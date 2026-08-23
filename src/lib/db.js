@@ -251,12 +251,15 @@ export const uploadServiceImage = (profileId, file) => uploadImage(profileId, fi
    MARKETPLACE
 ══════════════════════════════════════════════════ */
 
-export const getListings = (filters = {}) => {
+export const getListings = (filters = {}, page = 0, pageSize = 24) => {
   let q = supabase
     .from("marketplace_listings")
     .select("*, poster:profiles(name,trade,booking_slug)")
     .eq("status", "active")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(page * pageSize, page * pageSize + pageSize - 1); // pagination
+    // obligatoire — sans .range(), un seul appel peut ramener TOUTES les
+    // annonces d'un coup, ce qui permet d'aspirer toute la base facilement
 
   if (filters.type)     q = q.eq("type", filters.type);
   if (filters.trade && filters.trade !== "all") q = q.eq("trade", filters.trade);

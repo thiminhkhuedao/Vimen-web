@@ -87,9 +87,12 @@ export default function MarketplacePage({ profile }) {
   const [search, setSearch] = useState("");
   const [filterTrade, setFilterTrade] = useState("All trades");
   const [filterUrgent, setFilterUrgent] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 24;
 
   // Load listings
-  const load = useCallback(async () => {
+  const load = useCallback(async (targetPage = 0) => {
     setLoading(true);
     setError(null);
     try {
@@ -98,9 +101,11 @@ export default function MarketplacePage({ profile }) {
         trade: filterTrade !== "All trades" ? filterTrade : undefined,
         urgent: filterUrgent || undefined,
       };
-      const { data, error: err } = await getListings(filters);
+      const { data, error: err } = await getListings(filters, targetPage, PAGE_SIZE);
       if (err) throw err;
-      setListings(data ?? []);
+      setListings((prev) => (targetPage === 0 ? (data ?? []) : [...prev, ...(data ?? [])]));
+      setHasMore((data ?? []).length === PAGE_SIZE);
+      setPage(targetPage);
     } catch (err) {
       console.error("[MarketplacePage] load listings error:", err);
       setError({
@@ -112,6 +117,8 @@ export default function MarketplacePage({ profile }) {
       setLoading(false);
     }
   }, [activeTab, filterTrade, filterUrgent, t]);
+
+  const loadMoreListings = () => load(page + 1);
 
   const loadMine = useCallback(async () => {
     if (!profile?.id) return;
@@ -348,16 +355,25 @@ export default function MarketplacePage({ profile }) {
                 action={<Btn size="sm" onClick={() => setModal("post")}>{t("marketplace.postFirstOne")}</Btn>}
               />
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
-                {displayed.map(l => (
-                  <ListingCard 
-                    key={l.id} 
-                    listing={l} 
-                    fmt={fmt}
-                    onClick={() => openDetail(l)}
-                  />
-                ))}
-              </div>
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 14 }}>
+                  {displayed.map(l => (
+                    <ListingCard 
+                      key={l.id} 
+                      listing={l} 
+                      fmt={fmt}
+                      onClick={() => openDetail(l)}
+                    />
+                  ))}
+                </div>
+                {hasMore && !search && (
+                  <div style={{ textAlign: "center", marginTop: 24 }}>
+                    <Btn size="sm" variant="secondary" onClick={loadMoreListings} disabled={loading}>
+                      {loading ? t("marketplace.loadingMore", "Chargement...") : t("marketplace.loadMore", "Charger plus")}
+                    </Btn>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

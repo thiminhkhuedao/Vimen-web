@@ -362,6 +362,18 @@ function Footer({ t }) {
           >
             {t("home.nav.terms") || "Terms"}
           </Link>
+
+          <Link
+            to="/mentions-legales"
+            style={{
+              fontSize: 13,
+              color: T.hint,
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            {t("home.nav.legal") || "Mentions Légales"}
+          </Link>
         </div>
 
         <p style={{ color: T.hint, fontSize: 13, margin: 0 }}>

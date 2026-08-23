@@ -18,6 +18,7 @@ import AboutPage        from "./pages/AboutPage.jsx";
 import ContactPage      from "./pages/ContactPage.jsx";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage.jsx";
 import TermsOfServicePage from "./pages/TermsOfServicePage.jsx";
+import MentionsLegalesPage from "./pages/MentionsLegalesPage.jsx";
 import FaqPage          from "./pages/FaqPage.jsx";
 
 // Core pages
@@ -870,6 +871,8 @@ function ClerkGatedApp() {
         return <PrivacyPolicyPage {...publicPageProps} />;
       case "/terms":
         return <TermsOfServicePage {...publicPageProps} />;
+      case "/mentions-legales":
+        return <MentionsLegalesPage {...publicPageProps} />;;
       case "/faq":
         return <FaqPage {...publicPageProps} />;
       default:

@@ -13,10 +13,10 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const ALERT_EMAIL = Deno.env.get("ALERT_EMAIL");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const ALERT_EMAIL = Deno.env.get("ALERT_EMAIL") ?? "";
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
@@ -26,7 +26,7 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 const ANOMALY_MULTIPLIER = 3;
 const MIN_ABSOLUTE_THRESHOLD = 10; // évite les faux positifs sur petit volume
 
-async function countLast24h(action) {
+async function countLast24h(action: string): Promise<number> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { count } = await supabase
     .from("rate_limit_events")
@@ -36,7 +36,7 @@ async function countLast24h(action) {
   return count ?? 0;
 }
 
-async function averageDailyLast7Days(action) {
+async function averageDailyLast7Days(action: string): Promise<number> {
   const since = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString();
   const until = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { count } = await supabase
@@ -48,7 +48,7 @@ async function averageDailyLast7Days(action) {
   return (count ?? 0) / 7;
 }
 
-async function sendAlert(subject, bodyLines) {
+async function sendAlert(subject: string, bodyLines: string[]): Promise<void> {
   if (!RESEND_API_KEY || !ALERT_EMAIL) {
     console.error("RESEND_API_KEY ou ALERT_EMAIL manquant, alerte non envoyée");
     return;
@@ -68,9 +68,9 @@ async function sendAlert(subject, bodyLines) {
   });
 }
 
-Deno.serve(async (_req) => {
+Deno.serve(async (_req: Request) => {
   const actionsToWatch = ["signup", "login", "contact_form", "booking_request"];
-  const anomalies = [];
+  const anomalies: string[] = [];
 
   for (const action of actionsToWatch) {
     const today = await countLast24h(action);

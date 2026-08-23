@@ -12,6 +12,8 @@ import { CURRENCY_SYMBOLS } from "../lib/currency.js";
 import { VERTICALS, getVerticalForProfession, getProfileFields, getVerticalLabel, getProfessionLabel } from "../lib/professions.js";
 import { useTranslation, LANGUAGES } from "../i18n/index.js";
 import { AppCtx } from "../lib/state.jsx";
+import PrivacyControls from "../components/PrivacyControls.jsx";
+import SecuritySettings from "../components/SecuritySettings.jsx";
 
 const INPUT_STYLE = {
   width: "100%",
@@ -278,6 +280,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         <TabBtn id="notifs" label={t("settings.notifications")} />
         <TabBtn id="plan" label={t("settings.plan")} />
         <TabBtn id="language" label={t("settings.language")} />
+        <TabBtn id="privacy" label={t("settings.privacy") || "Confidentialité & Sécurité"} />
       </div>
 
       <div style={{ maxWidth: 540 }}>
@@ -698,6 +701,30 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
               ))}
             </div>
           </Card>
+        )}
+
+        {tab === "privacy" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+            <Card>
+              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
+                {t("settings.securityTitle") || "Sécurité du compte"}
+              </div>
+              <p style={{ fontSize: 13, color: T.muted, marginBottom: 20 }}>
+                {t("settings.securitySub") || "Active la double authentification et gère les appareils connectés à ton compte."}
+              </p>
+              <SecuritySettings />
+            </Card>
+
+            <Card>
+              <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
+                {t("settings.privacyTitle") || "Tes données personnelles"}
+              </div>
+              <p style={{ fontSize: 13, color: T.muted, marginBottom: 20 }}>
+                {t("settings.privacySub") || "Exporte une copie de tes données, ou supprime définitivement ton compte."}
+              </p>
+              <PrivacyControls />
+            </Card>
+          </div>
         )}
       </div>
     </PageShell>

@@ -27,6 +27,7 @@
 //   if (!allowed) { /* bloque, affiche reason */ }
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, handleCors } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -76,21 +77,47 @@ async function verifyTurnstile(token, ip) {
 }
 
 Deno.serve(async (req) => {
+  const preflight = handleCors(req);
+  if (preflight) return preflight;
+
+  const json = (body, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsHeaders(req), "Content-Type": "application/json" },
+    });
+
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ allowed: false, reason: "method_not_allowed" }), { status: 405 });
+    return json({ allowed: false, reason: "method_not_allowed" }, 405);
   }
 
   try {
-    const { action, identifier, turnstileToken, honeypot } = await req.json();
+    const body = await req.json();
+
+    // Validation stricte : chaque champ doit être du bon type ou absent,
+    // jamais faire confiance à ce que le client prétend envoyer.
+    const { action, identifier, turnstileToken, honeypot } = body;
+    if (typeof action !== "string") {
+      return json({ allowed: false, reason: "invalid_action" }, 400);
+    }
+    if (identifier !== undefined && (typeof identifier !== "string" || identifier.length > 320)) {
+      return json({ allowed: false, reason: "invalid_identifier" }, 400);
+    }
+    if (turnstileToken !== undefined && typeof turnstileToken !== "string") {
+      return json({ allowed: false, reason: "invalid_turnstile_token" }, 400);
+    }
+    if (honeypot !== undefined && typeof honeypot !== "string") {
+      return json({ allowed: false, reason: "invalid_honeypot" }, 400);
+    }
+
     const limits = LIMITS[action];
     if (!limits) {
-      return new Response(JSON.stringify({ allowed: false, reason: "unknown_action" }), { status: 400 });
+      return json({ allowed: false, reason: "unknown_action" }, 400);
     }
 
     // Honeypot rempli -> bot détecté, on rejette immédiatement sans même
     // consommer de quota (pas la peine de logguer une vraie tentative)
     if (honeypot && honeypot.trim().length > 0) {
-      return new Response(JSON.stringify({ allowed: false, reason: "bot_detected" }), { status: 200 });
+      return json({ allowed: false, reason: "bot_detected" }, 200);
     }
 
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -100,7 +127,7 @@ Deno.serve(async (req) => {
     if (requiresCaptcha) {
       const captchaOk = await verifyTurnstile(turnstileToken, ip);
       if (!captchaOk) {
-        return new Response(JSON.stringify({ allowed: false, reason: "captcha_failed" }), { status: 200 });
+        return json({ allowed: false, reason: "captcha_failed" }, 200);
       }
     }
 
@@ -108,7 +135,7 @@ Deno.serve(async (req) => {
     const ipBucket = `${action}:${ip}`;
     const ipCount = await countEvents(ipBucket, limits.windowSec);
     if (ipCount >= limits.maxByIp) {
-      return new Response(JSON.stringify({ allowed: false, reason: "rate_limited_ip" }), { status: 200 });
+      return json({ allowed: false, reason: "rate_limited_ip" }, 200);
     }
 
     // Rate limit par identifiant (email pour login/signup) si applicable
@@ -116,19 +143,16 @@ Deno.serve(async (req) => {
       const idBucket = `${action}:id:${identifier.toLowerCase()}`;
       const idCount = await countEvents(idBucket, limits.windowSec);
       if (idCount >= limits.maxByIdentifier) {
-        return new Response(JSON.stringify({ allowed: false, reason: "rate_limited_identifier" }), { status: 200 });
+        return json({ allowed: false, reason: "rate_limited_identifier" }, 200);
       }
       await recordEvent(idBucket, action);
     }
 
     await recordEvent(ipBucket, action);
 
-    return new Response(JSON.stringify({ allowed: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json({ allowed: true }, 200);
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ allowed: false, reason: "server_error" }), { status: 500 });
+    return json({ allowed: false, reason: "server_error" }, 500);
   }
 });
