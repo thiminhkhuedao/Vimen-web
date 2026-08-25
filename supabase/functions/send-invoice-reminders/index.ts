@@ -68,11 +68,17 @@ Deno.serve(async (req) => {
     if (!profile) continue;
     if (!invoice.client?.email) continue;
 
-    // Plafond des rappels selon le plan : illimité pour Pro (sauf si le pro a
-    // lui-même défini un plafond plus bas), 5 maximum pour Free quoi qu'il arrive.
-    const maxReminders = profile.plan === "pro"
-      ? (profile.reminder_max_count && profile.reminder_max_count > 0 ? profile.reminder_max_count : Infinity)
-      : Math.min(profile.reminder_max_count ?? 5, 5);
+    // TEMPORAIREMENT DÉSACTIVÉ — plus de distinction Free/Pro tant que
+    // l'abonnement Pro est inatteignable (pas de Stripe/SIRET actif).
+    // Illimité pour tout le monde, sauf si le pro a lui-même réglé un
+    // plafond personnalisé dans Settings (reminder_max_count).
+    // Pour réactiver la distinction plan Free/Pro, remettre :
+    //   const maxReminders = profile.plan === "pro"
+    //     ? (profile.reminder_max_count && profile.reminder_max_count > 0 ? profile.reminder_max_count : Infinity)
+    //     : Math.min(profile.reminder_max_count ?? 5, 5);
+    const maxReminders = profile.reminder_max_count && profile.reminder_max_count > 0
+      ? profile.reminder_max_count
+      : Infinity;
     const frequencyDays = profile.reminder_frequency_days ?? 7;
 
     if (invoice.reminder_count >= maxReminders) continue;

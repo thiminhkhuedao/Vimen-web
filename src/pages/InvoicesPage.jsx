@@ -81,9 +81,13 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
   const fld = k => e => { setForm(p=>({...p,[k]:e.target.value})); setFormErrors(p=>({...p,[k]:""})); };
 
   // Gestion des limites du plan Free pour les factures (max 10)
+  // TEMPORAIREMENT DÉSACTIVÉ — pas de moyen de passer Pro pour l'instant
+  // (pas de Stripe/SIRET actif), donc cette limite bloquerait tout le
+  // monde indéfiniment. Remettre `!isPro && totalInvoicesCount >= 10`
+  // pour la réactiver une fois l'abonnement Pro de retour.
   const isPro = profile?.plan === "pro";
   const totalInvoicesCount = invoices.length;
-  const isInvoiceLimitReached = !isPro && totalInvoicesCount >= 10;
+  const isInvoiceLimitReached = false;
 
   // ── Load invoices ──────────────────────────────────
   const load = useCallback(async () => {

@@ -63,9 +63,13 @@ export default function ClientsPage({ profile, onUpgradeClick }) {
     setFieldErrors(p => (p[k] ? { ...p, [k]: null } : p));
   };
 
+  // TEMPORAIREMENT DÉSACTIVÉ — pas de moyen de passer Pro pour l'instant
+  // (pas de Stripe/SIRET actif), donc cette limite bloquerait tout le
+  // monde indéfiniment. Remettre `!isPro && clientsCount >= 5` pour la
+  // réactiver une fois l'abonnement Pro de retour.
   const isPro = profile?.plan === "pro";
   const clientsCount = clients.length;
-  const isClientLimitReached = !isPro && clientsCount >= 5;
+  const isClientLimitReached = false;
 
   const load = useCallback(async () => {
     if (!profile?.id) return;
@@ -192,11 +196,13 @@ export default function ClientsPage({ profile, onUpgradeClick }) {
       title={t("nav.clients")} 
       action={
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {/* Compteur "X/5 clients" caché en même temps que la limite —
+              remettre `!isPro &&` pour le réafficher :
           {!isPro && (
             <span style={{ fontSize: 13, color: isClientLimitReached ? T.amber : T.muted, fontWeight: 600 }}>
               {clientsCount}/5 clients
             </span>
-          )}
+          )} */}
           <Btn size="sm" onClick={handleOpenAddClient}>+ {t("clients.addClient")}</Btn>
         </div>
       }
