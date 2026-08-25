@@ -2168,6 +2168,8 @@ home: {
     title: "Simple plans that grow with you",
     sub: "No contracts, no surprise charges. Cancel or change your subscription anytime.",
     cta: "See Full Pricing & Plans",
+    freeTitle: "100% free to start",
+    freeSub: "Everything you need to run your business — no credit card required.",
   },
   finalCta: {
     title: "Ready to get started?",

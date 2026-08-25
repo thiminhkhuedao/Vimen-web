@@ -278,7 +278,10 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         <TabBtn id="account" label={t("settings.account")} />
         <TabBtn id="payment" label={t("settings.payment")} />
         <TabBtn id="notifs" label={t("settings.notifications")} />
-        <TabBtn id="plan" label={t("settings.plan")} />
+        {/* Onglet "plan" retiré temporairement — pas de Stripe/SIRET actif,
+            tout est gratuit pour l'instant. Remettre la ligne ci-dessous
+            (+ le bloc de rendu correspondant) pour le réactiver :
+            <TabBtn id="plan" label={t("settings.plan")} /> */}
         <TabBtn id="language" label={t("settings.language")} />
         <TabBtn id="privacy" label={t("settings.privacy") || "Confidentialité & Sécurité"} />
       </div>
@@ -411,6 +414,16 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
 
         {tab === "payment" && (
           <Card>
+            {/* Déplacé depuis l'ancien onglet "plan" lors du retrait
+                temporaire de l'abonnement Pro — Stripe Connect reste actif */}
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>Connexion Stripe Connect</div>
+            <div style={{ fontSize: 13, color: T.muted, marginBottom: 12 }}>Associe ton compte Stripe pour recevoir tes versements.</div>
+            <Btn variant="ghost" size="sm" onClick={handleConnectStripe}>
+              {t("settings.connectStripe") || "Connecter mon compte Stripe"}
+            </Btn>
+
+            <Divider />
+
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t("settings.currencyTitle")}</div>
             <Field label={t("settings.currencyLabel")} htmlFor="payment-currency">
               <select id="payment-currency" style={INPUT_STYLE} value={form.currency} onChange={fld("currency")}>
@@ -534,139 +547,17 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
           </Card>
         )}
 
-        {tab === "plan" && (
-          <div>
-            <Card style={{ marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>{t("settings.currentPlan")}</div>
-                  <Badge color={profile?.plan === "pro" ? "brand" : "gray"}>
-                    {profile?.plan === "pro" ? t("common.pro") : t("common.free")}
-                  </Badge>
-                  {profile?.plan === "pro" && (
-                    <span style={{ fontSize: 13, color: T.green, marginLeft: 10 }}>
-                      · {t("settings.renewsMonthly")}
-                    </span>
-                  )}
-                </div>
-                {profile?.plan === "pro" && <Btn variant="ghost" size="sm">{t("settings.manageBilling")}</Btn>}
-              </div>
-            </Card>
+        {/*
+          Onglet "plan" (abonnement Free/Pro via Stripe Checkout) retiré
+          temporairement — pas de Stripe/SIRET actif pour ça, tout est
+          gratuit pour l'instant. La carte "Connexion Stripe Connect"
+          qui vivait ici a été déplacée dans l'onglet "payment" ci-dessus
+          (Stripe Connect reste actif, c'est un système différent).
 
-            <Card style={{ marginBottom: 16, background: T.surface2 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>Connexion Stripe Connect</div>
-              <div style={{ fontSize: 13, color: T.muted, marginBottom: 12 }}>Associe ton compte Stripe pour recevoir tes versements.</div>
-              <Btn variant="ghost" size="sm" onClick={handleConnectStripe}>
-                {t("settings.connectStripe") || "Connecter mon compte Stripe"}
-              </Btn>
-            </Card>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              {[
-                {
-                  id: "free",
-                  name: t("common.free"),
-                  price: "€0/mo",
-                  feats: [
-                    t("settings.freeFeatServices"),
-                    t("settings.freeFeatCerts"),
-                    t("settings.freeFeatBooking"),
-                    t("settings.freeFeatSupport"),
-                  ],
-                },
-                {
-                  id: "pro",
-                  name: t("common.pro"),
-                  price: "€10/mo",
-                  hi: true,
-                  feats: [
-                    t("settings.proFeatServices"),
-                    t("settings.proFeatCerts"),
-                    t("settings.proFeatCustomDomain"),
-                    t("settings.proFeatPrioritySlot"),
-                    t("settings.proFeatAnalytics"),
-                    t("settings.proFeatSupport"),
-                  ],
-                },
-              ].map(p => (
-                <div
-                  key={p.id}
-                  style={{
-                    background: profile?.plan === p.id ? T.brandLight : T.surface,
-                    borderRadius: T.r.lg,
-                    border: p.hi ? `2px solid ${T.brand}` : `1px solid ${T.border}`,
-                    padding: 24,
-                    position: "relative",
-                  }}
-                >
-                  {p.hi && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: -12,
-                        left: "50%",
-                        transform: "translateX(-50%)",
-                        background: T.brand,
-                        color: "#fff",
-                        fontSize: 11,
-                        fontWeight: 800,
-                        padding: "3px 14px",
-                        borderRadius: T.r.full,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {t("settings.mostPopular")}
-                    </div>
-                  )}
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 700,
-                      color: T.muted,
-                      textTransform: "uppercase",
-                      letterSpacing: 1,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {p.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 28,
-                      fontWeight: 900,
-                      letterSpacing: -1,
-                      marginBottom: 4,
-                      color: p.hi ? T.brand : T.text,
-                    }}
-                  >
-                    {p.price}
-                  </div>
-                  <Divider />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
-                    {p.feats.map(f => (
-                      <div key={f} style={{ display: "flex", gap: 8, fontSize: 13, color: T.muted }}>
-                        <span style={{ color: p.hi ? T.brand : T.green }}>✓</span>
-                        {f}
-                      </div>
-                    ))}
-                  </div>
-                  {profile?.plan === p.id ? (
-                    <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: T.brand }}>
-                      {t("settings.currentPlanBadge")}
-                    </div>
-                  ) : (
-                    <Btn
-                      fullWidth
-                      onClick={() => p.id === "pro" && handleUpgradeStripe()}
-                    >
-                      {p.id === "pro" ? t("settings.upgrade") : t("settings.downgrade")}
-                    </Btn>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          Pour réactiver : remettre le TabBtn "plan" plus haut, et
+          recoller ici le bloc {tab === "plan" && (...)} d'origine
+          (disponible dans l'historique de conversation si besoin).
+        */}
 
         {tab === "language" && (
           <Card>

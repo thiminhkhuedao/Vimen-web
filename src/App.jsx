@@ -13,7 +13,7 @@ import { useTranslation, setLanguagePersister } from "./i18n/index.js";
 
 // Marketing / logged-out
 import HomePage         from "./pages/HomePage";
-import PricingPage      from "./pages/PricingPage";
+// import PricingPage      from "./pages/PricingPage"; // désactivé temporairement — pas de Stripe/SIRET pour l'instant, tout est gratuit
 import AboutPage        from "./pages/AboutPage.jsx";
 import ContactPage      from "./pages/ContactPage.jsx";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage.jsx";
@@ -861,8 +861,8 @@ function ClerkGatedApp() {
     };
 
     switch (location.pathname) {
-      case "/pricing":
-        return <PricingPage {...publicPageProps} />;
+      // "/pricing" désactivé temporairement — retiré du switch, tombe sur
+      // "default" (homepage) tant qu'on n'a pas de Stripe/SIRET actif.
       case "/about":
         return <AboutPage {...publicPageProps} />;
       case "/contact":

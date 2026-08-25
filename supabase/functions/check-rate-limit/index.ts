@@ -11,32 +11,28 @@
 // Déploiement :
 //   supabase functions deploy check-rate-limit
 //   supabase secrets set TURNSTILE_SECRET_KEY=xxxx   (Secret Key, PAS la Site Key)
-//
-// Appel depuis le front (exemple) :
-//   const res = await fetch(`${SUPABASE_URL}/functions/v1/check-rate-limit`, {
-//     method: "POST",
-//     headers: { "Content-Type": "application/json" },
-//     body: JSON.stringify({
-//       action: "login",
-//       identifier: email,          // optionnel, ex: email pour un login
-//       turnstileToken: captchaToken, // optionnel, requis pour signup/contact/booking
-//       honeypot: honeypotValue,      // optionnel
-//     }),
-//   });
-//   const { allowed, reason } = await res.json();
-//   if (!allowed) { /* bloque, affiche reason */ }
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders, handleCors } from "../_shared/cors.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const TURNSTILE_SECRET_KEY = Deno.env.get("TURNSTILE_SECRET_KEY");
+
+if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+  throw new Error("SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manquant (normalement injectés automatiquement par Supabase)");
+}
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
+interface RateLimit {
+  windowSec: number;
+  maxByIp: number;
+  maxByIdentifier: number | null;
+}
+
 // Limites par action : { fenêtre en secondes, nombre max de tentatives }
-const LIMITS = {
+const LIMITS: Record<string, RateLimit> = {
   login:            { windowSec: 5 * 60,  maxByIp: 20, maxByIdentifier: 5 },
   signup:           { windowSec: 60 * 60, maxByIp: 5,  maxByIdentifier: 1 },
   password_reset:   { windowSec: 15 * 60, maxByIp: 10, maxByIdentifier: 3 },
@@ -46,7 +42,14 @@ const LIMITS = {
   profile_view:     { windowSec: 60,      maxByIp: 90, maxByIdentifier: null }, // anti-scraping
 };
 
-async function countEvents(bucketKey, windowSec) {
+interface RateLimitRequestBody {
+  action?: unknown;
+  identifier?: unknown;
+  turnstileToken?: unknown;
+  honeypot?: unknown;
+}
+
+async function countEvents(bucketKey: string, windowSec: number): Promise<number> {
   const since = new Date(Date.now() - windowSec * 1000).toISOString();
   const { count, error } = await supabase
     .from("rate_limit_events")
@@ -57,12 +60,14 @@ async function countEvents(bucketKey, windowSec) {
   return count ?? 0;
 }
 
-async function recordEvent(bucketKey, action) {
+async function recordEvent(bucketKey: string, action: string): Promise<void> {
   await supabase.from("rate_limit_events").insert({ bucket_key: bucketKey, action });
 }
 
-async function verifyTurnstile(token, ip) {
+async function verifyTurnstile(token: string | undefined, ip: string): Promise<boolean> {
   if (!token) return false;
+  if (!TURNSTILE_SECRET_KEY) return false; // pas de secret configuré -> refuse par défaut, jamais par accident
+
   const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -76,11 +81,11 @@ async function verifyTurnstile(token, ip) {
   return data.success === true;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   const preflight = handleCors(req);
   if (preflight) return preflight;
 
-  const json = (body, status = 200) =>
+  const json = (body: Record<string, unknown>, status = 200) =>
     new Response(JSON.stringify(body), {
       status,
       headers: { ...corsHeaders(req), "Content-Type": "application/json" },
@@ -91,7 +96,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const body = await req.json();
+    const body: RateLimitRequestBody = await req.json();
 
     // Validation stricte : chaque champ doit être du bon type ou absent,
     // jamais faire confiance à ce que le client prétend envoyer.
@@ -152,7 +157,8 @@ Deno.serve(async (req) => {
 
     return json({ allowed: true }, 200);
   } catch (err) {
-    console.error(err);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(message);
     return json({ allowed: false, reason: "server_error" }, 500);
   }
 });

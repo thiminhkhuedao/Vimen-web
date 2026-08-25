@@ -2225,6 +2225,8 @@ home: {
     title: "Des forfaits simples qui évoluent avec vous",
     sub: "Sans engagement, sans frais cachés. Modifiez ou résiliez votre abonnement à tout moment.",
     cta: "Voir tous les tarifs et forfaits",
+    freeTitle: "100% gratuit pour commencer",
+    freeSub: "Tout ce qu'il te faut pour gérer ton activité — sans carte bancaire.",
   },
   finalCta: {
     title: "Prêt à simplifier votre gestion au quotidien ?",
