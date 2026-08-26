@@ -700,7 +700,11 @@ export default function PublicBookingPage() {
   // Profile data derivations
   const certs = profile?.extra_fields?.certifications || [];
   const isPro = profile?.plan === "pro";
-  const visibleCertifications = isPro ? certs : certs.slice(0, 2);
+  // TEMPORAIREMENT DÉSACTIVÉ — pas de moyen de passer Pro pour l'instant
+  // (pas de Stripe/SIRET actif), donc cette limite cacherait des
+  // certifications indéfiniment. Remettre `isPro ? certs : certs.slice(0, 2)`
+  // pour la réactiver une fois l'abonnement Pro de retour.
+  const visibleCertifications = certs;
 
   const vertical = getVerticalForProfession(profile.trade);
   const verticalColor = getVerticalColor(profile.trade);
