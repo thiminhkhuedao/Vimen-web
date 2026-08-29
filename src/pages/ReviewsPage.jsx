@@ -8,6 +8,7 @@ import { toast } from "react-hot-toast";
 import { T } from "../styles/tokens";
 import { uid } from "../lib/state";
 import { supabase } from "../lib/supabase";
+import ReportButton from "../components/ReportButton";
 import {
   PageShell, Card, Btn, Badge, Empty,
   Modal, Field, FormActions, SectionTitle, Divider,
@@ -320,8 +321,8 @@ export default function ReviewsPage({ state, dispatch, profile }) {
               </div>
               {r.title && <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{r.title}</div>}
               {r.body && <div style={{ fontSize: 13, color: T.muted, lineHeight: 1.7 }}>{r.body}</div>}
-              {!r.google_review_clicked && (
-                <div style={{ marginTop: 10 }}>
+              <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 14 }}>
+                {!r.google_review_clicked && (
                   <Btn 
                     size="sm" 
                     variant="ghost"
@@ -332,8 +333,9 @@ export default function ReviewsPage({ state, dispatch, profile }) {
                   >
                     {t("reviews.list.askClientToPostBtn")}
                   </Btn>
-                </div>
-              )}
+                )}
+                <ReportButton contentType="review" contentId={r.id} ownerProfileId={profile?.id} />
+              </div>
             </div>
           ))
         )}

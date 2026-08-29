@@ -113,6 +113,11 @@ export default {
     fullName:          "Nom complet",
     profession:        "Votre profession",
     forgotPassword:    "Mot de passe oublié ?",
+    form: {
+      continueGoogle: "Continuer avec Google",
+      orDivider:      "ou",
+      forgotPassword: "Mot de passe oublié ?",
+    },
     noAccount:         "Pas encore de compte ?",
     alreadyAccount:    "Déjà inscrit ?",
     signUpFree:        "S'inscrire gratuitement",
@@ -1403,6 +1408,10 @@ export default {
   // ── Settings ─────────────────────────────────────────
   settings: {
     title:            "Paramètres",
+    securityTitle:    "Sécurité",
+    securitySub:      "Gère ton mot de passe et tes sessions actives.",
+    privacyTitle:     "Confidentialité & données",
+    privacySub:       "Exporte une copie de tes données, ou supprime définitivement ton compte.",
     account:          "Compte",
     payment:          "Paiement",
     notifications:    "Alertes",

@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  sitemap.xml — Submit this to Google Search Console
-  Place at: public/sitemap.xml
-  URL will be: https://yourdomain.com/sitemap.xml
-
-  Replace "yourdomain.com" everywhere below with your real domain.
+  sitemap.xml — soumis à Google Search Console
+  Emplacement : public/sitemap.xml
+  URL finale : https://vimen.app/sitemap.xml
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
   <!-- ── Landing page ── -->
   <url>
-    <loc>https://yourdomain.com/</loc>
-    <lastmod>2026-05-22</lastmod>
+    <loc>https://vimen.app/</loc>
+    <lastmod>2026-08-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -22,19 +20,36 @@
        Each links its "Start free" CTAs to /?vertical={slug}&signup=1
        so visitors land in signup mode with the right profession pre-selected. -->
   <url>
-    <loc>https://yourdomain.com/trades/</loc>
+    <loc>https://vimen.app/trades/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yourdomain.com/beauty/</loc>
+    <loc>https://vimen.app/beauty/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yourdomain.com/professional/</loc>
+    <loc>https://vimen.app/professional/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- ── Pages secondaires ── -->
+  <url>
+    <loc>https://vimen.app/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://vimen.app/faq</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://vimen.app/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
 
   <!--
@@ -43,13 +58,12 @@
     Each /b/[slug] page is a public profile + booking form
     that Google can index and rank for "[trade] [city]" searches.
 
+    Retiré temporairement : l'exemple "jakemorrison" du fichier d'origine
+    n'était qu'un placeholder d'exemple, pas un vrai compte — le garder
+    ferait planter le crawl Google dessus (404).
+
     Add one <url> block per tradesperson who signs up.
     You can generate this dynamically from Supabase — see seo/generate-sitemap.js
   -->
-  <url>
-    <loc>https://yourdomain.com/b/jakemorrison</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
 
 </urlset>

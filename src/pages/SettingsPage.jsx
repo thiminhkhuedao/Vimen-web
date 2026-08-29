@@ -204,6 +204,10 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
     }
   }
 
+  /* handleUpgradeStripe — retirée en même temps que l'onglet "plan"
+     (voir note plus bas). Plus aucun bouton ne l'appelle actuellement.
+     Code d'origine conservé ici pour réactivation :
+
   async function handleUpgradeStripe() {
     const userId = profile?.id || profile?.clerk_id;
     try {
@@ -227,6 +231,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
       console.error("[Stripe checkout error]:", err);
     }
   }
+  */
 
   const TabBtn = ({ id, label }) => (
     <button

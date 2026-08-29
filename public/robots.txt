@@ -1,6 +1,6 @@
 # robots.txt — tells search engines what they can and can't crawl
 # Place this at: public/robots.txt
-# Vercel serves it automatically at https://yourdomain.com/robots.txt
+# Vercel serves it automatically at https://vimen.app/robots.txt
 
 User-agent: *
 Allow: /
@@ -18,4 +18,4 @@ Allow: /
 Allow: /b/          # public booking pages e.g. /b/jakemorrison
 
 # Your sitemap location
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://vimen.app/sitemap.xml

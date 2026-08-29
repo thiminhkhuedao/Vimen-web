@@ -11,6 +11,7 @@ import {
   FormActions, Empty, Skeleton, Spinner, ErrorBox
 } from "../components/UI";
 import PhotoUpload from "../components/PhotoUpload";
+import ReportButton from "../components/ReportButton";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { formatCurrency } from "../lib/currency.js";
 import { ALL_PROFESSIONS, VERTICALS, getVerticalForProfession, getVerticalLabel, getProfessionLabel } from "../lib/professions.js";
@@ -25,22 +26,22 @@ const MATERIAL_CATEGORIES = ["Electrical", "Plumbing", "General", "Safety", "Too
 const MATERIAL_CONDITIONS = ["New", "Like new", "Used", "For parts"];
 const CONDITION_KEY = { "New": "new", "Like new": "likeNew", "Used": "used", "For parts": "forParts" };
 
-const fmtDate = d => { 
+const fmtDate = (d, locale = "en-GB") => { 
   try { 
-    return new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); 
+    return new Date(d).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" }); 
   } catch { 
     return ""; 
   }
 };
 
-const timeAgo = (d, t) => {
+const timeAgo = (d, t, locale = "en-GB") => {
   const diff = Date.now() - new Date(d).getTime();
   const days = Math.floor(diff / 86400000);
   if (days === 0) return t("marketplace.time.today");
   if (days === 1) return t("marketplace.time.yesterday");
   if (days < 7) return t("marketplace.time.daysAgo", { count: days });
   if (days < 30) return t("marketplace.time.weeksAgo", { count: Math.floor(days / 7) });
-  return fmtDate(d);
+  return fmtDate(d, locale);
 };
 
 const iStyle = {
@@ -74,7 +75,8 @@ function TypeBadge({ type }) {
   MAIN COMPONENT
 ══════════════════════════════════════════════════════ */
 export default function MarketplacePage({ profile }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
   const fmt = n => formatCurrency(n, profile?.currency);
   const [listings, setListings] = useState([]);
   const [myListings, setMyListings] = useState([]);
@@ -405,7 +407,7 @@ export default function MarketplacePage({ profile }) {
                         </div>
                         <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{l.title}</div>
                         <div style={{ fontSize: 13, color: T.muted }}>
-                          {l.location} · {getProfessionLabel(l.trade, t)} · {timeAgo(l.created_at, t)}
+                          {l.location} · {getProfessionLabel(l.trade, t)} · {timeAgo(l.created_at, t, locale)}
                           {l.views > 0 && <span> · {t("marketplace.viewsCount", { count: l.views })}</span>}
                         </div>
                       </div>
@@ -433,7 +435,8 @@ export default function MarketplacePage({ profile }) {
   LISTING CARD
 ══════════════════════════════════════════════════════ */
 function ListingCard({ listing: l, fmt, onClick }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
   const thumb = l.photos?.[0];
 
   return (
@@ -495,7 +498,7 @@ function ListingCard({ listing: l, fmt, onClick }) {
           {l.contract_type && <span style={tagStyle}>{t(`marketplace.contractTypes.${l.contract_type}`)}</span>}
           {l.quantity > 1 && <span style={tagStyle}>× {l.quantity}</span>}
           {l.work_start_date && (
-            <span style={tagStyle}>{t("marketplace.fromDate", { date: fmtDate(l.work_start_date) })}</span>
+            <span style={tagStyle}>{t("marketplace.fromDate", { date: fmtDate(l.work_start_date, locale) })}</span>
           )}
         </div>
 
@@ -518,7 +521,7 @@ function ListingCard({ listing: l, fmt, onClick }) {
               </span>
             )}
           </div>
-          <div style={{ fontSize: 12, color: T.hint }}>{timeAgo(l.created_at, t)}</div>
+          <div style={{ fontSize: 12, color: T.hint }}>{timeAgo(l.created_at, t, locale)}</div>
         </div>
       </div>
     </div>
@@ -529,7 +532,8 @@ function ListingCard({ listing: l, fmt, onClick }) {
   LISTING DETAIL MODAL
 ══════════════════════════════════════════════════════ */
 function ListingDetailModal({ listing: l, profile, fmt, onClose, onInterest }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
   const isOwn = profile && (l.profile_id === profile.id || l.profile_id === profile.clerk_id);
 
   return (
@@ -567,7 +571,7 @@ function ListingDetailModal({ listing: l, profile, fmt, onClose, onInterest }) {
         {l.trade && (
           <span>{getVerticalForProfession(l.trade)?.icon} {getProfessionLabel(l.trade, t)}</span>
         )}
-        <span>{timeAgo(l.created_at, t)}</span>
+        <span>{timeAgo(l.created_at, t, locale)}</span>
       </div>
 
       {/* Description */}
@@ -617,16 +621,23 @@ function ListingDetailModal({ listing: l, profile, fmt, onClose, onInterest }) {
           {t("marketplace.detail.thisIsYourListing")}
         </div>
       )}
+
+      {!isOwn && (
+        <div style={{ textAlign: "center", marginTop: 16 }}>
+          <ReportButton contentType="marketplace_listing" contentId={l.id} ownerProfileId={l.profile_id} />
+        </div>
+      )}
     </Modal>
   );
 }
 
 function DetailGrid({ listing: l, fmt }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
   const rows = [];
   if (l.type === "demand") {
     if (l.budget) rows.push([t("marketplace.detail.fields.budget"), fmt(l.budget)]);
-    if (l.work_start_date) rows.push([t("marketplace.detail.fields.startDate"), fmtDate(l.work_start_date)]);
+    if (l.work_start_date) rows.push([t("marketplace.detail.fields.startDate"), fmtDate(l.work_start_date, locale)]);
   }
   if (l.type === "sale") {
     if (l.business_type) rows.push([t("marketplace.detail.fields.businessType"), l.business_type]);

@@ -111,6 +111,11 @@ export default {
     fullName:          "Full name",
     profession:        "Your profession",
     forgotPassword:    "Forgot password?",
+    form: {
+      continueGoogle: "Continue with Google",
+      orDivider:      "or",
+      forgotPassword: "Forgot password?",
+    },
     noAccount:         "Don't have an account?",
     alreadyAccount:    "Already have an account?",
     signUpFree:        "Sign up free",
@@ -1396,6 +1401,10 @@ export default {
   // ── Settings ─────────────────────────────────────────
   settings: {
     title:            "Settings",
+    securityTitle:    "Security",
+    securitySub:      "Manage your password and active sessions.",
+    privacyTitle:     "Privacy & Data",
+    privacySub:       "Export a copy of your data, or permanently delete your account.",
     account:          "Account",
     payment:          "Payment",
     notifications:    "Alerts",
