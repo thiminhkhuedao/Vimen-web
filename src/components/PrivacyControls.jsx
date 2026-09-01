@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@clerk/clerk-react";
+import { useTranslation } from "../i18n/index.js";
 
 /**
  * À insérer dans ta page Settings, section "Confidentialité" ou
@@ -12,12 +13,19 @@ import { useAuth } from "@clerk/clerk-react";
  * utilisateur ne peut techniquement demander que SA propre suppression)
  */
 export default function PrivacyControls() {
+  const { t } = useTranslation();
   const { getToken } = useAuth();
   const [exporting, setExporting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState("");
+
+  // Mot que l'utilisateur doit taper pour confirmer — traduit lui aussi,
+  // sinon quelqu'un en anglais verrait "Type DELETE" mais devrait en
+  // réalité taper "SUPPRIMER" pour que ça marche. On compare toujours
+  // à cette même valeur traduite, jamais à un mot codé en dur.
+  const confirmWord = t("settings.privacyControls.confirmWord") || "DELETE";
 
   async function handleExport() {
     setExporting(true);
@@ -40,13 +48,14 @@ export default function PrivacyControls() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      setError("Impossible d'exporter tes données pour le moment. Réessaie ou contacte le support.");
+      console.error("[PrivacyControls] export error:", err);
+      setError(t("settings.privacyControls.exportError"));
     }
     setExporting(false);
   }
 
   async function handleDelete() {
-    if (confirmText !== "SUPPRIMER") return;
+    if (confirmText !== confirmWord) return;
     setDeleting(true);
     setError("");
     try {
@@ -63,7 +72,8 @@ export default function PrivacyControls() {
       // locale est maintenant invalide, on redirige.
       window.location.href = "/";
     } catch (err) {
-      setError("Impossible de supprimer ton compte pour le moment. Contacte contact.vimen@gmail.com pour qu'on le fasse manuellement.");
+      console.error("[PrivacyControls] delete error:", err);
+      setError(t("settings.privacyControls.deleteError"));
       setDeleting(false);
     }
   }
@@ -71,23 +81,27 @@ export default function PrivacyControls() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div style={{ padding: 20, border: "1px solid #E5E5E0", borderRadius: 12 }}>
-        <h3 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700 }}>Exporter mes données</h3>
+        <h3 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700 }}>
+          {t("settings.privacyControls.exportTitle")}
+        </h3>
         <p style={{ margin: "0 0 14px", fontSize: 13, color: "#6B6B66" }}>
-          Télécharge une copie complète de toutes tes données personnelles stockées sur Vimen (profil, clients, factures, avis, etc.) au format JSON.
+          {t("settings.privacyControls.exportDesc")}
         </p>
         <button
           onClick={handleExport}
           disabled={exporting}
           style={{ padding: "10px 18px", borderRadius: 8, border: "1px solid #E5E5E0", background: "#fff", fontWeight: 600, fontSize: 14, cursor: exporting ? "not-allowed" : "pointer" }}
         >
-          {exporting ? "Export en cours..." : "Télécharger mes données"}
+          {exporting ? t("settings.privacyControls.exporting") : t("settings.privacyControls.exportBtn")}
         </button>
       </div>
 
       <div style={{ padding: 20, border: "1px solid #FECACA", borderRadius: 12, background: "#FEF2F2" }}>
-        <h3 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700, color: "#991B1B" }}>Supprimer mon compte</h3>
+        <h3 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700, color: "#991B1B" }}>
+          {t("settings.privacyControls.deleteTitle")}
+        </h3>
         <p style={{ margin: "0 0 14px", fontSize: 13, color: "#7F1D1D" }}>
-          Action définitive et irréversible. Supprime ton profil, tous tes clients, factures, avis, réservations, et ton compte de connexion. Aucune récupération possible après.
+          {t("settings.privacyControls.deleteDesc")}
         </p>
 
         {!showConfirm ? (
@@ -95,12 +109,12 @@ export default function PrivacyControls() {
             onClick={() => setShowConfirm(true)}
             style={{ padding: "10px 18px", borderRadius: 8, border: "1px solid #DC2626", background: "#fff", color: "#DC2626", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
           >
-            Supprimer mon compte
+            {t("settings.privacyControls.deleteBtn")}
           </button>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <label style={{ fontSize: 13, fontWeight: 600, color: "#7F1D1D" }}>
-              Tape SUPPRIMER pour confirmer :
+              {t("settings.privacyControls.confirmLabel", { word: confirmWord })}
             </label>
             <input
               type="text"
@@ -113,23 +127,23 @@ export default function PrivacyControls() {
                 onClick={() => { setShowConfirm(false); setConfirmText(""); }}
                 style={{ padding: "10px 18px", borderRadius: 8, border: "1px solid #E5E5E0", background: "#fff", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
               >
-                Annuler
+                {t("common.cancel")}
               </button>
               <button
                 onClick={handleDelete}
-                disabled={confirmText !== "SUPPRIMER" || deleting}
+                disabled={confirmText !== confirmWord || deleting}
                 style={{
                   padding: "10px 18px",
                   borderRadius: 8,
                   border: "none",
-                  background: confirmText === "SUPPRIMER" ? "#DC2626" : "#F3A8A8",
+                  background: confirmText === confirmWord ? "#DC2626" : "#F3A8A8",
                   color: "#fff",
                   fontWeight: 700,
                   fontSize: 14,
-                  cursor: confirmText === "SUPPRIMER" && !deleting ? "pointer" : "not-allowed",
+                  cursor: confirmText === confirmWord && !deleting ? "pointer" : "not-allowed",
                 }}
               >
-                {deleting ? "Suppression..." : "Supprimer définitivement"}
+                {deleting ? t("settings.privacyControls.deleting") : t("settings.privacyControls.deleteConfirmBtn")}
               </button>
             </div>
           </div>

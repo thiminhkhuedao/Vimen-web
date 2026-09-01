@@ -12,10 +12,18 @@ import { UserProfile } from "@clerk/clerk-react";
  * réordonne pour que Security s'ouvre en premier — plutôt que de cacher
  * la navbar, ce qui bloquerait l'accès à Security (elle ne serait jamais
  * atteignable sans nav).
+ *
+ * SÉCURITÉ VISUELLE — bug corrigé : <UserProfile> a sa propre mise en
+ * page interne complète (sa propre nav "Account/Security/Profile", son
+ * propre header). Un `maxWidth` externe entrait en conflit avec sa
+ * grille interne, causant un header plus large que le panneau en
+ * dessous. On laisse maintenant Clerk gérer sa largeur nativement
+ * (100% du parent), avec un scroll horizontal de secours sur mobile
+ * si jamais son contenu interne reste plus large que l'écran.
  */
 export default function SecuritySettings() {
   return (
-    <div style={{ maxWidth: 640 }}>
+    <div style={{ width: "100%", overflowX: "auto" }}>
       <UserProfile
         routing="hash"
         appearance={{
