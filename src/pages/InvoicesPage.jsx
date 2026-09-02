@@ -1,6 +1,7 @@
 // src/pages/InvoicesPage.jsx
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 import { T } from "../styles/tokens";
 import {
   getInvoices, createInvoice, markInvoicePaid, deleteInvoice,
@@ -63,6 +64,7 @@ function FieldError({ message }) {
 
 export default function InvoicesPage({ profile, onUpgradeClick }) {
   const { t } = useTranslation();
+  const { getToken } = useAuth();
   const fmt = n => formatCurrency(n, profile?.currency);
 
   const [invoices,   setInvoices]   = useState([]);
@@ -242,7 +244,8 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
   async function handleStripeLink(inv) {
     setBusy(true);
     try {
-      const result = await createPaymentLink(inv, profile);
+      const token = await getToken();
+      const result = await createPaymentLink(inv.id, token);
       if (!result) throw new Error("No result from Stripe");
       setInvoices(prev => prev.map(i =>
         i.id === inv.id ? { ...i, stripe_payment_link_url:result.url, stripe_payment_link_id:result.id } : i
