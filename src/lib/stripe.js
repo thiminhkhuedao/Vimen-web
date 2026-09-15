@@ -1,27 +1,24 @@
-// src/lib/stripe.js
+// src/lib/stripe.js — web
+//
+// CORRECTIF : la Edge Function create-payment-link ne fait plus confiance
+// à aucune donnée fournie par le client (montant, email, nom...) — elle va
+// tout chercher elle-même dans la table invoices, et vérifie que l'appelant
+// authentifié est bien le propriétaire de la facture. On envoie donc
+// seulement l'ID de la facture, plus le token Clerk pour prouver qui on est.
 
 import { supabase } from "./supabase";
-import { saveStripeLink } from "./db";
+import { saveStripeLink } from "./db.js";
 
 /**
- * Creates a Stripe payment link for an invoice.
- * Calls the "create-payment-link" Edge Function which uses the secret key.
- *
- * @param {object} invoice   - invoice row (with .client and .job joined)
- * @param {object} profile   - tradesperson profile
+ * Crée un lien de paiement Stripe pour une facture.
+ * @param {string} invoiceId
+ * @param {string} clerkToken - récupéré via useAuth().getToken() (Clerk) côté composant
  * @returns {{ url: string, id: string } | null}
  */
-export async function createPaymentLink(invoice, profile) {
+export async function createPaymentLink(invoiceId, clerkToken) {
   const { data, error } = await supabase.functions.invoke("create-payment-link", {
-    body: {
-      invoiceId:     invoice.id,
-      invoiceNumber: invoice.invoice_number,
-      amount:        invoice.amount,
-      clientEmail:   invoice.client?.email ?? "",
-      clientName:    invoice.client?.name  ?? "",
-      tradeName:     profile.name,
-      description:   invoice.job?.title ?? "Trade services",
-    },
+    body: { invoiceId },
+    headers: { Authorization: `Bearer ${clerkToken}` },
   });
 
   if (error || data?.error) {
@@ -29,8 +26,7 @@ export async function createPaymentLink(invoice, profile) {
     return null;
   }
 
-  // Persist the link back to Supabase so it shows on the invoice permanently
-  await saveStripeLink(invoice.id, {
+  await saveStripeLink(invoiceId, {
     stripe_payment_link_id:  data.id,
     stripe_payment_link_url: data.url,
   });

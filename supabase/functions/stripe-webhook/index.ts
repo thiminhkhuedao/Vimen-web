@@ -5,6 +5,14 @@
  * Every time a client pays an invoice through Stripe, this fires
  * and records the transaction + fees in Supabase.
  *
+ * DURCISSEMENT apporté à cette version :
+ *   1. Comparaison de signature en temps constant (l'ancienne version
+ *      utilisait `===` sur des strings, techniquement vulnérable à une
+ *      attaque par timing — même si peu réaliste sur du HTTP en pratique,
+ *      autant fermer la porte proprement).
+ *   2. Limite de taille du body avant de le lire en entier (aucune limite
+ *      n'existait avant).
+ *
  * Deploy:
  *   supabase functions deploy stripe-webhook
  *
@@ -42,14 +50,14 @@ const supabase = createClient(
 
 const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 
+// Aucune requête Stripe légitime ne dépasse cette taille en pratique —
+// un event avec beaucoup de métadonnées reste de l'ordre de quelques Ko.
+const MAX_BODY_BYTES = 256 * 1024; // 256 Ko
+
 // Stripe UK rate: 1.4% + 20p
 const STRIPE_FEE_RATE   = 0.014;
 const STRIPE_FEE_FIXED  = 0.20;
 
-// Minimal typing for what we actually read off a Stripe event — not
-// the full Stripe type surface (that's what the SDK would normally
-// provide), just enough to satisfy TypeScript without resorting to
-// `any` anywhere in this file.
 interface StripeEvent {
   type: string;
   data: { object: Record<string, unknown> };
@@ -61,15 +69,49 @@ function calculateFees(grossAmount: number) {
   return { stripeFee, netAmount };
 }
 
+// Lit le body en texte en coupant court si ça dépasse MAX_BODY_BYTES — ne
+// se fie pas au header Content-Length (peut être omis ou mensonger),
+// compte les vrais octets reçus au fil du flux.
+async function readTextWithLimit(req: Request, maxBytes: number): Promise<string | null> {
+  if (!req.body) return "";
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
+}
+
+// Comparaison en temps constant — évite qu'un attaquant puisse déduire la
+// signature attendue octet par octet en mesurant le temps de réponse
+// (l'ancien `computedSig === expectedSig` sortait dès la première
+// différence trouvée, ce qui fuite un peu d'information par le timing).
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
 /**
  * Verifies a Stripe webhook signature manually, per Stripe's public
  * spec: https://stripe.com/docs/webhooks#verify-manually
- *
- * The `Stripe-Signature` header looks like:
- *   t=1614556800,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
- *
- * Expected signature = HMAC-SHA256(secret, `${timestamp}.${rawBody}`)
- * as a hex string, compared against the `v1` value.
  */
 async function verifyStripeSignature(rawBody: string, signatureHeader: string, secret: string): Promise<boolean> {
   const parts = Object.fromEntries(
@@ -101,19 +143,19 @@ async function verifyStripeSignature(rawBody: string, signatureHeader: string, s
     .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 
-  // Constant-time-ish comparison — not perfectly timing-safe in JS,
-  // but matches what most non-SDK Deno implementations do; the 5-min
-  // freshness check above already closes the main practical attack
-  // window.
-  return computedSig === expectedSig;
+  return timingSafeEqual(computedSig, expectedSig);
 }
 
 Deno.serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
-  const rawBody    = await req.text();
 
   if (!signature) {
     return new Response("Missing signature", { status: 400 });
+  }
+
+  const rawBody = await readTextWithLimit(req, MAX_BODY_BYTES);
+  if (rawBody === null) {
+    return new Response("Payload too large", { status: 413 });
   }
 
   const isValid = await verifyStripeSignature(rawBody, signature, WEBHOOK_SECRET);
@@ -143,8 +185,6 @@ Deno.serve(async (req) => {
           metadata?: { invoice_id?: string; profile_id?: string; client_name?: string };
         };
 
-        // We store invoice_id and profile_id in the payment intent metadata
-        // when creating the payment link (see create-payment-link/index.ts)
         const invoiceId = pi.metadata?.invoice_id;
         const profileId = pi.metadata?.profile_id;
 
@@ -156,14 +196,12 @@ Deno.serve(async (req) => {
         const grossAmount = pi.amount / 100; // Stripe stores in pence
         const { stripeFee, netAmount } = calculateFees(grossAmount);
 
-        // Get invoice details for context
         const { data: invoice } = await supabase
           .from("invoices")
           .select("*, client:clients(id,name,email)")
           .eq("id", invoiceId)
           .single();
 
-        // 1. Record the transaction
         await supabase.from("payment_transactions").insert({
           profile_id:               profileId,
           invoice_id:               invoiceId,
@@ -180,12 +218,10 @@ Deno.serve(async (req) => {
           paid_at:                  new Date().toISOString(),
         });
 
-        // 2. Mark the invoice as paid in Supabase
         await supabase.from("invoices")
           .update({ status: "paid", paid_at: new Date().toISOString() })
           .eq("id", invoiceId);
 
-        // 3. Send SMS notification to tradesperson (if they have Twilio)
         await supabase.functions.invoke("send-sms", {
           body: {
             type: "invoice_paid",
@@ -202,7 +238,6 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── Payment failed ──────────────────────────────
       case "payment_intent.payment_failed": {
         const pi = event.data.object as { id: string; metadata?: { invoice_id?: string } };
         const invoiceId = pi.metadata?.invoice_id;
@@ -214,7 +249,6 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── Payout sent to tradesperson's bank ─────────
       case "payout.paid": {
         const payout = event.data.object as { id: string; arrival_date: number };
         await supabase.from("payouts")
@@ -231,7 +265,6 @@ Deno.serve(async (req) => {
         break;
       }
 
-      // ── Refund issued ───────────────────────────────
       case "charge.refunded": {
         const charge = event.data.object as { id: string };
         await supabase.from("payment_transactions")

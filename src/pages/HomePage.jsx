@@ -688,6 +688,8 @@ function FeatureTabs({ t }) {
 }
 
 function PricingTeaser({ t }) {
+  // "/pricing" désactivé temporairement — pas de Stripe/SIRET actif,
+  // donc message "100% gratuit" à la place du teaser de tarifs.
   return (
     <section
       style={{
@@ -723,7 +725,7 @@ function PricingTeaser({ t }) {
             margin: "0 0 16px",
           }}
         >
-          {t("home.pricingTeaser.title")}
+          {t("home.pricingTeaser.freeTitle")}
         </h2>
 
         <p
@@ -735,24 +737,8 @@ function PricingTeaser({ t }) {
             lineHeight: 1.7,
           }}
         >
-          {t("home.pricingTeaser.sub")}
+          {t("home.pricingTeaser.freeSub")}
         </p>
-
-        <Link
-          to="/pricing"
-          style={{
-            display: "inline-block",
-            background: T.brand,
-            color: "#fff",
-            padding: "13px 28px",
-            borderRadius: T.r?.md || 6,
-            fontWeight: 700,
-            fontSize: 14,
-            textDecoration: "none",
-          }}
-        >
-          {t("home.pricingTeaser.cta")}
-        </Link>
       </div>
     </section>
   );
@@ -763,7 +749,7 @@ export default function HomePage({ onSignIn, onSignUp }) {
 
   const stats = [
     ["5 min", t("home.hero.stats.setup")],
-    ["£0", t("home.hero.stats.free")],
+    ["€0", t("home.hero.stats.free")],
   ];
 
   return (
@@ -833,7 +819,7 @@ export default function HomePage({ onSignIn, onSignUp }) {
               </button>
 
               <Link
-                to="/pricing"
+                to="/#features"
                 style={{
                   border: `1px solid ${T.border}`,
                   color: T.text,

@@ -1,0 +1,51 @@
+# .github/workflows/supabase-keepalive.yml
+#
+# Empêche vimen-dev et vimen-prod de se mettre en pause automatiquement
+# (plan gratuit Supabase = pause après 7 jours sans vraie activité en
+# base). Fait un vrai UPDATE toutes les 3 jours sur chaque projet — une
+# simple connexion/lecture ne suffit pas, il faut une écriture réelle.
+#
+# À placer dans CE repo précis (peu importe lequel des deux, web ou
+# mobile — ça touche aux deux bases Supabase depuis un seul repo, pas
+# besoin de le dupliquer dans les deux repos).
+#
+# Secrets GitHub à configurer AVANT que ça marche (Settings → Secrets
+# and variables → Actions → New repository secret) :
+#   SUPABASE_DEV_URL           = https://unmzpsjttiioppkqvzhq.supabase.co
+#   SUPABASE_DEV_SERVICE_KEY   = (la service_role key de vimen-dev)
+#   SUPABASE_PROD_URL          = https://maqqshseubrbtrfbbkce.supabase.co
+#   SUPABASE_PROD_SERVICE_KEY  = (la service_role key de vimen-prod)
+
+name: Supabase keepalive
+
+on:
+  schedule:
+    - cron: "0 6 */3 * *"  # toutes les 3 jours à 6h UTC — marge confortable sous les 7 jours
+  workflow_dispatch:  # bouton "Run workflow" manuel dans l'onglet Actions, pratique pour tester
+
+jobs:
+  ping-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping vimen-dev (vraie écriture en base)
+        run: |
+          curl -X PATCH "${{ secrets.SUPABASE_DEV_URL }}/rest/v1/heartbeat?id=eq.1" \
+            -H "apikey: ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_DEV_SERVICE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "{\"pinged_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" \
+            --fail
+
+  ping-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping vimen-prod (vraie écriture en base)
+        run: |
+          curl -X PATCH "${{ secrets.SUPABASE_PROD_URL }}/rest/v1/heartbeat?id=eq.1" \
+            -H "apikey: ${{ secrets.SUPABASE_PROD_SERVICE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_PROD_SERVICE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "{\"pinged_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" \
+            --fail

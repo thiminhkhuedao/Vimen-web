@@ -2,7 +2,7 @@
   src/pages/PublicBookingPage.jsx (Cleaned: No Icons/Emojis)
 ══════════════════════════════════════════════════════ */
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useTranslation } from "../i18n/index.js";
@@ -125,6 +125,117 @@ function Spinner() {
         }}
       />
     </>
+  );
+}
+
+// ── Graceful degradation: SafeImage ──────────────────────────────
+// If a service photo's URL 404s or fails to load, falls back to a
+// plain icon block instead of the browser's default broken-image glyph.
+function SafeImage({ src, alt, style, fallbackIcon = "photo" }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <div style={{ ...style, background: THEME.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, color: THEME.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>
+        {fallbackIcon}
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} style={style} onError={() => setFailed(true)} />;
+}
+
+// ── Graceful degradation: local ErrorBoundary ────────────────────
+// Public, anonymous-visitor-facing page — a blank white screen with no
+// explanation is the worst outcome if something throws mid-render.
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error, info) { console.error("PublicBookingPage crashed:", error, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: THEME.bg, padding: 20 }}>
+          <div style={{ textAlign: "center", maxWidth: 360 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Something went wrong</h2>
+            <p style={{ fontSize: 14, color: THEME.muted, marginBottom: 20 }}>
+              This page hit an unexpected error. Reloading usually fixes it.
+            </p>
+            <button onClick={() => window.location.reload()}
+              style={{ background: THEME.brand, color: "#fff", border: "none", padding: "10px 20px", borderRadius: THEME.radius.md, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+              Reload page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ── Loading: skeleton screen ─────────────────────────────────────
+function SkeletonBlock({ width = "100%", height = 16, style }) {
+  return (
+    <>
+      <style>{`@keyframes skPulse{0%,100%{opacity:1}50%{opacity:.45}}`}</style>
+      <div style={{ width, height, borderRadius: 6, background: THEME.border, animation: "skPulse 1.4s ease-in-out infinite", ...style }} />
+    </>
+  );
+}
+function PageSkeleton() {
+  return (
+    <div style={{ minHeight: "100vh", background: THEME.bg, padding: "28px 20px" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto" }}>
+        <div style={{ background: THEME.surface, borderRadius: THEME.radius.xl, border: `1px solid ${THEME.border}`, padding: "22px 26px", marginBottom: 20, display: "flex", gap: 16, alignItems: "center" }}>
+          <SkeletonBlock width={56} height={56} style={{ borderRadius: "50%" }} />
+          <div style={{ flex: 1 }}>
+            <SkeletonBlock width="40%" height={18} style={{ marginBottom: 8 }} />
+            <SkeletonBlock width="55%" height={13} />
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 12 }}>
+          <SkeletonBlock height={140} style={{ borderRadius: THEME.radius.lg }} />
+          <SkeletonBlock height={140} style={{ borderRadius: THEME.radius.lg }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Error state: 3-part rule (what / why / what to do) ───────────
+// `error` can be a plain string (kept for backwards compatibility with
+// messages coming straight from checkRateLimit) or a { what, why } object.
+function ErrorNotice({ error, action, actionLabel, onAction }) {
+  if (!error) return null;
+  const what = typeof error === "string" ? error : error.what;
+  const why  = typeof error === "string" ? null : error.why;
+  return (
+    <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: THEME.radius.md, padding: "12px 16px" }}>
+      <div style={{ fontWeight: 700, fontSize: 13, color: "#B91C1C", marginBottom: why ? 4 : 0 }}>{what}</div>
+      {why && <div style={{ fontSize: 12, color: "#991B1B", marginBottom: action ? 10 : 0, lineHeight: 1.5 }}>{why}</div>}
+      {action && (
+        <button type="button" onClick={onAction}
+          style={{ background: "#fff", border: "1px solid #FECACA", color: "#B91C1C", padding: "7px 14px", borderRadius: THEME.radius.sm, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginTop: why ? 0 : 8 }}>
+          {actionLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Success: discrete toast ───────────────────────────────────────
+// Non-blocking, bottom-right, auto-dismisses. No new dependency.
+function DiscreteToast({ message, onDone }) {
+  useEffect(() => {
+    const timer = setTimeout(onDone, 2600);
+    return () => clearTimeout(timer);
+  }, [onDone]);
+  return (
+    <div style={{
+      position: "fixed", bottom: 20, right: 20, zIndex: 200,
+      background: THEME.text, color: "#fff", padding: "10px 16px", borderRadius: THEME.radius.md,
+      fontSize: 13, fontWeight: 700, boxShadow: "0 6px 20px rgba(0,0,0,0.2)",
+    }}>
+      {message}
+    </div>
   );
 }
 
@@ -380,7 +491,7 @@ function ServiceCard({ service, selected, onClick, currency }) {
     >
       {service.image_url && (
         <div style={{ height: 140, overflow: "hidden" }}>
-          <img src={service.image_url} alt={service.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <SafeImage src={service.image_url} alt={service.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} fallbackIcon="photo"/>
         </div>
       )}
       <div style={{ padding: "12px 16px" }}>
@@ -409,10 +520,13 @@ function ImageUpload({ value, onChange, label, hint }) {
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
+  const [showToast, setShowToast] = useState(false);
 
   const handleFile = async (file) => {
     if (!file) return;
 
+    setUploadError(null);
     setPreview(URL.createObjectURL(file));
     setUploading(true);
 
@@ -427,13 +541,17 @@ function ImageUpload({ value, onChange, label, hint }) {
     setUploading(false);
 
     if (error) {
-      alert("Upload failed");
+      setUploadError({
+        what: "Couldn't upload your photo",
+        why: "This can happen with a slow connection or a file that's too large. Try a smaller image, or continue without one.",
+      });
       setPreview(null);
       return;
     }
 
     const { data: { publicUrl } } = supabase.storage.from("booking-attachments").getPublicUrl(path);
     onChange(publicUrl);
+    setShowToast(true);
   };
 
   const handleClear = (e) => {
@@ -500,12 +618,19 @@ function ImageUpload({ value, onChange, label, hint }) {
         )}
         <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => handleFile(e.target.files[0])} />
       </div>
+
+      {uploadError && (
+        <div style={{ marginTop: 10 }}>
+          <ErrorNotice error={uploadError} action actionLabel="Try again" onAction={() => { setUploadError(null); fileInputRef.current?.click(); }} />
+        </div>
+      )}
+      {showToast && <DiscreteToast message="Photo uploaded" onDone={() => setShowToast(false)} />}
     </div>
   );
 }
 
 // ── MAIN COMPONENT ─────────────────────────────────────
-export default function PublicBookingPage() {
+function PublicBookingPageInner() {
   const { t: tr } = useTranslation();
   const { slug } = useParams();
   const { user } = useOptionalClerkUser();
@@ -514,7 +639,7 @@ export default function PublicBookingPage() {
   const [services, setServices] = useState([]);
   const [availability, setAvailability] = useState([]);
   const [blocked, setBlocked] = useState([]);
-  const [status, setStatus] = useState("loading");
+  const [status, setStatus] = useState("loading"); // loading | found | notfound | error
   const [isOwner, setIsOwner] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -537,27 +662,34 @@ export default function PublicBookingPage() {
   const [done, setDone] = useState(false);
   const [honeypot, setHoneypot] = useState("");
   const [captchaToken, setCaptchaToken] = useState(null);
-  const [formError, setFormError] = useState("");
+  const [formError, setFormError] = useState(""); // string OR { what, why } — see ErrorNotice
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const fmt = useCallback((n) => formatCurrency(n, profile?.currency), [profile?.currency]);
-  const updateFormField = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const updateFormField = (key) => (e) => {
+    setForm((prev) => ({ ...prev, [key]: e.target.value }));
+    setFieldErrors((prev) => ({ ...prev, [key]: null }));
+  };
 
   // Load profile and availability data
-  useEffect(() => {
-    let isCancelled = false;
-
-    async function loadData() {
+  async function loadData() {
+    setStatus("loading");
+    try {
       const { data: prof, error } = await supabase
         .from("public_profiles")
         .select("id, name, trade, bio, hourly_rate, booking_slug, extra_fields, plan, currency")
         .eq("booking_slug", slug)
         .single();
 
-      if (isCancelled) return;
-      if (error || !prof) {
-        setStatus("notfound");
+      if (error) {
+        // PGRST116 = .single() found zero rows = a genuine 404 (this
+        // booking page doesn't exist). Anything else — network failure,
+        // 500, timeout — is retry-able and shouldn't look like a 404.
+        if (error.code === "PGRST116") { setStatus("notfound"); return; }
+        setStatus("error");
         return;
       }
+      if (!prof) { setStatus("notfound"); return; }
 
       setProfile(prof);
 
@@ -567,21 +699,25 @@ export default function PublicBookingPage() {
         supabase.from("blocked_slots").select("*").eq("profile_id", prof.id),
       ]);
 
-      if (!isCancelled) {
-        const fetchedServices = svcs ?? [];
-        setServices(fetchedServices);
-        setAvailability(avail ?? []);
-        setBlocked(blk ?? []);
-        setStep(fetchedServices.length > 0 ? 1 : 2);
-        setStatus("found");
-      }
+      const fetchedServices = svcs ?? [];
+      setServices(fetchedServices);
+      setAvailability(avail ?? []);
+      setBlocked(blk ?? []);
+      setStep(fetchedServices.length > 0 ? 1 : 2);
+      setStatus("found");
+    } catch {
+      // Network-level failure (fetch rejected outright) — also retry-able.
+      setStatus("error");
     }
+  }
 
-    loadData();
-
-    return () => {
-      isCancelled = true;
-    };
+  useEffect(() => {
+    let isCancelled = false;
+    (async () => {
+      await loadData();
+      if (isCancelled) return;
+    })();
+    return () => { isCancelled = true; };
   }, [slug]);
 
   // Détecte si le visiteur connecté est le pro propriétaire de cette page
@@ -622,16 +758,29 @@ export default function PublicBookingPage() {
   const handleSlotSelect = (date, time) => {
     setSelDate(date);
     setSelTime(time);
+    setFormError("");
   };
+
+  function validateContactFields() {
+    const errors = {};
+    if (!form.customer_name.trim()) errors.customer_name = "Please enter your name";
+    if (!form.customer_email.trim()) {
+      errors.customer_email = "Please enter your email";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customer_email.trim())) {
+      errors.customer_email = "That email address doesn't look right";
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
     if (isOwner) return; // On ne prend pas de rdv avec soi-même.
     if (isBotSubmission(honeypot)) return; // Bot détecté, rejet silencieux.
-    if (!form.customer_name || !form.customer_email) return;
+    if (!validateContactFields()) return;
     if (!selDate || !selTime) {
-      alert("Please select a date and time");
+      setFormError({ what: "Pick a date and time first", why: "Select an available slot above before sending your request." });
       return;
     }
     if (!captchaToken) {
@@ -667,22 +816,39 @@ export default function PublicBookingPage() {
       status: "pending",
     };
 
-    const { error } = await supabase.from("booking_requests").insert(payload);
-    setSending(false);
+    try {
+      const { error } = await supabase.from("booking_requests").insert(payload);
+      setSending(false);
 
-    if (error) {
-      alert("Something went wrong — please try again");
-      return;
+      if (error) {
+        setFormError({
+          what: "Couldn't send your request",
+          why: "This is usually a temporary connection issue — your details weren't lost. Try sending again.",
+        });
+        return;
+      }
+
+      setDone(true);
+    } catch {
+      setSending(false);
+      setFormError({ what: "Couldn't send your request", why: "Check your connection and try again — nothing was lost." });
     }
-
-    setDone(true);
   };
 
-  // State checks: Loading & Not Found
-  if (status === "loading") {
+  // State checks: Loading, Not Found, Error
+  if (status === "loading") return <PageSkeleton />;
+
+  if (status === "error") {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: THEME.bg }}>
-        <Spinner />
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: THEME.bg, padding: 20 }}>
+        <div style={{ maxWidth: 380, width: "100%" }}>
+          <ErrorNotice
+            error={{ what: "Couldn't load this booking page", why: "This is usually a temporary connection issue, not a problem with the link itself." }}
+            action
+            actionLabel="Try again"
+            onAction={loadData}
+          />
+        </div>
       </div>
     );
   }
@@ -985,12 +1151,14 @@ export default function PublicBookingPage() {
             <div style={{ background: THEME.surface, borderRadius: THEME.radius.xl, border: `1px solid ${THEME.border}`, padding: "24px", marginBottom: 16, boxShadow: THEME.shadow, display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>Your Name *</label>
-                <input type="text" required placeholder="John Doe" value={form.customer_name} onChange={updateFormField("customer_name")} style={inputStyle} />
+                <input type="text" placeholder="John Doe" value={form.customer_name} onChange={updateFormField("customer_name")} style={{ ...inputStyle, ...(fieldErrors.customer_name ? { borderColor: "#DC2626" } : {}) }} />
+                {fieldErrors.customer_name && <div style={{ fontSize: 12, color: "#DC2626", marginTop: 5 }}>{fieldErrors.customer_name}</div>}
               </div>
 
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>Email Address *</label>
-                <input type="email" required placeholder="john@example.com" value={form.customer_email} onChange={updateFormField("customer_email")} style={inputStyle} />
+                <input type="email" placeholder="john@example.com" value={form.customer_email} onChange={updateFormField("customer_email")} style={{ ...inputStyle, ...(fieldErrors.customer_email ? { borderColor: "#DC2626" } : {}) }} />
+                {fieldErrors.customer_email && <div style={{ fontSize: 12, color: "#DC2626", marginTop: 5 }}>{fieldErrors.customer_email}</div>}
               </div>
 
               <div>
@@ -1013,7 +1181,9 @@ export default function PublicBookingPage() {
             </div>
 
             {formError && (
-              <div style={{ fontSize: 13, color: "#dc2626", marginBottom: 16 }}>{formError}</div>
+              <div style={{ marginBottom: 16 }}>
+                <ErrorNotice error={formError} />
+              </div>
             )}
 
             <div style={{ display: "flex", gap: 10 }}>
@@ -1045,5 +1215,13 @@ export default function PublicBookingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PublicBookingPage() {
+  return (
+    <ErrorBoundary>
+      <PublicBookingPageInner />
+    </ErrorBoundary>
   );
 }
