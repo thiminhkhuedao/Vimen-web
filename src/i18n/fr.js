@@ -85,7 +85,8 @@ export default {
   save: "Enregistrer",
   delete: "Supprimer",
   loading: "Chargement...",
-  },
+    signing: "Signature en cours...",
+},
 
   days: {
     sunday: "Dimanche",
@@ -113,6 +114,19 @@ export default {
     fullName:          "Nom complet",
     profession:        "Votre profession",
     forgotPassword:    "Mot de passe oublié ?",
+    forgot: {
+      title: "Réinitialiser votre mot de passe",
+      subtitle: "Entrez votre email et nous vous enverrons un code de réinitialisation.",
+      emailRequired: "Entrez d'abord votre email.",
+      sending: "Envoi…",
+      submit: "Envoyer le code",
+      verifyTitle: "Vérifiez vos emails",
+      verifySubtitle: "Entrez le code que nous avons envoyé à",
+      andNewPassword: "et choisissez un nouveau mot de passe.",
+      newPasswordPlaceholder: "Nouveau mot de passe",
+      resetting: "Réinitialisation…",
+      submitNew: "Définir le nouveau mot de passe →",
+    },
     noAccount:         "Pas encore de compte ?",
     alreadyAccount:    "Déjà inscrit ?",
     signUpFree:        "S'inscrire gratuitement",
@@ -1882,7 +1896,14 @@ loading: {
       title: "Prêt à simplifier la gestion de vos chantiers ?",
       cta: "Commencer dès maintenant",
     },
+    eyebrow: "Tarifs",
+  limitModal: {
+    title: "Limite atteinte",
+    description: "Tu as atteint la limite de ton offre actuelle. Passe à l'offre supérieure pour continuer.",
+    btn: "Voir les offres",
+    cancel: "Annuler",
   },
+},
   home: {
     nav: {
       features: "Fonctionnalités",
@@ -1899,9 +1920,16 @@ loading: {
     "subtitle": "Choisissez le forfait adapté à votre activité. Aucun frais caché.",
     "monthly": "Mensuel",
     "annual": "Annuel (-20%)",
+    "eyebrow": "Tarifs",
     "finalCta": {
       "title": "Prêt à simplifier votre gestion au quotidien ?",
-      "cta": "Démarrer l'essai gratuit"
+      "cta": "Créer mon compte gratuit"
+    },
+    "limitModal": {
+      "title": "Limite atteinte",
+      "description": "Tu as atteint la limite de ton offre actuelle. Passe à l'offre supérieure pour continuer.",
+      "btn": "Voir les offres",
+      "cancel": "Annuler"
     }
   },
   "home": {
@@ -2030,6 +2058,13 @@ loading: {
     finalCta: {
       title: "Prêt à simplifier vos réservations ?",
       cta: "Créer un compte gratuit",
+    },
+    eyebrow: "Tarifs",
+    limitModal: {
+      title: "Limite atteinte",
+      description: "Tu as atteint la limite de ton offre actuelle. Passe à l'offre supérieure pour continuer.",
+      btn: "Voir les offres",
+      cancel: "Annuler",
     },
 },
 
@@ -2298,7 +2333,15 @@ booking: {
     deleteFailed: "Échec de la suppression du service",
     deletedToast: "Service supprimé avec succès",
     reorderFailed: "Échec du réordonnancement des services",
-  }
+  },
+  autoJobTitle: "Nouvelle réservation",
+  availabilitySaveFailed: "Impossible d'enregistrer les disponibilités, veuillez réessayer",
+  copyError: "Impossible de copier le lien",
+  jobCreateFailedToast: "Réservation acceptée, mais l'intervention n'a pas pu être créée automatiquement — ajoutez-la manuellement.",
+  jobCreatedToast: "Intervention créée automatiquement",
+  loadErrorWhat: "Impossible de charger les demandes de réservation",
+  loadErrorWhy: "La synchronisation des données avec le serveur a échoué.",
+  loadErrorNext: "Vérifiez votre connexion réseau et essayez de rafraîchir la page.",
 },
 
 
@@ -2399,6 +2442,12 @@ clients: {
   noJobsYet: "Aucun historique de mission pour ce client.",
   invoicesTitle: "Factures",
   noInvoicesYet: "Aucune facture générée pour ce client.",
+  fixFieldsError: "Merci de corriger les champs surlignés",
+  invalidEmail: "Merci de saisir une adresse email valide",
+  invalidPhone: "Merci de saisir un numéro de téléphone valide",
+  loadErrorWhat: "Impossible de charger la liste des clients",
+  loadErrorWhy: "Impossible de récupérer les clients depuis le serveur.",
+  loadErrorNext: "Vérifiez votre connexion réseau et réessayez.",
 },
 
 // Add inside your fr.js export object
@@ -2440,6 +2489,9 @@ dashboard: {
   linkCopied: "Lien de la page de réservation copié dans le presse-papier !",
   copyFailedManual: "Échec de la copie. Veuillez copier l'URL manuellement.",
   viewPage: "Voir la page",
+  loadErrorWhat: "Impossible de charger les données du tableau de bord",
+  loadErrorWhy: "Impossible de récupérer les données depuis le serveur.",
+  loadErrorNext: "Vérifiez votre connexion et actualisez la page.",
 },
 // Add inside your en.js export object
 nav: {
@@ -2579,6 +2631,11 @@ jobs: {
     scheduled: "Planifiée",
     completed: "Terminée",
   },
+  loadErrorWhat: "Impossible de charger la liste des interventions",
+  loadErrorWhy: "Impossible de récupérer les données depuis le serveur.",
+  loadErrorNext: "Vérifiez votre connexion et réessayez.",
+  invoiceAutoCreatedToast: "Facture créée automatiquement",
+  invoiceAutoCreateFailedToast: "Intervention terminée, mais la facture n'a pas pu être créée automatiquement — ajoutez-la manuellement.",
 },
 
 marketplace: {
@@ -2630,6 +2687,9 @@ marketplace: {
     requiredTitleDescLocation: "Veuillez renseigner le titre, la description et la localisation.",
     requiredContact: "Veuillez renseigner votre nom et votre adresse e-mail.",
     failedPost: "Échec de la publication de l'annonce. Veuillez réessayer.",
+    failedLoadMine: "Impossible de charger vos annonces",
+    failedClose: "Impossible de clôturer l'annonce",
+    failedDelete: "Impossible de supprimer l'annonce",
     requiredInterestFields: "Veuillez renseigner votre nom, e-mail et votre message.",
     failedInterest: "Échec de l'envoi du message. Veuillez réessayer.",
     requiredInterestFields: "Veuillez renseigner votre nom, e-mail et votre message.",
@@ -2813,6 +2873,17 @@ marketplace: {
       message: "Bonjour, je suis intéressé par votre annonce. Est-elle toujours disponible ?",
     },
   },
+  loadErrorWhat: "Impossible de charger les annonces",
+  loadErrorWhy: "Impossible de récupérer les données depuis le serveur.",
+  loadErrorNext: "Vérifiez votre connexion et réessayez.",
+  loadMore: "Charger plus",
+  loadingMore: "Chargement...",
+  time: {
+    today: "Aujourd'hui",
+    yesterday: "Hier",
+    daysAgo: "Il y a {{count}} jours",
+    weeksAgo: "Il y a {{count}} semaines",
+  },
 },
 
 payments: {
@@ -2874,6 +2945,8 @@ payments: {
     notConnectedBody: "En connectant Stripe, vous permettez à vos clients de régler leurs devis et factures directement en ligne par carte bancaire. Les fonds sont automatiquement versés sur votre compte.",
     connectAccountBtn: "Connecter le compte Stripe",
     redirectingToast: "Redirection vers Stripe Connect...",
+    syncBtn: "Synchroniser",
+    syncSuccess: "Synchronisation effectuée",
   },
   howItWorks: {
     title: "Comment fonctionnent les paiements",
@@ -2907,6 +2980,7 @@ payments: {
     amount: "Montant",
     transactions: "Transactions",
     bank: "Compte bancaire",
+    actions: "Actions",
   },
   status: {
     connected: "Connecté",
@@ -2931,6 +3005,27 @@ errorAction: "Vérifiez votre connexion et réessayez. Si le problème persiste,
 
 copiedToast: "Copié",
 copyFailedToast: "Impossible de copier",
+
+copied: "Copié",
+
+bankTransfer: {
+  title: "Coordonnées bancaires (RIB)",
+  desc: "Pas de compte Stripe ? Renseigne ton IBAN pour que tes clients puissent te payer par virement bancaire. Ces informations apparaîtront automatiquement sur tes factures envoyées par email.",
+  holderLabel: "Titulaire du compte",
+  holderPlaceholder: "ex. Jean Dupont",
+  invalidIban: "Cet IBAN ne semble pas valide, vérifie-le.",
+  saved: "Coordonnées bancaires enregistrées",
+  saveFailed: "Échec de l'enregistrement, réessaie",
+},
+
+errors: {
+  connectFailedWhat: "Impossible de démarrer la connexion Stripe",
+  connectFailedWhy: "Le service de paiement est temporairement indisponible",
+  connectFailedAction: "Vérifie ta connexion et réessaie",
+  syncFailedWhat: "Impossible de synchroniser le compte",
+  syncFailedWhy: "Le service de paiement est temporairement indisponible",
+  syncFailedAction: "Veuillez réessayer dans quelques instants",
+},
 },
 
 publicBooking: {
@@ -3030,8 +3125,16 @@ quotes: {
     markedAsSent: "Devis marqué comme envoyé",
     enterClientName: "Veuillez saisir le nom complet du client",
     quoteSignedBy: "Devis accepté et signé par {{name}}",
-    convertedToJob: "Converti en chantier avec succès",
+    convertedToJob: "Converti en intervention avec succès",
     quoteDeleted: "Devis supprimé",
+    clientNoEmail: "Ce client n'a pas d'adresse email renseignée",
+    quoteEmailSent: "Devis envoyé à {{name}}",
+    errorSaving: "Échec de l'enregistrement, veuillez réessayer",
+    errorUpdating: "Échec de la mise à jour, veuillez réessayer",
+    errorSendingEmail: "Échec de l'envoi, réessaie",
+    errorSigning: "Échec de la signature, veuillez réessayer",
+    errorConverting: "Échec de la conversion, veuillez réessayer",
+    errorDeleting: "Échec de la suppression, veuillez réessayer",
   },
 
   modal: {
@@ -3078,12 +3181,15 @@ quotes: {
   actions: {
     createQuote: "Créer le devis",
     saveChanges: "Enregistrer les modifications",
+    copy: "Copier",
+    loading: "Chargement...",
+    save: "Enregistrer",
   },
 
   preview: {
     markAsSent: "Marquer comme envoyé",
     clientSign: "Faire signer le client",
-    convertToJob: "Convertir en chantier",
+    convertToJob: "Convertir en intervention",
     issued: "Émis le {{date}}",
     validUntil: "Valable jusqu'au {{date}}",
     preparedFor: "Préparé pour",
@@ -3095,6 +3201,7 @@ quotes: {
       confirmText: "En signant, vous confirmez l'acceptation de ce devis et de ses conditions.",
       signBtn: "Confirmer & Signer",
     },
+    sendEmail: "Envoyer par email",
     table: {
       description: "Description",
       type: "Type",
@@ -3113,7 +3220,7 @@ quotes: {
     totalQuotedValue: "Valeur totale devisée",
     quotesCount: "{{count}} devis au total",
     acceptedValue: "Valeur acceptée",
-    won: "Chantiers gagnés",
+    won: "Interventions gagnées",
     pending: "En attente",
     awaitingResponse: "En attente de réponse",
     conversionRate: "Taux de conversion",
@@ -3143,8 +3250,10 @@ quotes: {
   row: {
     view: "Voir",
     edit: "Éditer",
-    toJob: "Chantier",
+    toJob: "Intervention",
+    email: "Email",
   },
+  errorLoading: "Impossible de charger les devis",
 },
 
 referrals: {
@@ -3227,6 +3336,7 @@ referrals: {
       reward: "Récompense",
       sent: "Envoyé le",
     },
+    applyReward: "Appliquer la récompense",
   },
 
   status: {
@@ -3241,6 +3351,11 @@ referrals: {
     signed_up: "Compte créé, en attente du 1er chantier",
     qualified: "Éligible pour la récompense",
     rewarded: "2 mois Pro crédités",
+  },
+  shareMessages: {
+    whatsapp: "Salut ! {{name}} t'invite à essayer Vimen, l'app gratuite pour gérer ton activité pro. Inscris-toi ici : {{url}}",
+    emailSubject: "{{name}} t'invite à essayer Vimen",
+    emailBody: "Salut,\n\nJ'utilise Vimen pour gérer mes devis, factures et rendez-vous, et je pense que ça pourrait aussi t'être utile — c'est 100% gratuit.\n\nInscris-toi ici : {{url}}",
   },
 },
 
@@ -3354,6 +3469,27 @@ settings: {
     reminderFrequency: "Fréquence des rappels",
     reminderMaxCount: "Nombre max de rappels",
     days: "jours",
+  privacy: "Confidentialité & Sécurité",
+  securityTitle: "Sécurité du compte",
+  securitySub: "Active la double authentification et gère les appareils connectés à ton compte.",
+  privacyTitle: "Tes données personnelles",
+  privacySub: "Exporte une copie de tes données, ou supprime définitivement ton compte.",
+  stripeConnectError: "Impossible de démarrer la connexion Stripe. Réessaie dans un instant ou contacte le support si ça persiste.",
+  privacyControls: {
+    exportTitle: "Exporter mes données",
+    exportDesc: "Téléchargez une copie de toutes vos données personnelles stockées sur Vimen (profil, clients, factures, devis).",
+    exportBtn: "Exporter mes données",
+    exporting: "Export en cours…",
+    exportError: "Échec de l'export, veuillez réessayer",
+    deleteTitle: "Supprimer mon compte",
+    deleteDesc: "Cette action est définitive et supprimera toutes vos données. Cette action ne peut pas être annulée.",
+    deleteBtn: "Supprimer mon compte",
+    confirmLabel: "Tapez {{word}} pour confirmer",
+    confirmWord: "SUPPRIMER",
+    deleteConfirmBtn: "Confirmer la suppression",
+    deleting: "Suppression en cours…",
+    deleteError: "Échec de la suppression, veuillez réessayer",
+  },
 },
 
 nav: {
@@ -3433,6 +3569,8 @@ contactPage: {
   sentTitle: "Message envoyé",
   sentSub: "Nous vous répondrons rapidement.",
   emailAlternative: "Vous préférez l'email. Écrivez nous à",
+  invalid: "Merci de remplir tous les champs.",
+  captchaMissing: "Merci de valider le test de vérification.",
 },
 
 // À ajouter / remplacer dans ton fichier src/i18n/fr.js
@@ -3639,5 +3777,31 @@ publicQuote: {
       title: "Devis accepté",
       sub: "{{name}} a été notifié et vous recontactera prochainement.",
     },
+  },
+  report: {
+    button: "Signaler",
+    title: "Signaler ce contenu",
+    subtitle: "Dites-nous ce qui ne va pas. Nous l'examinerons dès que possible.",
+    selectReason: "Sélectionnez un motif…",
+    reasons: {
+      illegal: "Contenu illégal",
+      fake: "Faux / trompeur",
+      harassment: "Harcèlement ou abus",
+      spam: "Spam",
+      other: "Autre",
+    },
+    detailsPlaceholder: "Détails supplémentaires (optionnel)",
+    emailPlaceholder: "Votre email (optionnel, si nous avons besoin de plus d'informations)",
+    reasonRequired: "Veuillez sélectionner un motif.",
+    failed: "Une erreur est survenue. Veuillez réessayer.",
+    thanks: "Merci, nous allons examiner ce signalement.",
+    sending: "Envoi…",
+    submit: "Envoyer le signalement",
+  },
+
+  actions: {
+    copy: "Copier",
+    loading: "Chargement...",
+    save: "Enregistrer",
   },
 }
