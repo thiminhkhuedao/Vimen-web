@@ -82,7 +82,8 @@ export default {
   save: "Save",
   delete: "Delete",
   loading: "Loading...",
-  },
+    signing: "Signing...",
+},
 
   days: {
     sunday: "Sunday",
@@ -111,6 +112,19 @@ export default {
     fullName:          "Full name",
     profession:        "Your profession",
     forgotPassword:    "Forgot password?",
+    forgot: {
+      title: "Reset your password",
+      subtitle: "Enter your email and we'll send you a reset code.",
+      emailRequired: "Enter your email first.",
+      sending: "Sending…",
+      submit: "Send reset code",
+      verifyTitle: "Check your email",
+      verifySubtitle: "Enter the code we sent to",
+      andNewPassword: "and choose a new password.",
+      newPasswordPlaceholder: "New password",
+      resetting: "Resetting…",
+      submitNew: "Set new password →",
+    },
     noAccount:         "Don't have an account?",
     alreadyAccount:    "Already have an account?",
     signUpFree:        "Sign up free",
@@ -2243,6 +2257,14 @@ booking: {
     deletedToast: "Service deleted successfully",
     reorderFailed: "Failed to reorder services",
   },
+  autoJobTitle: "New booking",
+  availabilitySaveFailed: "Could not save availability, please try again",
+  copyError: "Could not copy the link",
+  jobCreateFailedToast: "Booking accepted, but the job could not be created automatically — add it manually.",
+  jobCreatedToast: "Job created automatically",
+  loadErrorWhat: "Failed to load booking requests",
+  loadErrorWhy: "Could not synchronize data with the server.",
+  loadErrorNext: "Please check your network connection and try refreshing.",
 },
 
 certifications: {
@@ -2341,6 +2363,12 @@ clients: {
   noJobsYet: "No job history recorded for this client.",
   invoicesTitle: "Invoices",
   noInvoicesYet: "No invoices created for this client.",
+  fixFieldsError: "Please fix the highlighted fields",
+  invalidEmail: "Please enter a valid email address",
+  invalidPhone: "Please enter a valid phone number",
+  loadErrorWhat: "Failed to load clients list",
+  loadErrorWhy: "Could not fetch clients from the server.",
+  loadErrorNext: "Please check your network connection and try again.",
 },
 
 // Add inside your en.js export object
@@ -2382,6 +2410,9 @@ dashboard: {
   linkCopied: "Booking page link copied to clipboard!",
   copyFailedManual: "Failed to copy. Please copy the URL manually.",
   viewPage: "View page",
+  loadErrorWhat: "Failed to load dashboard data",
+  loadErrorWhy: "Could not fetch data from the server.",
+  loadErrorNext: "Please check your connection and refresh.",
 },
 
 // Add inside your en.js export object
@@ -2524,6 +2555,11 @@ jobs: {
     scheduled: "Scheduled",
     completed: "Completed",
   },
+  loadErrorWhat: "Failed to load jobs list",
+  loadErrorWhy: "Could not fetch data from the server.",
+  loadErrorNext: "Please check your connection and try again.",
+  invoiceAutoCreatedToast: "Invoice created automatically",
+  invoiceAutoCreateFailedToast: "Job completed, but the invoice could not be created automatically — add it manually.",
 },
 
 marketplace: {
@@ -2575,6 +2611,9 @@ marketplace: {
     requiredTitleDescLocation: "Please fill in the title, description, and location.",
     requiredContact: "Please fill in your contact name and email.",
     failedPost: "Failed to post listing. Please try again.",
+    failedLoadMine: "Failed to load your listings",
+    failedClose: "Failed to close listing",
+    failedDelete: "Failed to delete listing",
     requiredInterestFields: "Please enter your name, email, and message.",
     failedInterest: "Failed to send interest message. Please try again.",
     requiredInterestFields: "Please fill in your name, email, and message.",
@@ -2758,6 +2797,17 @@ marketplace: {
       message: "Hi, I am interested in this listing. Is it still available?",
     },
   },
+  loadErrorWhat: "Failed to load marketplace listings",
+  loadErrorWhy: "Could not fetch data from the server.",
+  loadErrorNext: "Please check your connection and try again.",
+  loadMore: "Load more",
+  loadingMore: "Loading...",
+  time: {
+    today: "Today",
+    yesterday: "Yesterday",
+    daysAgo: "{{count}} days ago",
+    weeksAgo: "{{count}} weeks ago",
+  },
 },
 
 payments: {
@@ -2819,6 +2869,8 @@ payments: {
     notConnectedBody: "By connecting Stripe, you allow clients to pay quotes and invoices directly online via credit/debit card. Funds are automatically deposited to your bank account.",
     connectAccountBtn: "Connect Stripe Account",
     redirectingToast: "Redirecting to Stripe Connect...",
+    syncBtn: "Sync",
+    syncSuccess: "Sync complete",
   },
   howItWorks: {
     title: "How Payments Work",
@@ -2852,6 +2904,7 @@ payments: {
     amount: "Amount",
     transactions: "Transactions",
     bank: "Bank Account",
+    actions: "Actions",
   },
   status: {
     connected: "Connected",
@@ -2864,6 +2917,24 @@ payments: {
     refunded: "Refunded",
     paid: "Paid",
     in_transit: "In Transit",
+  },
+  copied: "Copied",
+  bankTransfer: {
+    title: "Bank Details",
+    desc: "No Stripe account? Add your IBAN so clients can pay you by bank transfer. This information will automatically appear on the invoices you send by email.",
+    holderLabel: "Account holder",
+    holderPlaceholder: "e.g. John Doe",
+    invalidIban: "This IBAN doesn't look valid, please check it.",
+    saved: "Bank details saved",
+    saveFailed: "Failed to save, please try again",
+  },
+  errors: {
+    connectFailedWhat: "Couldn't start the Stripe connection",
+    connectFailedWhy: "The payment service is temporarily unavailable",
+    connectFailedAction: "Check your connection and try again",
+    syncFailedWhat: "Couldn't sync your account",
+    syncFailedWhy: "The payment service is temporarily unavailable",
+    syncFailedAction: "Please try again in a moment",
   },
 },
 
@@ -2976,6 +3047,14 @@ quotes: {
     quoteSignedBy: "Quote accepted and signed by {{name}}",
     convertedToJob: "Converted to job successfully",
     quoteDeleted: "Quote deleted",
+    clientNoEmail: "This client has no email address on file",
+    quoteEmailSent: "Quote sent to {{name}}",
+    errorSaving: "Failed to save, please try again",
+    errorUpdating: "Failed to update, please try again",
+    errorSendingEmail: "Failed to send, please try again",
+    errorSigning: "Failed to sign, please try again",
+    errorConverting: "Failed to convert, please try again",
+    errorDeleting: "Failed to delete, please try again",
   },
 
   modal: {
@@ -3022,6 +3101,9 @@ quotes: {
   actions: {
     createQuote: "Create quote",
     saveChanges: "Save changes",
+    copy: "Copy",
+    loading: "Loading...",
+    save: "Save",
   },
 
   preview: {
@@ -3039,6 +3121,7 @@ quotes: {
       confirmText: "By signing, you confirm acceptance of this quote and its terms.",
       signBtn: "Confirm & Sign",
     },
+    sendEmail: "Send by email",
     table: {
       description: "Description",
       type: "Type",
@@ -3088,7 +3171,9 @@ quotes: {
     view: "View",
     edit: "Edit",
     toJob: "Job",
+    email: "Email",
   },
+  errorLoading: "Failed to load quotes",
 },
 
 referrals: {
@@ -3171,6 +3256,7 @@ referrals: {
       reward: "Reward",
       sent: "Sent",
     },
+    applyReward: "Apply reward",
   },
 
   status: {
@@ -3185,6 +3271,11 @@ referrals: {
     signed_up: "Account created, awaiting first job",
     qualified: "Eligible for reward",
     rewarded: "2 months Pro applied",
+  },
+  shareMessages: {
+    whatsapp: "Hey! {{name}} is inviting you to try Vimen, the free app for running your business. Sign up here: {{url}}",
+    emailSubject: "{{name}} is inviting you to try Vimen",
+    emailBody: "Hi,\n\nI use Vimen to manage my quotes, invoices, and bookings, and thought it might be useful for you too — it's 100% free.\n\nSign up here: {{url}}",
   },
 },
 
@@ -3286,6 +3377,27 @@ settings: {
     "reminderFrequency": "Reminder frequency",
     "reminderMaxCount": "Max reminders count",
     "days": "days",
+  privacy: "Privacy & Security",
+  securityTitle: "Account Security",
+  securitySub: "Enable two-factor authentication and manage devices connected to your account.",
+  privacyTitle: "Your personal data",
+  privacySub: "Export a copy of your data, or permanently delete your account.",
+  stripeConnectError: "Couldn't start the Stripe connection. Try again in a moment or contact support if this persists.",
+  privacyControls: {
+    exportTitle: "Export my data",
+    exportDesc: "Download a copy of all your personal data stored on Vimen (profile, clients, invoices, quotes).",
+    exportBtn: "Export my data",
+    exporting: "Exporting…",
+    exportError: "Export failed, please try again",
+    deleteTitle: "Delete my account",
+    deleteDesc: "This action is permanent and will delete all your data. This cannot be undone.",
+    deleteBtn: "Delete my account",
+    confirmLabel: "Type {{word}} to confirm",
+    confirmWord: "DELETE",
+    deleteConfirmBtn: "Confirm deletion",
+    deleting: "Deleting…",
+    deleteError: "Delete failed, please try again",
+  },
 },
 
 nav: {
@@ -3425,6 +3537,13 @@ pricingPage: {
       title: "Ready to simplify your bookings?",
       cta: "Create Your Free Account",
     },
+  eyebrow: "Pricing",
+  limitModal: {
+    title: "Limit reached",
+    description: "You've reached the limit of your current plan. Upgrade to keep going.",
+    btn: "View plans",
+    cancel: "Cancel",
+  },
 },
 footerNav: {
   faq: "FAQ",
@@ -3479,6 +3598,8 @@ contactPage: {
   sentTitle: "Message sent",
   sentSub: "We will get back to you soon.",
   emailAlternative: "Prefer email. Write to us at",
+  invalid: "Please fill in all fields.",
+  captchaMissing: "Please complete the verification challenge.",
 },
 
 reviews: {
@@ -3597,5 +3718,32 @@ publicQuote: {
       title: "Quote accepted",
       sub: "{{name}} has been notified and will be in touch shortly.",
     },
+  },
+
+  report: {
+    button: "Report",
+    title: "Report this content",
+    subtitle: "Let us know what's wrong. We'll review it as soon as possible.",
+    selectReason: "Select a reason…",
+    reasons: {
+      illegal: "Illegal content",
+      fake: "Fake / misleading",
+      harassment: "Harassment or abuse",
+      spam: "Spam",
+      other: "Other",
+    },
+    detailsPlaceholder: "Additional details (optional)",
+    emailPlaceholder: "Your email (optional, in case we need more info)",
+    reasonRequired: "Please select a reason.",
+    failed: "Something went wrong. Please try again.",
+    thanks: "Thanks, we'll review this.",
+    sending: "Sending…",
+    submit: "Submit report",
+  },
+
+  actions: {
+    copy: "Copy",
+    loading: "Loading...",
+    save: "Save",
   },
 }
