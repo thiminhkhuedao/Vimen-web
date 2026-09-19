@@ -76,33 +76,22 @@ export default function ReviewsPage({ state, dispatch, profile }) {
     }
 
     const cl = getClient(job.client_id);
-    
-    const hasEmail = Boolean(cl?.email);
-    const hasPhone = Boolean(cl?.phone);
 
-    if (!hasEmail && !hasPhone) { 
-      toast.error(t("reviews.toast.noContactInfo") || "Le client n'a aucun email ni numéro de téléphone valide."); 
-      return; 
+    if (!cl?.email) {
+      toast.error(t("reviews.toast.noContactInfo") || "Le client n'a aucune adresse email enregistrée.");
+      return;
     }
 
-    const messageBody = t("reviews.requestModal.smsTemplate", {
-      clientName: cl?.name ?? t("reviews.fallback.clientBracket"),
-      jobTitle: job?.title ?? t("reviews.fallback.work"),
-      urlPreview: googleUrl,
-      profileName: profile?.name,
-    });
-
     const tid = toast.loading(t("reviews.toast.sendingRequest") || "Envoi de la demande...");
-    
+
     try {
       const { error } = await supabase.functions.invoke("send-review-request", {
         body: {
-          toEmail: cl.email || null,
-          toPhone: cl.phone || null,
+          toEmail: cl.email,
           clientName: cl.name,
           profileName: profile?.name,
+          jobTitle: job?.title,
           googleUrl: googleUrl,
-          message: messageBody,
         },
       });
 
@@ -114,20 +103,8 @@ export default function ReviewsPage({ state, dispatch, profile }) {
 
     } catch (err) {
       toast.dismiss(tid);
-      console.warn("[Review Request Edge Function failed/missing]:", err);
-
-      if (hasEmail) {
-        const mailtoUrl = `mailto:${cl.email}?subject=${encodeURIComponent("Avis sur notre intervention")}&body=${encodeURIComponent(messageBody)}`;
-        window.open(mailtoUrl, "_blank");
-        toast.success("Client Mail ouvert avec le message prêt !");
-      } else if (hasPhone) {
-        if (navigator.clipboard) {
-          await navigator.clipboard.writeText(messageBody);
-          toast.success("Texte copié ! Envoyez-le par SMS au " + cl.phone);
-        }
-      }
-      
-      setModal(null);
+      console.warn("[Review Request Edge Function failed]:", err);
+      toast.error(t("reviews.toast.requestFailed") || "Échec de l'envoi. Merci de réessayer.");
     }
   }
 
@@ -186,32 +163,29 @@ export default function ReviewsPage({ state, dispatch, profile }) {
           {selJob && (() => {
             const job = jobs.find(j => j.id === selJob);
             const cl = getClient(job?.client_id);
-            const hasContact = cl?.email || cl?.phone;
+            const hasContact = Boolean(cl?.email);
             return (
               <>
                 <div style={{ background: T.surface2, borderRadius: T.r.md, padding: "12px 14px", marginBottom: 14, fontSize: 13 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 4 }}>{t("reviews.requestModal.smsPreviewTitle")}</div>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>{t("reviews.requestModal.emailPreviewTitle")}</div>
                   <div style={{ color: T.muted, fontStyle: "italic", lineHeight: 1.6 }}>
-                    {t("reviews.requestModal.smsTemplate", {
+                    {t("reviews.requestModal.emailTemplate", {
                       clientName: cl?.name ?? t("reviews.fallback.clientBracket"),
                       jobTitle: job?.title ?? t("reviews.fallback.work"),
-                      urlPreview: googleUrl.slice(0, 30),
                       profileName: profile?.name,
                     })}
                   </div>
                 </div>
 
                 <div style={{ fontSize: 12, marginBottom: 14, color: hasContact ? T.green : T.red }}>
-                  {cl?.email && `Email: ${cl.email} `}
-                  {cl?.phone && `Tel: ${cl.phone}`}
-                  {!hasContact && "Aucun email ni numéro de téléphone associé à ce client."}
+                  {cl?.email ? `Email : ${cl.email}` : t("reviews.requestModal.noEmailWarning")}
                 </div>
               </>
             );
           })()}
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", paddingTop: 14, borderTop: `1px solid ${T.border}` }}>
             <Btn variant="ghost" onClick={() => setModal(null)}>{t("reviews.requestModal.cancel")}</Btn>
-            <Btn onClick={sendRequest}>{t("reviews.requestModal.sendSmsBtn")}</Btn>
+            <Btn onClick={sendRequest}>{t("reviews.requestModal.sendEmailBtn")}</Btn>
           </div>
         </Modal>
       )}

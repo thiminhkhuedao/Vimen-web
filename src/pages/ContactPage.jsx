@@ -32,10 +32,17 @@ export default function ContactPage({ onSignIn, onSignUp }) {
   const { t, lang, setLanguage, languages } = useTranslation();
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [status, setStatus] = useState("idle");
+  const [errorMsg, setErrorMsg] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [captchaToken, setCaptchaToken] = useState(null);
 
-  const fld = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
+  const fld = k => e => {
+    setForm(p => ({ ...p, [k]: e.target.value }));
+    // On efface le message d'erreur dès que l'utilisateur recommence à
+    // taper, pour ne pas laisser un vieux message bloqué à l'écran alors
+    // que le formulaire est en fait correctement rempli.
+    setStatus(s => (s === "invalid" || s === "error" ? "idle" : s));
+  };
 
   async function submit(e) {
     e.preventDefault();
@@ -62,6 +69,7 @@ export default function ContactPage({ onSignIn, onSignUp }) {
       honeypot,
     });
     if (rateLimitMsg) {
+      setErrorMsg(rateLimitMsg);
       setStatus("error");
       return;
     }
@@ -74,6 +82,7 @@ export default function ContactPage({ onSignIn, onSignUp }) {
       setStatus("sent");
     } catch (err) {
       console.error("[Contact submit error]", err);
+      setErrorMsg("");
       setStatus("error");
     }
   }
@@ -231,6 +240,7 @@ export default function ContactPage({ onSignIn, onSignUp }) {
                   style={{ fontSize: 13, color: T.red || "#dc2626", marginBottom: 16, marginTop: 0 }}
                 >
                   {t("contactPage.error", "Something went wrong sending your message. Please try again or email us directly.")}
+                  {errorMsg ? ` (${errorMsg})` : ""}
                 </p>
               )}
 

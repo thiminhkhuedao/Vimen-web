@@ -8,7 +8,8 @@ import {
 } from "../lib/db";
 import { createPaymentLink } from "../lib/stripe";
 import { supabase } from "../lib/supabase";
-import { sendInvoiceEmail, sendInvoicePaidSMS } from "../lib/notifications";
+import { sendInvoiceEmail } from "../lib/notifications";
+import { jsPDF } from "jspdf";
 import { useTranslation } from "../i18n/index.js";
 import {
   PageShell, Card, Btn, Badge, Table, TD,
@@ -198,6 +199,123 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
     setBusy(false);
   }
 
+  // ── PDF export ───────────────────────────────────────
+  function handleDownloadPdf(inv) {
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const marginX = 48;
+    let y = 56;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(230, 90, 30);
+    doc.text("Vimen", marginX, y);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(90, 90, 90);
+    y += 20;
+    doc.text(`${profile?.name ?? ""}${profile?.trade ? " · " + profile.trade : ""}`, marginX, y);
+    if (profile?.email) { y += 14; doc.text(profile.email, marginX, y); }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(20, 20, 20);
+    doc.text(inv.invoice_number ?? "", 547, 56, { align: "right" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(90, 90, 90);
+    doc.text(
+      `${t("invoices.issuedLabel")} ${fmtDate(inv.created_at)}`,
+      547, 74, { align: "right" }
+    );
+    if (inv.due_date) {
+      doc.text(`${t("invoices.dueLabel")} ${fmtDate(inv.due_date)}`, 547, 88, { align: "right" });
+    }
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(inv.status === "paid" ? 34 : 200, inv.status === "paid" ? 140 : 120, inv.status === "paid" ? 60 : 30);
+    doc.text(
+      inv.status === "paid" ? t("invoices.status.paid") : t("invoices.status.unpaid"),
+      547, 104, { align: "right" }
+    );
+
+    y = 140;
+    doc.setDrawColor(225, 220, 210);
+    doc.line(marginX, y, 547, y);
+
+    y += 24;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(t("invoices.billTo").toUpperCase(), marginX, y);
+    y += 16;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(20, 20, 20);
+    doc.text(inv.client?.name ?? "", marginX, y);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(90, 90, 90);
+    if (inv.client?.email) { y += 14; doc.text(inv.client.email, marginX, y); }
+    if (inv.client?.address) { y += 14; doc.text(inv.client.address, marginX, y); }
+
+    y += 32;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(t("invoices.descriptionCol").toUpperCase(), marginX, y);
+    doc.text(t("invoices.amountCol").toUpperCase(), 547, y, { align: "right" });
+    y += 8;
+    doc.setDrawColor(225, 220, 210);
+    doc.line(marginX, y, 547, y);
+
+    y += 22;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(20, 20, 20);
+    doc.text(inv.job?.title || t("invoices.servicesRendered"), marginX, y);
+    doc.setFont("helvetica", "bold");
+    doc.text(fmt(inv.amount), 547, y, { align: "right" });
+
+    y += 16;
+    doc.setDrawColor(20, 20, 20);
+    doc.line(marginX, y, 547, y);
+
+    y += 26;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(20, 20, 20);
+    doc.text(t("invoices.totalDue"), marginX, y);
+    doc.setTextColor(inv.status === "paid" ? 34 : 230, inv.status === "paid" ? 140 : 90, inv.status === "paid" ? 60 : 30);
+    doc.text(fmt(inv.amount), 547, y, { align: "right" });
+
+    if (profile?.bank_name || profile?.account_number) {
+      y += 34;
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(20, 130, 60);
+      doc.text(t("invoices.bankTransferTitle"), marginX, y);
+      doc.setFont("helvetica", "normal");
+      if (profile.bank_name) { y += 14; doc.text(`${t("invoices.bankLabel")} ${profile.bank_name}`, marginX, y); }
+      if (profile.sort_code) { y += 14; doc.text(`${t("invoices.sortCodeLabel")} ${profile.sort_code}`, marginX, y); }
+      if (profile.account_number) { y += 14; doc.text(`${t("invoices.accountLabel")} ${profile.account_number}`, marginX, y); }
+      y += 14;
+      doc.text(`${t("invoices.referenceLabel")} ${inv.invoice_number}`, marginX, y);
+    }
+
+    y += 34;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(140, 140, 140);
+    doc.text(
+      `${t("invoices.referenceLabel")} ${inv.invoice_number} · ${profile?.payment_terms || t("invoices.defaultPaymentTerms")}`,
+      marginX, y
+    );
+    if (profile?.invoice_notes) { y += 14; doc.text(profile.invoice_notes, marginX, y, { maxWidth: 499 }); }
+
+    doc.save(`${inv.invoice_number || "invoice"}.pdf`);
+  }
+
   // ── Mark paid ──────────────────────────────────────
   async function handleMarkPaid(id) {
     setInvoices(prev => prev.map(i => i.id===id ? {...i, status:"paid"} : i));
@@ -206,10 +324,6 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
       if (error) throw error;
       setInvoices(prev => prev.map(i => i.id===id ? data : i));
       toast.success(t("invoices.markedPaidToast"));
-      if (profile?.notif_sms_paid && profile?.phone) {
-        const inv = invoices.find(i=>i.id===id);
-        if (inv) sendInvoicePaidSMS(inv, profile);
-      }
     } catch (err) {
       console.error("[InvoicesPage] mark paid error:", err);
       setInvoices(prev => prev.map(i => i.id===id ? {...i, status:"unpaid"} : i));
@@ -383,6 +497,9 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
                 </Btn>
               )}
             </>}
+            <Btn size="sm" variant="ghost" onClick={() => handleDownloadPdf(previewInv)}>
+              {t("invoices.downloadPdf")}
+            </Btn>
             <Btn size="sm" variant="danger" style={{marginLeft:"auto"}} onClick={() => setDelId(previewInv.id)}>
               {t("common.delete")}
             </Btn>
@@ -507,6 +624,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
                   <TD>
                     <div style={{display:"flex",gap:6}}>
                       <Btn size="sm" variant="ghost" onClick={() => setModal(inv.id)}>{t("invoices.viewButton")}</Btn>
+                      <Btn size="sm" variant="ghost" onClick={() => handleDownloadPdf(inv)}>{t("invoices.downloadPdf")}</Btn>
                       {inv.status==="unpaid" && (
                         <Btn size="sm" variant="success" onClick={() => handleMarkPaid(inv.id)}>{t("invoices.paidButton")}</Btn>
                       )}

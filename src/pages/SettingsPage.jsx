@@ -54,7 +54,6 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
     booking_slug: profile?.booking_slug ?? "",
     google_review_url: profile?.google_review_url ?? "",
     notif_email_booking: profile?.notif_email_booking ?? true,
-    notif_sms_paid: profile?.notif_sms_paid ?? false,
     notif_weekly_digest: profile?.notif_weekly_digest ?? true,
     notif_overdue_reminder: profile?.notif_overdue_reminder ?? true,
     reminder_frequency_days: profile?.reminder_frequency_days ?? 7,
@@ -81,7 +80,6 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         booking_slug: profile.booking_slug ?? "",
         google_review_url: profile.google_review_url ?? "",
         notif_email_booking: profile.notif_email_booking ?? true,
-        notif_sms_paid: profile.notif_sms_paid ?? false,
         notif_weekly_digest: profile.notif_weekly_digest ?? true,
         notif_overdue_reminder: profile.notif_overdue_reminder ?? true,
         reminder_frequency_days: profile.reminder_frequency_days ?? 7,
@@ -142,7 +140,6 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         booking_slug: form.booking_slug,
         google_review_url: form.google_review_url,
         notif_email_booking: form.notif_email_booking,
-        notif_sms_paid: form.notif_sms_paid,
         notif_weekly_digest: form.notif_weekly_digest,
         notif_overdue_reminder: form.notif_overdue_reminder,
         reminder_frequency_days: form.reminder_frequency_days,
@@ -512,7 +509,6 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
           <Card>
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t("settings.notifTitle")}</div>
             <SettingRow label={t("settings.notifEmail")} sub={t("settings.notifEmailSub")} k="notif_email_booking" />
-            <SettingRow label={t("settings.notifSms")} sub={t("settings.notifSmsSub")} k="notif_sms_paid" />
             <SettingRow label={t("settings.notifDigest")} sub={t("settings.notifDigestSub")} k="notif_weekly_digest" />
             <SettingRow label={t("settings.notifOverdue")} sub={t("settings.notifOverdueSub")} k="notif_overdue_reminder" />
             {form.notif_overdue_reminder && (

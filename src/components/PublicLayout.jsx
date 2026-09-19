@@ -62,10 +62,11 @@ function NavBar({ onSignIn, onSignUp, t, lang, setLanguage, languages }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { to: "/pricing", label: t("home.nav.pricing") },
     { to: "/about", label: t("home.nav.about") },
     { to: "/faq", label: t("home.nav.faq") },
     { to: "/contact", label: t("home.nav.contact") },
+    { to: "/privacy", label: t("home.nav.privacy") },
+    { to: "/terms", label: t("home.nav.terms") },
   ];
 
   return (
@@ -291,18 +292,6 @@ function Footer({ t }) {
             flexWrap: "wrap",
           }}
         >
-          <Link
-            to="/pricing"
-            style={{
-              fontSize: 13,
-              color: T.hint,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {t("home.nav.pricing")}
-          </Link>
-
           <Link
             to="/about"
             style={{

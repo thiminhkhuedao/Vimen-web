@@ -113,11 +113,6 @@ export default {
     fullName:          "Nom complet",
     profession:        "Votre profession",
     forgotPassword:    "Mot de passe oublié ?",
-    form: {
-      continueGoogle: "Continuer avec Google",
-      orDivider:      "ou",
-      forgotPassword: "Mot de passe oublié ?",
-    },
     noAccount:         "Pas encore de compte ?",
     alreadyAccount:    "Déjà inscrit ?",
     signUpFree:        "S'inscrire gratuitement",
@@ -132,7 +127,7 @@ export default {
     heroSub:           "Artisans, beauté et bien-être, ou professions libérales : devis, rendez-vous, factures et paiements, tout en un seul endroit.",
     feature1:          "Les clients réservent leurs {{bookingPlural}} eux-mêmes",
     feature2:          "Facturez et encaissez",
-    feature3:          "Vimen Pay : 2 % fixe",
+    feature3:          "Paiement en ligne inclus",
     feature4:          "Conçu pour {{vertical}}",
     feature5:          "Demandes d'avis automatiques",
     passwordRequirements: "EXIGENCES DU MOT DE PASSE",
@@ -169,11 +164,13 @@ export default {
     sub: "Artisans, beauté & bien-être ou services professionnels — devis, rendez-vous, factures et paiements, tout en un.",
     feature1: "Vos clients réservent eux-mêmes",
     feature2: "Facturez et soyez payé",
-    feature3: "Paiements Vimen Pay",
+    feature3: "Paiement en ligne inclus",
     feature4: "Demandes d'avis automatiques",
     feature5: "Vos données vous appartiennent"
   },
   form: {
+    continueGoogle: "Continuer avec Google",
+    orDivider: "ou",
     loginTitle: "Bon retour",
     signupTitle: "Créer un compte",
     loginSub: "Connectez-vous à votre compte Vimen",
@@ -192,7 +189,12 @@ export default {
     noAccount: "Pas de compte ? ",
     hasAccount: "Déjà inscrit ? ",
     gotoSignup: "S'inscrire gratuitement",
-    gotoLogin: "Se connecter"
+    gotoLogin: "Se connecter",
+    forgotPassword: "Mot de passe oublié ?",
+    agreeTermsPrefix: "J'accepte",
+    privacyLink: "la Politique de confidentialité",
+    andWord: "et les",
+    termsLink: "Conditions Générales d'Utilisation",
   },
   error: {
     weakPassword: "Le mot de passe est trop faible — utilisez au moins 8 caractères avec un mélange de lettres et de chiffres.",
@@ -1124,101 +1126,6 @@ export default {
   },
 
   // ── Reviews ──────────────────────────────────────────
-  reviews: {
-    title:          "Avis",
-    addManually:    "Ajouter",
-    request:        "Demander",
-    averageRating:  "{{rating}} de moyenne",
-    verified:       "Vérifié",
-    onGoogle:       "Sur Google",
-    pending:        "En attente",
-    noReviews:      "Aucun avis pour l'instant",
-    requestFirst:   "Demandez votre premier avis",
-    connectGoogle:  "Connecter Google Business",
-    connectSub:     "Permettez aux clients d'accéder directement à votre profil Google",
-    sendRequest:    "Envoyer la demande par SMS",
-    requestTitle:   "Demander un avis",
-    requestSub:     "Sélectionnez une mission terminée. Nous enverrons un SMS au client avec un lien direct vers votre page Google.",
-    addTitle:       "Ajouter un avis",
-    clientName:     "Nom du client",
-    rating:         "Note",
-    reviewTitle:    "Titre",
-    reviewBody:     "Avis",
-    whatSaid:       "Qu'a dit le client ?",
-    addReview:      "Ajouter l'avis",
-    pushGoogle:     "Inviter le client à poster sur Google",
-
-    addManuallyBtn: "+ Ajouter manuellement",
-    requestReviewBtn: "Demander un avis",
-
-    requestModal: {
-      title: "Demander un avis",
-      intro: "Sélectionnez une mission terminée. Nous enverrons un SMS au client lui demandant de laisser un avis, avec un lien direct vers votre profil Google.",
-      completedJobLabel: "Mission terminée",
-      selectJobPlaceholder: "Sélectionner une mission…",
-      smsPreviewTitle: "Aperçu du SMS",
-      smsTemplate: "\"Bonjour {{clientName}}, j'espère que vous êtes satisfait(e) du {{jobTitle}}. Auriez-vous 60 secondes pour nous laisser un avis Google ? Cela nous aide vraiment. Cliquez ici : {{urlPreview}}… De la part de {{profileName}}\"",
-      cancel: "Annuler",
-      sendSmsBtn: "Envoyer le SMS",
-    },
-
-    manualModal: {
-      title: "Ajouter un avis manuellement",
-      intro: "Pour les avis laissés directement par les clients (WhatsApp, email, oral) que vous souhaitez enregistrer.",
-      clientNameLabel: "Nom du client",
-      ratingLabel: "Note",
-      reviewTitleLabel: "Titre de l'avis",
-      reviewTitlePlaceholder: "ex. Excellent travail, ponctuel et soigné",
-      reviewTextLabel: "Texte de l'avis",
-      reviewTextPlaceholder: "Qu'a dit le client ?",
-      addReviewBtn: "Ajouter l'avis",
-    },
-
-    toast: {
-      selectCompletedJob: "Sélectionnez une mission terminée",
-      clientNoPhone: "Ce client n'a pas de numéro de téléphone enregistré",
-      noGoogleUrlConfigured: "Ajoutez votre lien d'avis Google dans les Paramètres avant d'envoyer des demandes",
-      sendFailed: "Échec de l'envoi, veuillez réessayer",
-      requestSent: "SMS de demande d'avis envoyé à {{name}}",
-      nameRatingRequired: "Le nom et la note sont obligatoires",
-      reviewAdded: "Avis ajouté",
-      markedPushedToGoogle: "Marqué comme publié sur Google",
-    },
-
-    fallback: {
-      client: "client",
-      clientBracket: "[client]",
-      work: "travaux",
-    },
-
-    stats: {
-      reviewsCount: "{{count}} avis",
-    },
-
-    metrics: {
-      verifiedReviews: "Avis vérifiés",
-      onYourProfile: "Sur votre profil",
-      googleClicks: "Clics Google",
-      tappedGoogleLink: "Ont cliqué sur le lien Google",
-      jobsWithNoReview: "Missions sans avis",
-      couldRequestReview: "Un avis pourrait être demandé",
-    },
-
-    googleCta: {
-      title: "Connectez votre fiche Google Business",
-      description: "Collez votre lien d'avis Google pour que les SMS envoient les clients directement vers Google.",
-      openBtn: "Ouvrir Google Business",
-    },
-
-    list: {
-      empty: "Aucun avis pour l'instant",
-      requestFirst: "Demandez votre premier avis",
-      verifiedBadge: "Vérifié",
-      onGoogleBadge: "Sur Google",
-      askClientToPostBtn: "Demander au client de publier sur Google",
-    },
-  },
-
   // ── Certifications ───────────────────────────────────
   certifications: {
     title:        "Certifications",
@@ -2136,13 +2043,16 @@ home: {
       about: "À propos",
       faq: "FAQ",
       contact: "Contact",
+      privacy: "Confidentialité",
+      terms: "CGU",
+      legal: "Mentions légales",
   },
   hero: {
     titleLine1: "Gérez toute votre activité",
     titleLine2: "en pilote automatique.",
     sub: "Une plateforme unique pour les professionnels et artisans : réservations, devis, factures, paiements et clients.",
-    ctaPrimary: "Démarrer l'essai gratuit",
-    ctaSecondary: "Voir les tarifs",
+    ctaPrimary: "Commencer gratuitement",
+    ctaSecondary: "Voir les fonctionnalités",
     stats: {
       fee: "Frais de plateforme",
       setup: "Configuration rapide",
@@ -2157,7 +2067,7 @@ home: {
       title: "Recevez des rendez-vous pendant votre sommeil",
       desc: "Offrez à vos clients une réservation en ligne simple. Définissez vos horaires, services et tarifs.",
       bullet1: "Module de prise de rendez-vous en ligne",
-      bullet2: "Rappels automatiques par SMS et e-mail",
+      bullet2: "Rappels automatiques par e-mail",
       bullet3: "Formulaires de réservation sur mesure",
       visual: {
         name: "Jean Dupont",
@@ -2188,7 +2098,7 @@ home: {
       desc: "Créez et envoyez des factures professionnelles directement depuis votre téléphone ou ordinateur.",
       bullet1: "Génération automatique de factures PDF",
       bullet2: "Suivi des paiements et relances automatiques",
-      bullet3: "Exportation facile vers votre logiciel comptable",
+      bullet3: "Facture téléchargeable en PDF",
       visual: {
         number: "Facture #FAC-2026-104",
         status: "Payée",
@@ -2200,26 +2110,25 @@ home: {
     },
     payments: {
       tabLabel: "Paiements",
-      title: "Acceptez les paiements partout",
-      desc: "Encaissez des acomptes au préalable ou prenez la carte bancaire sur le chantier sans difficulté.",
-      bullet1: "Paiements par carte & Apple Pay intégrés",
-      bullet2: "Rapprochement bancaire automatique",
-      bullet3: "Virement rapide disponible",
+      title: "Faites-vous payer en ligne, en toute sécurité",
+      desc: "Vos clients paient directement par carte bancaire via Stripe, notre prestataire de paiement, ou par virement sur votre IBAN. Vimen ne gère jamais vos fonds.",
+      bullet1: "Paiement par carte sécurisé via Stripe",
+      bullet2: "Ou virement direct sur votre IBAN",
+      bullet3: "Suivi automatique du statut de paiement",
       visual: {
-        title: "Détail du virement",
+        title: "Détail du paiement",
         amount: "Montant brut",
-        processing: "Frais de traitement",
-        platform: "Frais de plateforme",
-        receive: "VIREMENT NET",
+        processing: "Frais Stripe",
+        receive: "VOUS RECEVEZ",
       },
 
     },
     clients: {
       tabLabel: "Gestion Clients",
       title: "Gardez tout l'historique client organisé",
-      desc: "Retrouvez chaque chantier, message, facture et note sur la fiche de votre client.",
+      desc: "Retrouvez chaque intervention, message, facture et note sur la fiche de votre client.",
       bullet1: "Historique complet des interventions",
-      bullet2: "Appel et guidage GPS en 1 clic",
+      bullet2: "Coordonnées et notes centralisées",
       bullet3: "Stockage de notes et photos d'interventions",
       visual: {
         title: "Clients Principaux",
@@ -2232,8 +2141,8 @@ home: {
     growth: {
       tabLabel: "Avis & Croissance",
       title: "Demandez à vos clients satisfaits de laisser un avis Google 5 étoiles",
-      desc: "Sollicitez automatiquement des avis Google auprès de vos clients à la fin de chaque intervention.",
-      bullet1: "Demandes d'avis envoyées automatiquement",
+      desc: "Un e-mail de demande d'avis est envoyé automatiquement à l'adresse enregistrée de votre client à la fin de chaque intervention.",
+      bullet1: "E-mail de demande d'avis envoyé automatiquement",
       bullet2: "Améliorez votre classement Google Maps",
       bullet3: "Suivi du programme de parrainage client",
       visual: {
@@ -2245,17 +2154,17 @@ home: {
     },
   },
   pricingTeaser: {
-    eyebrow: "TARIFICATION TRANSPARENTE",
-    title: "Des forfaits simples qui évoluent avec vous",
-    sub: "Sans engagement, sans frais cachés. Modifiez ou résiliez votre abonnement à tout moment.",
-    cta: "Voir tous les tarifs et forfaits",
-    freeTitle: "100% gratuit pour commencer",
+    eyebrow: "100% GRATUIT",
+    title: "Toutes les fonctionnalités, sans payer",
+    sub: "Aucun abonnement, aucun engagement, aucune carte bancaire requise.",
+    cta: "Créer mon compte gratuit",
+    freeTitle: "100% gratuit, sans conditions cachées",
     freeSub: "Tout ce qu'il te faut pour gérer ton activité — sans carte bancaire.",
   },
   finalCta: {
     title: "Prêt à simplifier votre gestion au quotidien ?",
     sub: "Rejoignez des milliers de professionnels qui gagnent plus de 5 heures par semaine sur l'administratif.",
-    cta: "Démarrer l'essai gratuit",
+    cta: "Créer mon compte gratuit",
   },
   footer: {
     contact: "Contact",
@@ -3335,77 +3244,6 @@ referrals: {
   },
 },
 
-reviews: {
-  title: "Avis Clients",
-  addManuallyBtn: "Ajouter manuellement",
-  requestReviewBtn: "Demander un avis",
-
-  toast: {
-    selectCompletedJob: "Veuillez sélectionner une intervention terminée",
-    requestSent: "Demande d'avis envoyée à {{name}}",
-    nameRatingRequired: "Veuillez saisir le nom du client et sélectionner une note",
-    reviewAdded: "Avis ajouté",
-    markedPushedToGoogle: "Marqué comme publié sur Google",
-  },
-
-  fallback: {
-    clientBracket: "[Nom du client]",
-    work: "l'intervention",
-  },
-
-  requestModal: {
-    title: "Demander un avis",
-    intro: "Envoyez un lien de demande d'avis à un client après avoir terminé un chantier. Les clients satisfaits laissent d'excellents avis qui vous aident à décrocher de nouveaux contrats.",
-    completedJobLabel: "Intervention terminée",
-    selectJobPlaceholder: "Sélectionner un chantier",
-    smsPreviewTitle: "Aperçu du message",
-    smsTemplate: "Bonjour {{clientName}}, merci d'avoir fait appel à {{profileName}} ! Si vous êtes satisfait de {{jobTitle}}, auriez-vous 60 secondes pour nous laisser un avis ? {{urlPreview}}...",
-    cancel: "Annuler",
-    sendSmsBtn: "Envoyer la demande",
-  },
-
-  manualModal: {
-    title: "Ajouter un avis manuellement",
-    intro: "Enregistrez un avis reçu de vive voix, via WhatsApp ou sur papier.",
-    clientNameLabel: "Nom du client",
-    ratingLabel: "Note",
-    reviewTitleLabel: "Titre de l'avis (optionnel)",
-    reviewTitlePlaceholder: "ex. Excellent travail dans notre cuisine",
-    reviewTextLabel: "Texte de l'avis (optionnel)",
-    reviewTextPlaceholder: "Qu'a dit le client ?",
-    addReviewBtn: "Ajouter l'avis",
-  },
-
-  stats: {
-    reviewsCount_zero: "Aucun avis pour l'instant",
-    reviewsCount_one: "Basé sur {{count}} avis",
-    reviewsCount_other: "Basé sur {{count}} avis",
-  },
-
-  metrics: {
-    verifiedReviews: "Avis vérifiés",
-    onYourProfile: "Sur votre profil",
-    googleClicks: "Clics Google",
-    tappedGoogleLink: "Ont cliqué sur le lien Google",
-    jobsWithNoReview: "Chantiers sans avis",
-    couldRequestReview: "Terminés, sans demande envoyée",
-  },
-
-  googleCta: {
-    title: "Améliorez votre référencement Google",
-    description: "Liez votre fiche Google Business Profile pour rediriger directement les clients satisfaits vers votre page d'avis Google.",
-    openBtn: "Ouvrir Google Business",
-  },
-
-  list: {
-    empty: "Aucun avis pour l'instant",
-    requestFirst: "Demander votre premier avis",
-    verifiedBadge: "Vérifié",
-    onGoogleBadge: "Publié sur Google",
-    askClientToPostBtn: "Marquer comme publié sur Google",
-  },
-},
-
 settings: {
   title: "Paramètres",
 
@@ -3553,15 +3391,15 @@ faqPage: {
   title: "Questions fréquentes",
   sub: "Tout ce qu'il faut savoir sur le fonctionnement de Vimen.",
   q1: { question: "Qu'est ce que Vimen", answer: "Vimen est une plateforme de réservation, devis et facturation pour les professionnels. Gérez vos clients, soyez réservé en ligne, envoyez des devis et des factures, et soyez payé, le tout au même endroit." },
-  q2: { question: "Ai je besoin d'un abonnement pour envoyer des factures", answer: "Non. Vous pouvez facturer et être payé avec le forfait Gratuit. Des frais de deux pour cent s'appliquent aux paiements traités via Vimen Pay." },
-  q3: { question: "Comment fonctionne Vimen Pay", answer: "Vimen Pay permet à vos clients de payer vos factures en ligne par carte. Les fonds sont traités en toute sécurité et versés automatiquement sur votre compte bancaire, moins des frais fixes de deux pour cent." },
+  q2: { question: "Ai-je besoin d'un abonnement pour envoyer des factures", answer: "Non. Vimen est 100% gratuit : vous pouvez créer des devis, envoyer des factures et être payé sans aucun abonnement ni frais caché." },
+  q3: { question: "Comment fonctionnent les paiements", answer: "Vos clients paient directement par carte bancaire via Stripe, notre prestataire de paiement, ou par virement sur votre IBAN. Vimen ne gère jamais vos fonds et ne prélève aucune commission." },
   q4: { question: "Les clients peuvent ils payer par virement à la place", answer: "Oui. Chaque facture peut afficher vos coordonnées bancaires comme alternative au paiement par carte, sans aucun frais." },
-  q5: { question: "Quelle est la différence entre Gratuit et Illimité", answer: "Le forfait Gratuit couvre jusqu'à cinq clients et dix factures par mois. Illimité supprime ces limites et ajoute une page de réservation personnalisée, des demandes d'avis automatiques et un programme de parrainage." },
-  q6: { question: "Puis je annuler à tout moment", answer: "Oui. Il n'y a aucun engagement. Vous pouvez revenir au forfait Gratuit quand vous le souhaitez." },
+  q5: { question: "Y a-t-il des limites sur le nombre de clients ou de factures", answer: "Non. Vimen est entièrement gratuit et sans limite : nombre de clients, de factures, de devis et de rendez-vous illimités." },
+  q6: { question: "Y a-t-il un engagement ou un abonnement à annuler", answer: "Non, il n'y a ni abonnement ni engagement. Vimen est gratuit dès le départ." },
   q7: { question: "Proposez vous des devis et une signature électronique", answer: "Oui. Créez un devis avec des lignes pour la main d'œuvre et le matériel, envoyez le à votre client, qui peut l'accepter par signature électronique directement sur le devis." },
   q8: { question: "Qu'est ce que la place de marché", answer: "Un espace où les professionnels peuvent publier des demandes, vendre une entreprise, recruter des sous-traitants ou se vendre du matériel entre eux." },
   q9: { question: "Mes données sont elles sécurisées", answer: "Vos données sont stockées de manière sécurisée et l'accès est protégé par authentification sur chaque compte. Les informations de paiement sont gérées entièrement par notre prestataire de paiement et ne sont jamais stockées sur nos serveurs." },
-  q10: { question: "Comment obtenir de l'aide", answer: "Les utilisateurs du forfait Gratuit ont accès au support communautaire. Les utilisateurs du forfait Illimité bénéficient d'un support prioritaire par email." },
+  q10: { question: "Comment obtenir de l'aide", answer: "Vous pouvez nous contacter directement via le formulaire de contact ou par email, et notre équipe vous répondra rapidement." },
   finalCta: { title: "Vous avez encore une question", cta: "Contactez nous" },
 },
 
@@ -3571,12 +3409,12 @@ aboutPage: {
   sub: "Réservation, devis, facturation et paiements, conçus pour les professionnels qui préfèrent passer du temps avec leurs clients plutôt que sur la paperasse.",
   paragraph1: "Vimen a été conçu pour les professionnels qui passent plus de temps à courir après la paperasse qu'à faire le travail qu'ils maîtrisent. Réserver, faire des devis, facturer et être payé ne devrait pas nécessiter cinq outils différents.",
   paragraph2: "Vimen réunit réservations, devis, factures et paiements au même endroit, pour que les professionnels passent moins de temps sur l'administratif et plus de temps avec leurs clients.",
-  paragraph3: "Nous gardons une tarification simple, des frais transparents et un support réactif, parce que c'est ce que nous attendrions d'un outil que nous utilisons chaque jour.",
+  paragraph3: "Vimen est 100% gratuit et sans frais cachés, parce que c'est ce que nous attendrions d'un outil que nous utilisons chaque jour.",
   valuesTitle: "Ce qui compte pour nous",
-  value1: { title: "Tarification simple", desc: "Deux forfaits, des frais clairs, aucun coût caché." },
+  value1: { title: "100% gratuit", desc: "Aucun abonnement, aucun frais caché." },
   value2: { title: "Pensé pour tous les métiers", desc: "Quel que soit votre métier, Vimen s'adapte à votre façon de travailler." },
   value3: { title: "Un support qui répond", desc: "De vraies réponses d'une équipe qui utilise aussi le produit." },
-  finalCta: { title: "Prêt à commencer", cta: "Essai gratuit" },
+  finalCta: { title: "Prêt à commencer", cta: "Créer mon compte gratuit" },
 },
 
 contactPage: {
@@ -3674,6 +3512,7 @@ invoices: {
   colAmount: "Montant",
   colStatus: "Statut",
   viewButton: "Voir",
+  downloadPdf: "Télécharger le PDF",
   paidButton: "Payer",
 
   // Statuts
@@ -3685,7 +3524,38 @@ invoices: {
 },
 
 reviews: {
-  // Modal d'ajout manuel visible sur image_67ddc4.png
+  title: "Avis Clients",
+  addManuallyBtn: "Ajouter manuellement",
+  requestReviewBtn: "Demander un avis",
+
+  toast: {
+    selectCompletedJob: "Veuillez sélectionner une intervention terminée",
+    noContactInfo: "Ce client n'a aucune adresse email enregistrée",
+    sendingRequest: "Envoi de la demande...",
+    requestSent: "Demande d'avis envoyée par email à {{name}}",
+    requestFailed: "Échec de l'envoi, veuillez réessayer",
+    nameRatingRequired: "Veuillez saisir le nom du client et sélectionner une note",
+    reviewAdded: "Avis ajouté",
+    markedPushedToGoogle: "Marqué comme publié sur Google",
+  },
+
+  fallback: {
+    clientBracket: "[Nom du client]",
+    work: "l'intervention",
+  },
+
+  requestModal: {
+    title: "Demander un avis",
+    intro: "Sélectionnez une intervention terminée. Un email sera envoyé automatiquement à l'adresse enregistrée du client, avec un lien direct vers votre profil Google.",
+    completedJobLabel: "Intervention terminée",
+    selectJobPlaceholder: "Sélectionner une intervention",
+    emailPreviewTitle: "Aperçu de l'email",
+    emailTemplate: "Bonjour {{clientName}}, merci d'avoir fait appel à {{profileName}} ! Si vous êtes satisfait de {{jobTitle}}, auriez-vous 60 secondes pour nous laisser un avis Google ?",
+    noEmailWarning: "Aucune adresse email enregistrée pour ce client.",
+    cancel: "Annuler",
+    sendEmailBtn: "Envoyer par email",
+  },
+
   manualModal: {
     title: "Ajouter un avis manuellement",
     intro: "Enregistrez un avis reçu de vive voix, via WhatsApp ou sur papier.",
@@ -3699,23 +3569,33 @@ reviews: {
     reviewTextPlaceholder: "Qu'a dit le client ?",
     addReviewBtn: "Ajouter l'avis"
   },
-  // Statistiques & CTA visibles sur image_67e0ad.png
+
   stats: {
     reviewsCount: "{{count}} avis"
   },
+
   metrics: {
     verifiedReviews: "Avis vérifiés",
     onYourProfile: "Sur votre profil",
     googleClicks: "Clics Google",
     tappedGoogleLink: "Ont cliqué sur le lien Google",
-    jobsWithNoReview: "Chantiers sans avis",
-    couldRequestReview: "Terminés, sans demande envoyée"
+    jobsWithNoReview: "Interventions sans avis",
+    couldRequestReview: "Terminées, sans demande envoyée"
   },
+
   googleCta: {
     title: "Améliorez votre référencement Google",
     description: "Liez votre fiche Google Business Profile pour rediriger directement les clients satisfaits vers votre page d'avis Google.",
     openBtn: "Ouvrir Google Business"
-  }
+  },
+
+  list: {
+    empty: "Aucun avis pour l'instant",
+    requestFirst: "Demander votre premier avis",
+    verifiedBadge: "Vérifié",
+    onGoogleBadge: "Publié sur Google",
+    askClientToPostBtn: "Marquer comme publié sur Google",
+  },
 },
 
 publicQuote: {

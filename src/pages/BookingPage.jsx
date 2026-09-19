@@ -4,7 +4,6 @@ import { toast } from "react-hot-toast";
 import { T } from "../styles/tokens";
 import { getBookingRequests, updateBookingStatus, submitBookingRequest, createClient, createJob } from "../lib/db";
 import { supabase } from "../lib/supabase";
-import { sendNewBookingSMS } from "../lib/notifications";
 import { getTerms, getVerticalColor, getVerticalForProfession } from "../lib/professions.js";
 import { useTranslation } from "../i18n/index.js";
 import {
@@ -182,10 +181,6 @@ export default function BookingPage({ profile }) {
     setBookings(prev => [data, ...prev]);
     setPreviewDone(true);
     toast.success(t("booking.submittedToast"));
-
-    if (profile?.phone && profile?.notif_sms_new_booking !== false) {
-      sendNewBookingSMS(data, profile);
-    }
   }
 
   const pending = bookings.filter(b => b.status === "pending");

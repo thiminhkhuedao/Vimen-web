@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { T } from "../styles/tokens";
 import { getJobs, getClients, createJob, updateJob, completeJob, deleteJob, createInvoice } from "../lib/db";
-import { sendJobReminderSMS, sendInvoiceEmail } from "../lib/notifications";
+import { sendInvoiceEmail } from "../lib/notifications";
 import { supabase } from "../lib/supabase";
 import { getTerms } from "../lib/professions.js";
 import { useTranslation } from "../i18n/index.js";
@@ -153,13 +153,36 @@ export default function JobsPage({ profile }) {
     
     const job = jobs.find(j => j.id === id);
     const client = clients.find(c => c.id === (job?.client_id ?? job?.client?.id));
-    if (client?.phone && profile?.phone) {
-      sendJobReminderSMS(job, client, profile);
-    }
 
     // Job terminé → facture créée et envoyée automatiquement, sauf s'il en
     // existe déjà une pour ce job (évite les doublons).
     await autoCreateAndSendInvoice(data ?? job, client);
+
+    // Demande d'avis envoyée automatiquement par email au client, s'il a
+    // une adresse enregistrée.
+    await autoSendReviewRequest(data ?? job, client);
+  }
+
+  async function autoSendReviewRequest(job, client) {
+    if (!job || !client?.email) return;
+    try {
+      const googleUrl = profile?.extra_fields?.google_place_id
+        ? `https://g.page/r/${profile.extra_fields.google_place_id}/review`
+        : `https://www.google.com/search?q=${encodeURIComponent((profile?.name || "") + " " + (profile?.trade || ""))}`;
+
+      await supabase.functions.invoke("send-review-request", {
+        body: {
+          toEmail: client.email,
+          clientName: client.name,
+          profileName: profile?.name,
+          jobTitle: job?.title,
+          googleUrl,
+        },
+      });
+    } catch (err) {
+      // Non-bloquant : on ne perturbe pas le flux si l'email d'avis échoue.
+      console.warn("[Auto review request failed]:", err);
+    }
   }
 
   async function autoCreateAndSendInvoice(job, client) {

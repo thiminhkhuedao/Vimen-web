@@ -54,7 +54,7 @@ Certains de ces prestataires sont basés aux États-Unis ; ces transferts sont e
       },
       {
         h: "5. Durée de conservation",
-        b: `Données de compte : conservées tant que le compte est actif. Données de facturation : conservées [À COMPLÉTER, généralement 10 ans en France]. Le reste : le temps nécessaire à la finalité concernée.`,
+        b: `Données de compte : conservées tant que le compte est actif. Données de facturation : conservées 10 ans conformément aux obligations comptables et fiscales françaises. Le reste : le temps nécessaire à la finalité concernée.`,
       },
       {
         h: "6. Sécurité",
@@ -123,7 +123,7 @@ Some of these providers are based in the United States; these transfers are gove
       },
       {
         h: "5. Data retention",
-        b: `Account data: kept as long as the account is active. Billing data: kept [TO COMPLETE, typically 10 years in France]. Everything else: for as long as necessary for its purpose.`,
+        b: `Account data: kept as long as the account is active. Billing data: kept for 10 years in accordance with French accounting and tax obligations. Everything else: for as long as necessary for its purpose.`,
       },
       {
         h: "6. Security",

@@ -111,11 +111,6 @@ export default {
     fullName:          "Full name",
     profession:        "Your profession",
     forgotPassword:    "Forgot password?",
-    form: {
-      continueGoogle: "Continue with Google",
-      orDivider:      "or",
-      forgotPassword: "Forgot password?",
-    },
     noAccount:         "Don't have an account?",
     alreadyAccount:    "Already have an account?",
     signUpFree:        "Sign up free",
@@ -166,11 +161,13 @@ export default {
     sub: "Trades, beauty & wellness, or professional services — quotes, appointments, invoices and payments, all in one place.",
     feature1: "Clients book their own appointments",
     feature2: "Invoice and get paid",
-    feature3: "Vimen Pay",
+    feature3: "Online payments included",
     feature4: "Automatic review requests",
     feature5: "Your data stays yours"
   },
   form: {
+    continueGoogle: "Continue with Google",
+    orDivider: "or",
     loginTitle: "Welcome back",
     signupTitle: "Create account",
     loginSub: "Sign in to your Vimen account",
@@ -189,7 +186,12 @@ export default {
     noAccount: "No account? ",
     hasAccount: "Already signed up? ",
     gotoSignup: "Sign up free",
-    gotoLogin: "Sign in"
+    gotoLogin: "Sign in",
+    forgotPassword: "Forgot password?",
+    agreeTermsPrefix: "I agree to the",
+    privacyLink: "Privacy Policy",
+    andWord: "and",
+    termsLink: "Terms of Service",
   },
   error: {
     weakPassword: "Password is too weak — use at least 8 characters with a mix of letters and numbers.",
@@ -1116,101 +1118,6 @@ export default {
   },
 
   // ── Reviews ──────────────────────────────────────────
-  reviews: {
-    addManually:    "Add",
-    request:        "Request",
-    averageRating:  "{{rating}} average",
-    verified:       "Verified",
-    onGoogle:       "On Google",
-    pending:        "Pending",
-    noReviews:      "No reviews yet",
-    requestFirst:   "Request your first review",
-    connectGoogle:  "Connect Google Business",
-    connectSub:     "Let clients go straight to your Google profile",
-    sendRequest:    "Send SMS request",
-    requestTitle:   "Request a review",
-    requestSub:     "Select a completed job. We'll send an SMS to the client with a one-tap link to your Google review page.",
-    addTitle:       "Add review",
-    clientName:     "Client name",
-    rating:         "Rating",
-    reviewTitle:    "Title",
-    reviewBody:     "Review",
-    whatSaid:       "What did they say?",
-    addReview:      "Add review",
-    pushGoogle:     "Ask client to post to Google",
-
-  title: "Reviews",
-  addManuallyBtn: "+ Add manually",
-  requestReviewBtn: "Request review",
-
-  requestModal: {
-    title: "Request a review",
-    intro: "Select a completed job. We'll send an SMS to the client asking them to leave a review, with a one-tap link directly to your Google profile.",
-    completedJobLabel: "Completed job",
-    selectJobPlaceholder: "Select a job…",
-    smsPreviewTitle: "SMS preview",
-    smsTemplate: "\"Hi {{clientName}}, hope you're happy with the {{jobTitle}}. Could you spare 60 seconds to leave us a Google review? It really helps. Tap here: {{urlPreview}}… From {{profileName}}\"",
-    cancel: "Cancel",
-    sendSmsBtn: "Send SMS request",
-  },
-
-  manualModal: {
-    title: "Add review manually",
-    intro: "For reviews left directly by clients (WhatsApp, email, verbal) that you want to record.",
-    clientNameLabel: "Client name",
-    ratingLabel: "Rating",
-    reviewTitleLabel: "Review title",
-    reviewTitlePlaceholder: "e.g. Excellent work, on time and tidy",
-    reviewTextLabel: "Review text",
-    reviewTextPlaceholder: "What did the client say?",
-    addReviewBtn: "Add review",
-  },
-
-  toast: {
-    selectCompletedJob: "Select a completed job",
-    clientNoPhone: "This client has no phone number on file",
-    noGoogleUrlConfigured: "Add your Google review link in Settings before sending requests",
-    sendFailed: "Failed to send, please try again",
-    requestSent: "Review request SMS sent to {{name}}",
-    nameRatingRequired: "Name and rating required",
-    reviewAdded: "Review added",
-    markedPushedToGoogle: "Marked as pushed to Google",
-  },
-
-  fallback: {
-    client: "client",
-    clientBracket: "[client]",
-    work: "work",
-  },
-
-  stats: {
-    reviewsCount: "{{count}} review(s)",
-  },
-
-  metrics: {
-    verifiedReviews: "Verified reviews",
-    onYourProfile: "On your profile",
-    googleClicks: "Google clicks",
-    tappedGoogleLink: "Tapped Google link",
-    jobsWithNoReview: "Jobs with no review",
-    couldRequestReview: "Could request a review",
-  },
-
-  googleCta: {
-    title: "Connect your Google Business Profile",
-    description: "Paste your Google review link so SMS requests take clients directly to Google.",
-    openBtn: "Open Google Business",
-  },
-
-  list: {
-    empty: "No reviews yet",
-    requestFirst: "Request your first review",
-    verifiedBadge: "Verified",
-    onGoogleBadge: "On Google",
-    askClientToPostBtn: "Ask client to post to Google",
-  },
-  },
-
   // ── Certifications ───────────────────────────────────
   certifications: {
     title:        "Certifications",
@@ -2080,13 +1987,16 @@ home: {
       about: "About Us",
       faq: "FAQ",
       contact: "Contact",
+      privacy: "Privacy",
+      terms: "Terms",
+      legal: "Legal Notice",
   },
   hero: {
     titleLine1: "Run your entire business",
     titleLine2: "on auto-pilot.",
     sub: "One platform for trade professionals to manage bookings, quotes, invoices, payments, and clients.",
-    ctaPrimary: "Start Free Trial",
-    ctaSecondary: "View Pricing",
+    ctaPrimary: "Get Started Free",
+    ctaSecondary: "See Features",
     stats: {
       fee: "Platform fee",
       setup: "Instant setup",
@@ -2101,7 +2011,7 @@ home: {
       title: "Get booked while you sleep",
       desc: "Give your clients an easy online booking experience. Set your working hours, service list, and rates.",
       bullet1: "Instant online scheduling widget",
-      bullet2: "Automated SMS and email reminders",
+      bullet2: "Automated email reminders",
       bullet3: "Custom booking forms per service",
       visual: {
         name: "John Miller",
@@ -2132,7 +2042,7 @@ home: {
       desc: "Create and send professional invoices directly from your phone or desktop.",
       bullet1: "Instant PDF invoice generation",
       bullet2: "Automatic payment tracking & reminders",
-      bullet3: "Export directly to accounting software",
+      bullet3: "Downloadable PDF invoices",
       visual: {
         number: "Invoice #INV-2026-104",
         status: "Paid",
@@ -2144,17 +2054,16 @@ home: {
     },
     payments: {
       tabLabel: "Payments",
-      title: "Accept payments anywhere",
-      desc: "Collect deposits upfront or process card payments on-site with zero hassle.",
-      bullet1: "Integrated card payments & Apple Pay",
-      bullet2: "Automatic bank reconciliation",
-      bullet3: "Instant payout option available",
+      title: "Get paid online, securely",
+      desc: "Clients pay directly by card through Stripe, our payment processor, or by bank transfer to your IBAN. Vimen never holds your funds.",
+      bullet1: "Secure card payments via Stripe",
+      bullet2: "Or direct bank transfer to your IBAN",
+      bullet3: "Automatic payment status tracking",
       visual: {
-        title: "Payout Breakdown",
+        title: "Payment Breakdown",
         amount: "Gross Amount",
-        processing: "Processing Fee",
-        platform: "Platform Fee",
-        receive: "NET PAYOUT",
+        processing: "Stripe Fee",
+        receive: "YOU RECEIVE",
       },
     },
     clients: {
@@ -2162,7 +2071,7 @@ home: {
       title: "Keep your client history organized",
       desc: "Every job, message, invoice, and note attached to your client profile.",
       bullet1: "Full job & revenue history",
-      bullet2: "1-touch call and navigation",
+      bullet2: "Centralized contact details & notes",
       bullet3: "Notes & property photos storage",
       visual: {
         title: "Top Clients",
@@ -2175,8 +2084,8 @@ home: {
     growth: {
       tabLabel: "Growth & Reviews",
       title: "Turn happy clients into 5-star Google reviews",
-      desc: "Automatically prompt satisfied customers for Google reviews after job completion.",
-      bullet1: "Automated review request links",
+      desc: "A review request email is sent automatically to your client's registered email address once a job is completed.",
+      bullet1: "Automated review request email",
       bullet2: "Boost your Google Maps ranking",
       bullet3: "Client referral reward tracking",
       visual: {
@@ -2188,17 +2097,17 @@ home: {
     },
   },
   pricingTeaser: {
-    eyebrow: "TRANSPARENT PRICING",
-    title: "Simple plans that grow with you",
-    sub: "No contracts, no surprise charges. Cancel or change your subscription anytime.",
-    cta: "See Full Pricing & Plans",
-    freeTitle: "100% free to start",
+    eyebrow: "100% FREE",
+    title: "Every feature, at no cost",
+    sub: "No subscription, no contract, no credit card required.",
+    cta: "Create my free account",
+    freeTitle: "100% free, no hidden catch",
     freeSub: "Everything you need to run your business — no credit card required.",
   },
   finalCta: {
     title: "Ready to get started?",
     sub: "Join thousands of tradespeople saving over 5 hours every week on admin.",
-    cta: "Start Your Free Trial",
+    cta: "Create my free account",
   },
   footer: {
     contact: "Contact",
@@ -2487,6 +2396,7 @@ invoices: {
   selectClient: "Select a client...",
   noneOption: "None / Standalone Invoice",
   viewButton: "View",
+  downloadPdf: "Download PDF",
   paidButton: "Paid",
 
   // Toasts & Notifications
@@ -3278,77 +3188,6 @@ referrals: {
   },
 },
 
-reviews: {
-  title: "Client Reviews",
-  addManuallyBtn: "Add manually",
-  requestReviewBtn: "Request review",
-
-  toast: {
-    selectCompletedJob: "Please select a completed job",
-    requestSent: "Review request sent to {{name}}",
-    nameRatingRequired: "Please enter client name and select a rating",
-    reviewAdded: "Review added",
-    markedPushedToGoogle: "Marked as pushed to Google",
-  },
-
-  fallback: {
-    clientBracket: "[Client Name]",
-    work: "the work",
-  },
-
-  requestModal: {
-    title: "Request a Review",
-    intro: "Send a quick review request link to a client after completing a job. Happy clients leave great reviews that win more business.",
-    completedJobLabel: "Completed Job",
-    selectJobPlaceholder: "Select a job",
-    smsPreviewTitle: "Message Preview",
-    smsTemplate: "Hi {{clientName}}, thanks for choosing {{profileName}}! If you were happy with {{jobTitle}}, would you mind taking 60 seconds to leave us a review? {{urlPreview}}...",
-    cancel: "Cancel",
-    sendSmsBtn: "Send Request",
-  },
-
-  manualModal: {
-    title: "Add Review Manually",
-    intro: "Record a review received verbally, via WhatsApp, or on paper.",
-    clientNameLabel: "Client Name",
-    ratingLabel: "Rating",
-    reviewTitleLabel: "Review Title (optional)",
-    reviewTitlePlaceholder: "e.g. Excellent work on our kitchen",
-    reviewTextLabel: "Review Text (optional)",
-    reviewTextPlaceholder: "What did the client say?",
-    addReviewBtn: "Add review",
-  },
-
-  stats: {
-    reviewsCount_zero: "No reviews yet",
-    reviewsCount_one: "Based on {{count}} review",
-    reviewsCount_other: "Based on {{count}} reviews",
-  },
-
-  metrics: {
-    verifiedReviews: "Verified Reviews",
-    onYourProfile: "On your profile",
-    googleClicks: "Google Clicks",
-    tappedGoogleLink: "Tapped Google link",
-    jobsWithNoReview: "Unreviewed Jobs",
-    couldRequestReview: "Completed, no review yet",
-  },
-
-  googleCta: {
-    title: "Boost your Google ranking",
-    description: "Link your Google Business Profile to direct happy clients straight to your Google review page.",
-    openBtn: "Open Google Business",
-  },
-
-  list: {
-    empty: "No reviews yet",
-    requestFirst: "Request your first review",
-    verifiedBadge: "Verified",
-    onGoogleBadge: "Pushed to Google",
-    askClientToPostBtn: "Mark as posted on Google",
-  },
-},
-
 settings: {
   title: "Settings",
 
@@ -3598,15 +3437,15 @@ faqPage: {
   title: "Frequently asked questions",
   sub: "Everything you need to know about how Vimen works.",
   q1: { question: "What is Vimen", answer: "Vimen is a booking, quoting and invoicing platform for professionals. Manage your clients, get booked online, send quotes and invoices, and get paid, all from one place." },
-  q2: { question: "Do I need a subscription to send invoices", answer: "No. You can invoice and get paid on the Free plan. A two percent fee applies to payments processed through Vimen Pay." },
-  q3: { question: "How does Vimen Pay work", answer: "Vimen Pay lets clients pay your invoices online by card. Funds are processed securely and paid out to your bank account automatically, minus a flat two percent fee." },
+  q2: { question: "Do I need a subscription to send invoices", answer: "No. Vimen is 100% free: you can create quotes, send invoices, and get paid with no subscription or hidden fees." },
+  q3: { question: "How do payments work", answer: "Clients pay directly by card through Stripe, our payment processor, or by bank transfer to your IBAN. Vimen never holds your funds and never takes a commission." },
   q4: { question: "Can clients pay by bank transfer instead", answer: "Yes. Every invoice can show your bank details as an alternative to card payment, with no fee attached." },
-  q5: { question: "What is the difference between Free and Unlimited", answer: "Free covers up to five clients and ten invoices a month. Unlimited removes those limits and adds a custom booking page, automatic review requests and a referral programme." },
-  q6: { question: "Can I cancel at any time", answer: "Yes. There is no contract. You can move back to the Free plan whenever you want." },
+  q5: { question: "Are there limits on clients or invoices", answer: "No. Vimen is completely free and unlimited: unlimited clients, invoices, quotes and bookings." },
+  q6: { question: "Is there a subscription or contract to cancel", answer: "No, there is no subscription and no contract. Vimen is free from the start." },
   q7: { question: "Do you support quotes and electronic signatures", answer: "Yes. Build a quote with line items for labour and materials, send it to your client, and they can accept it with an electronic signature directly on the quote." },
   q8: { question: "What is the marketplace", answer: "A place where professionals can post demands, sell a business, hire subcontractors, or sell surplus materials to each other." },
   q9: { question: "Is my data secure", answer: "Your data is stored securely and access is protected by authentication on every account. Payment details are handled entirely by our payment processor and never stored on our servers." },
-  q10: { question: "How do I get support", answer: "Free plan users have access to community support. Unlimited plan users get priority support by email." },
+  q10: { question: "How do I get support", answer: "You can reach us directly through the contact form or by email, and our team will get back to you quickly." },
   finalCta: { title: "Still have a question", cta: "Contact us" },
 },
 
@@ -3616,12 +3455,12 @@ aboutPage: {
   sub: "Booking, quoting, invoicing and payments, built for professionals who would rather spend their time on clients than on paperwork.",
   paragraph1: "Vimen was built for professionals who spend more time chasing paperwork than doing the work they are good at. Booking, quoting, invoicing and getting paid should not require five different tools.",
   paragraph2: "Vimen brings booking, quotes, invoices and payments into one place, so professionals can spend less time on admin and more time with clients.",
-  paragraph3: "We keep pricing simple, fees transparent and support responsive, because that is what we would want from a tool we use every day.",
+  paragraph3: "Vimen is 100% free with no hidden fees, because that is what we would want from a tool we use every day.",
   valuesTitle: "What we care about",
-  value1: { title: "Simple pricing", desc: "Two plans, clear fees, no hidden costs." },
+  value1: { title: "100% free", desc: "No subscription, no hidden fees." },
   value2: { title: "Built for every professional", desc: "Whatever your trade or practice, Vimen adapts to how you work." },
   value3: { title: "Support that responds", desc: "Real answers from a team that uses the product too." },
-  finalCta: { title: "Ready to get started", cta: "Start free" },
+  finalCta: { title: "Ready to get started", cta: "Create my free account" },
 },
 
 contactPage: {
@@ -3643,41 +3482,38 @@ contactPage: {
 },
 
 reviews: {
-  // Manual Modal placeholders & text visible in image_67ddc4.png
-  manualModal: {
-    title: "Add review manually",
-    intro: "Record a review received live, via WhatsApp, or on paper.",
-    clientNameLabel: "Client name",
-    clientNamePlaceholder: "e.g., John Doe",
-    ratingLabel: "Rating",
-    ratingDisplay: "{{rating}} of {{total}} stars",
-    reviewTitleLabel: "Review title (optional)",
-    reviewTitlePlaceholder: "e.g., Great work in our kitchen",
-    reviewTextLabel: "Review text (optional)",
-    reviewTextPlaceholder: "What did the client say?",
-    addReviewBtn: "Add review"
-  },
-  // Stats / Metrics & CTA visible in image_67e0ad.png
-  stats: {
-    reviewsCount: "{{count}} reviews"
-  },
-  metrics: {
-    verifiedReviews: "Verified reviews",
-    onYourProfile: "On your profile",
-    googleClicks: "Google clicks",
-    tappedGoogleLink: "Clicked on Google link",
-    jobsWithNoReview: "Jobs without review",
-    couldRequestReview: "Completed, no request sent"
-  },
-  googleCta: {
-    title: "Improve your Google ranking",
-    description: "Link your Google Business Profile to redirect satisfied clients directly to your Google review page.",
-    openBtn: "Open Google Business"
-  }
-},
+  title: "Client Reviews",
+  addManuallyBtn: "Add manually",
+  requestReviewBtn: "Request review",
 
-reviews: {
-  // Manual Modal placeholders & text visible in image_67ddc4.png
+  toast: {
+    selectCompletedJob: "Please select a completed job",
+    noContactInfo: "This client has no email address on file",
+    sendingRequest: "Sending request...",
+    requestSent: "Review request emailed to {{name}}",
+    requestFailed: "Failed to send, please try again",
+    nameRatingRequired: "Please enter client name and select a rating",
+    reviewAdded: "Review added",
+    markedPushedToGoogle: "Marked as pushed to Google",
+  },
+
+  fallback: {
+    clientBracket: "[Client Name]",
+    work: "the work",
+  },
+
+  requestModal: {
+    title: "Request a Review",
+    intro: "Select a completed job. An email will be sent automatically to the client's registered address, with a direct link to your Google profile.",
+    completedJobLabel: "Completed Job",
+    selectJobPlaceholder: "Select a job",
+    emailPreviewTitle: "Email preview",
+    emailTemplate: "Hi {{clientName}}, thanks for choosing {{profileName}}! If you were happy with {{jobTitle}}, would you mind taking 60 seconds to leave us a Google review?",
+    noEmailWarning: "No email address on file for this client.",
+    cancel: "Cancel",
+    sendEmailBtn: "Send by email",
+  },
+
   manualModal: {
     title: "Add review manually",
     intro: "Record a review received live, via WhatsApp, or on paper.",
@@ -3691,10 +3527,11 @@ reviews: {
     reviewTextPlaceholder: "What did the client say?",
     addReviewBtn: "Add review"
   },
-  // Stats / Metrics & CTA visible in image_67e0ad.png
+
   stats: {
     reviewsCount: "{{count}} reviews"
   },
+
   metrics: {
     verifiedReviews: "Verified reviews",
     onYourProfile: "On your profile",
@@ -3703,11 +3540,20 @@ reviews: {
     jobsWithNoReview: "Jobs without review",
     couldRequestReview: "Completed, no request sent"
   },
+
   googleCta: {
     title: "Improve your Google ranking",
     description: "Link your Google Business Profile to redirect satisfied clients directly to your Google review page.",
     openBtn: "Open Google Business"
-  }
+  },
+
+  list: {
+    empty: "No reviews yet",
+    requestFirst: "Request your first review",
+    verifiedBadge: "Verified",
+    onGoogleBadge: "Pushed to Google",
+    askClientToPostBtn: "Mark as posted on Google",
+  },
 },
 
 publicQuote: {

@@ -34,11 +34,11 @@ En créant un compte ou en utilisant le Service, tu acceptes d'être lié par ce
       },
       {
         h: "3. Abonnement et facturation",
-        b: `Vimen propose un plan gratuit et un plan payant (« Pro ») [À COMPLÉTER — détail des plans, prix]. Les abonnements payants sont facturés [À COMPLÉTER — mensuellement/annuellement], renouvelés automatiquement sauf résiliation. Tu peux résilier à tout moment depuis les paramètres ; la résiliation prend effet à la fin de la période déjà payée. [À COMPLÉTER — politique de remboursement.]`,
+        b: `Vimen est 100% gratuit : il n'existe aucun abonnement payant, aucun forfait, ni aucune limite sur le nombre de clients, factures, devis ou rendez-vous. Aucune information de carte bancaire n'est requise pour créer un compte ou utiliser le Service.`,
       },
       {
         h: "4. Paiements et versements (Stripe)",
-        b: `Les paiements et versements sont traités par Stripe, notre prestataire de paiement — en les utilisant, tu acceptes aussi les conditions de Stripe. Tu es seul responsable de déclarer et payer les impôts et cotisations applicables à tes revenus. [À COMPLÉTER — commission éventuelle prélevée par Vimen.] En cas de litige, rétrofacturation ou fraude, les fonds concernés peuvent être temporairement suspendus le temps de l'investigation.`,
+        b: `Lorsque tu utilises la fonctionnalité de paiement en ligne, les paiements de tes propres clients et les versements vers ton compte bancaire sont traités directement par Stripe, notre prestataire de paiement — en les utilisant, tu acceptes aussi les conditions de Stripe. Vimen ne prélève aucune commission sur ces paiements et ne détient jamais tes fonds. Tu peux également indiquer tes coordonnées bancaires (IBAN) sur tes factures pour permettre à tes clients de te régler par virement direct, sans passer par Stripe. Tu es seul responsable de déclarer et payer les impôts et cotisations applicables à tes revenus. En cas de litige, rétrofacturation ou fraude concernant un paiement Stripe, les fonds concernés peuvent être temporairement suspendus par Stripe le temps de l'investigation.`,
       },
       {
         h: "5. Ta responsabilité concernant les données de tes clients",
@@ -78,7 +78,7 @@ En créant un compte ou en utilisant le Service, tu acceptes d'être lié par ce
       },
       {
         h: "14. Résiliation",
-        b: `Tu peux supprimer ton compte à tout moment. Nous pouvons suspendre ou résilier ton accès en cas de violation, non-paiement ou inactivité prolongée [À COMPLÉTER], avec notification préalable sauf urgence (fraude, sécurité). Les dispositions sur la propriété intellectuelle, la responsabilité et le droit applicable survivent à la résiliation.`,
+        b: `Tu peux supprimer ton compte à tout moment. Nous pouvons suspendre ou résilier ton accès en cas de violation de ces CGU ou d'inactivité prolongée [À COMPLÉTER — durée], avec notification préalable sauf urgence (fraude, sécurité). Les dispositions sur la propriété intellectuelle, la responsabilité et le droit applicable survivent à la résiliation.`,
       },
       {
         h: "15. Modifications des CGU",
@@ -111,11 +111,11 @@ By creating an account or using the Service, you agree to be bound by these Term
       },
       {
         h: "3. Subscription and billing",
-        b: `Vimen offers a free plan and a paid ("Pro") plan [TO COMPLETE — plan details, pricing]. Paid subscriptions are billed [TO COMPLETE — monthly/annually] and renew automatically unless cancelled. You may cancel anytime from your settings; cancellation takes effect at the end of the paid period. [TO COMPLETE — refund policy.]`,
+        b: `Vimen is 100% free: there is no paid subscription, no plan, and no limit on the number of clients, invoices, quotes, or bookings. No credit card information is required to create an account or use the Service.`,
       },
       {
         h: "4. Payments and payouts (Stripe)",
-        b: `Payments and payouts are processed by Stripe — by using this feature, you also agree to Stripe's terms. You are solely responsible for declaring and paying taxes on your income. [TO COMPLETE — any commission charged by Vimen.] In case of a dispute, chargeback, or fraud, relevant funds may be temporarily held pending investigation.`,
+        b: `When you use the online payment feature, payments from your own clients and payouts to your bank account are processed directly by Stripe, our payment processor — by using this feature, you also agree to Stripe's terms. Vimen charges no commission on these payments and never holds your funds. You may also display your bank details (IBAN) on your invoices so clients can pay you by direct bank transfer instead. You are solely responsible for declaring and paying taxes on your income. In case of a dispute, chargeback, or fraud related to a Stripe payment, the relevant funds may be temporarily held by Stripe pending investigation.`,
       },
       {
         h: "5. Your responsibility regarding your clients' data",
@@ -155,7 +155,7 @@ By creating an account or using the Service, you agree to be bound by these Term
       },
       {
         h: "14. Termination",
-        b: `You may delete your account anytime. We may suspend or terminate access for violations, non-payment, or prolonged inactivity [TO COMPLETE], with prior notice except in urgent cases (fraud, security). Provisions on IP, liability, and governing law survive termination.`,
+        b: `You may delete your account anytime. We may suspend or terminate access for violating these Terms or prolonged inactivity [TO COMPLETE — duration], with prior notice except in urgent cases (fraud, security). Provisions on IP, liability, and governing law survive termination.`,
       },
       {
         h: "15. Changes to these Terms",
