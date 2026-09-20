@@ -176,19 +176,25 @@ Deno.serve(async (req) => {
   try {
     switch (event.type) {
 
-      // ── Client paid an invoice ──────────────────────
+      // ── Client paid an invoice, or a booking deposit ──
       case "payment_intent.succeeded": {
         const pi = event.data.object as {
           id: string;
           amount: number;
           latest_charge?: string;
-          metadata?: { invoice_id?: string; profile_id?: string; client_name?: string };
+          metadata?: {
+            invoice_id?: string;
+            booking_request_id?: string;
+            profile_id?: string;
+            client_name?: string;
+          };
         };
 
         const invoiceId = pi.metadata?.invoice_id;
+        const bookingRequestId = pi.metadata?.booking_request_id;
         const profileId = pi.metadata?.profile_id;
 
-        if (!invoiceId || !profileId) {
+        if (!profileId || (!invoiceId && !bookingRequestId)) {
           console.warn("payment_intent.succeeded: missing metadata", pi.id);
           break;
         }
@@ -196,6 +202,31 @@ Deno.serve(async (req) => {
         const grossAmount = pi.amount / 100; // Stripe stores in pence
         const { stripeFee, netAmount } = calculateFees(grossAmount);
 
+        // ── Acompte de réservation ──
+        if (bookingRequestId) {
+          await supabase.from("booking_requests")
+            .update({ deposit_paid: true, deposit_paid_at: new Date().toISOString() })
+            .eq("id", bookingRequestId);
+
+          await supabase.from("payment_transactions").insert({
+            profile_id:               profileId,
+            booking_request_id:      bookingRequestId,
+            stripe_payment_intent_id: pi.id,
+            stripe_charge_id:         pi.latest_charge,
+            gross_amount:             grossAmount,
+            stripe_fee:               stripeFee,
+            net_amount:               netAmount,
+            status:                   "completed",
+            description:              "Booking deposit",
+            client_name:              pi.metadata?.client_name ?? "",
+            paid_at:                  new Date().toISOString(),
+          });
+
+          console.log(`✓ Booking deposit recorded: £${grossAmount} (Stripe fee: £${stripeFee}, net: £${netAmount})`);
+          break;
+        }
+
+        // ── Facture ──
         const { data: invoice } = await supabase
           .from("invoices")
           .select("*, client:clients(id,name,email)")
@@ -221,18 +252,6 @@ Deno.serve(async (req) => {
         await supabase.from("invoices")
           .update({ status: "paid", paid_at: new Date().toISOString() })
           .eq("id", invoiceId);
-
-        await supabase.functions.invoke("send-sms", {
-          body: {
-            type: "invoice_paid",
-            profileId,
-            data: {
-              invoiceNumber: invoice?.invoice_number ?? invoiceId,
-              amount:        grossAmount,
-              clientName:    invoice?.client?.name ?? "your client",
-            },
-          },
-        });
 
         console.log(`✓ Payment recorded: £${grossAmount} (Stripe fee: £${stripeFee}, net: £${netAmount})`);
         break;
