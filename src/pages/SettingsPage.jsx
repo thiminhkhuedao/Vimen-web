@@ -1,6 +1,7 @@
 // src/pages/SettingsPage.jsx
 
 import { useState, useEffect, useContext } from "react";
+import { useAuth } from "@clerk/clerk-react";
 import { toast } from "react-hot-toast";
 import { updateProfile, uploadImage, getStripeConnectUrl } from "../lib/db";
 import { T } from "../styles/tokens";
@@ -29,6 +30,7 @@ const INPUT_STYLE = {
 
 export default function SettingsPage({ profile, setProfile, dispatch }) {
   const { t, lang, setLanguage } = useTranslation();
+  const { getToken } = useAuth();
   const context = useContext(AppCtx);
   
   const activeDispatch = dispatch || context?.dispatch;
@@ -56,6 +58,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
     notif_email_booking: profile?.notif_email_booking ?? true,
     notif_weekly_digest: profile?.notif_weekly_digest ?? true,
     notif_overdue_reminder: profile?.notif_overdue_reminder ?? true,
+    show_iban_on_documents: profile?.show_iban_on_documents ?? true,
+    show_stripe_link_on_documents: profile?.show_stripe_link_on_documents ?? true,
     reminder_frequency_days: profile?.reminder_frequency_days ?? 7,
     reminder_max_count: profile?.reminder_max_count ?? 5,
     extra_fields: profile?.extra_fields ?? {},
@@ -82,6 +86,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         notif_email_booking: profile.notif_email_booking ?? true,
         notif_weekly_digest: profile.notif_weekly_digest ?? true,
         notif_overdue_reminder: profile.notif_overdue_reminder ?? true,
+        show_iban_on_documents: profile.show_iban_on_documents ?? true,
+        show_stripe_link_on_documents: profile.show_stripe_link_on_documents ?? true,
         reminder_frequency_days: profile.reminder_frequency_days ?? 7,
         reminder_max_count: profile.reminder_max_count ?? 5,
         extra_fields: profile.extra_fields ?? {},
@@ -142,6 +148,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         notif_email_booking: form.notif_email_booking,
         notif_weekly_digest: form.notif_weekly_digest,
         notif_overdue_reminder: form.notif_overdue_reminder,
+        show_iban_on_documents: form.show_iban_on_documents,
+        show_stripe_link_on_documents: form.show_stripe_link_on_documents,
         reminder_frequency_days: form.reminder_frequency_days,
         reminder_max_count: form.reminder_max_count,
         extra_fields: form.extra_fields,
@@ -185,12 +193,12 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
 
   /* ── PREMIER ENDROIT STRIPE CONNECT (Onglet Payment) ── */
   async function handleConnectStripe() {
-    const targetId = profile?.id || profile?.clerk_id;
     const returnUrl = `${window.location.origin}/settings?tab=payment&stripe_return=1`;
 
     toast.loading(t("settings.redirectingStripe") || "Redirection vers Stripe...");
     try {
-      const { data, error } = await getStripeConnectUrl(targetId, returnUrl);
+      const token = await getToken();
+      const { data, error } = await getStripeConnectUrl(token, returnUrl);
       if (error || !data?.url) throw new Error(error?.message || "URL Stripe manquante");
       toast.dismiss();
       window.location.href = data.url;
@@ -418,8 +426,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
           <Card>
             {/* Déplacé depuis l'ancien onglet "plan" lors du retrait
                 temporaire de l'abonnement Pro — Stripe Connect reste actif */}
-            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>Connexion Stripe Connect</div>
-            <div style={{ fontSize: 13, color: T.muted, marginBottom: 12 }}>Associe ton compte Stripe pour recevoir tes versements.</div>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{t("settings.stripeConnectTitle")}</div>
+            <div style={{ fontSize: 13, color: T.muted, marginBottom: 12 }}>{t("settings.stripeConnectSub")}</div>
             <Btn variant="ghost" size="sm" onClick={handleConnectStripe}>
               {t("settings.connectStripe") || "Connecter mon compte Stripe"}
             </Btn>
@@ -470,6 +478,20 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
             </FieldRow>
 
             <Divider />
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{t("settings.documentVisibility.title")}</div>
+            <p style={{ fontSize: 13, color: T.muted, marginBottom: 4 }}>{t("settings.documentVisibility.sub")}</p>
+            <SettingRow
+              label={t("settings.documentVisibility.showIban")}
+              sub={t("settings.documentVisibility.showIbanSub")}
+              k="show_iban_on_documents"
+            />
+            <SettingRow
+              label={t("settings.documentVisibility.showStripe")}
+              sub={t("settings.documentVisibility.showStripeSub")}
+              k="show_stripe_link_on_documents"
+            />
+
+            <Divider />
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t("settings.invoiceDefaults")}</div>
             <Field label={t("settings.paymentTerms")} htmlFor="payment-terms">
               <select id="payment-terms" style={INPUT_STYLE} value={form.payment_terms} onChange={fld("payment_terms")}>
@@ -491,7 +513,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
             </Field>
 
             <Divider />
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>Stripe</div>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{t("settings.stripeTitle")}</div>
             <div style={{ fontSize: 13, color: T.muted, marginBottom: 14 }}>{t("settings.stripeDesc")}</div>
             
             <Btn variant="ghost" onClick={handleConnectStripe}>
