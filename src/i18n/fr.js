@@ -3273,6 +3273,9 @@ settings: {
   },
   changePhoto: "Changer la photo",
   removePhoto: "Retirer",
+  avatarUploadFailed: "Échec de l'envoi de la photo, réessaie.",
+  avatarNoProfile: "Profil non chargé, réessaie dans un instant.",
+  uploadingPhoto: "Envoi...",
 },
 
 nav: {
