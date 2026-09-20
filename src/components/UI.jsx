@@ -182,9 +182,25 @@ export function Badge({ color = "gray", children }) {
 }
 
 const AV_COLORS = ["#E8500A", "#1A7F4B", "#7C3AED", "#0369A1", "#B45309", "#BE185D", "#0F766E", "#C2410C"];
-export function Avatar({ name = "?", size = 36, index = 0 }) {
+export function Avatar({ name = "?", size = 36, index = 0, src = null }) {
+  const [failed, setFailed] = useState(false);
   const letters = (name || "?").split(" ").filter(Boolean).map(w => w[0]).join("").toUpperCase().slice(0, 2);
   const color = AV_COLORS[index % AV_COLORS.length];
+
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={name}
+        onError={() => setFailed(true)}
+        style={{
+          width: size, height: size, borderRadius: "50%",
+          objectFit: "cover", flexShrink: 0,
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{
       width: size, height: size, borderRadius: "50%", background: color,
