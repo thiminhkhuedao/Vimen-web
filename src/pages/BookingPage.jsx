@@ -47,7 +47,7 @@ export default function BookingPage({ profile }) {
   const { t } = useTranslation();
   const { getToken } = useAuth();
   const fmt = n => formatCurrency(n, profile?.currency);
-  const terms = getTerms(profile?.trade);
+  const terms = getTerms(profile?.trade, t);
   const verticalColor = getVerticalColor(profile?.trade);
   const vertical = getVerticalForProfession(profile?.trade);
 
@@ -320,7 +320,7 @@ export default function BookingPage({ profile }) {
                 <div style={{ flex: 1, background: T.surface2, borderRadius: T.r.md, padding: "14px 18px" }}>
                   <div style={{ fontSize: 11, color: T.muted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>{terms.rateLabel}</div>
                   <div style={{ fontSize: 22, fontWeight: 800, color: profile?.hourly_rate > 0 ? T.brand : T.muted }}>
-                    {profile?.hourly_rate > 0 ? <>{fmt(profile.hourly_rate)}<span style={{ fontSize: 13, fontWeight: 400, color: T.muted }}>{vertical.id === "beauty" ? "" : "/hr"}</span></> : ""}
+                    {profile?.hourly_rate > 0 ? <>{fmt(profile.hourly_rate)}<span style={{ fontSize: 13, fontWeight: 400, color: T.muted }}>{vertical.id === "beauty" ? "" : t("booking.perHourSuffix")}</span></> : ""}
                   </div>
                 </div>
                 <div style={{ flex: 1, background: T.surface2, borderRadius: T.r.md, padding: "14px 18px" }}>
