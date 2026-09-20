@@ -1603,38 +1603,7 @@ export default {
   },
 
 
-pricingPage: {
-  eyebrow: "Tarifs",
-  title: "Une tarification simple qui évolue avec vous",
-  sub: "Commencez gratuitement. Passez à Illimité quand vous êtes prêt pour plus.",
-  mostPopular: "Le plus choisi",
-  perMonth: "/mois",
-  feeNote: "Des frais de traitement de deux pour cent s'appliquent aux paiements effectués via Vimen Pay, quel que soit le forfait.",
-  free: {
-    name: "Gratuit",
-    sub: "Tout ce qu'il faut pour démarrer",
-    cta: "Essai gratuit",
-    feature1: "Jusqu'à cinq clients",
-    feature2: "Jusqu'à dix factures par mois",
-    feature3: "Une page de réservation",
-    feature4: "Support communautaire",
-  },
-  unlimited: {
-    name: "Illimité",
-    sub: "Pour les activités prêtes à grandir",
-    cta: "Essai gratuit",
-    feature1: "Clients illimités",
-    feature2: "Factures et devis illimités",
-    feature3: "Page de réservation personnalisée",
-    feature4: "Demandes d'avis automatiques",
-    feature5: "Programme de parrainage",
-    feature6: "Support prioritaire",
-  },
-  finalCta: {
-    title: "Commencez gratuitement, passez à un forfait supérieur quand vous êtes prêt",
-    cta: "Essai gratuit",
-  },
-},
+
 
 errors: {
     sectionUnavailable: "Cette section est actuellement indisponible.",
@@ -1831,79 +1800,7 @@ loading: {
   },
 
 
-  pricingPage: {
-    nav: {
-      signIn: "Se connecter",
-      signUp: "Essai gratuit",
-    },
-    hero: {
-      title: "Tarifs simples et transparents",
-      subtitle: "Tout ce dont vous avez besoin pour gérer votre entreprise d'artisanat. Sans frais cachés ni engagement.",
-    },
-    billing: {
-      monthly: "Facturation mensuelle",
-      annual: "Facturation annuelle",
-      saveDiscount: "-20%",
-    },
-    popularBadge: "Le plus populaire",
-    monthAbbr: "mois",
-    plans: {
-      solo: {
-        name: "Indépendant",
-        tagline: "Idéal pour les artisans seuls qui démarrent leur activité.",
-        feat1: "Devis & Factures illimités",
-        feat2: "Gestion clients & Historique",
-        feat3: "Paiements par carte en ligne",
-        feat4: "Rappels SMS & E-mail",
-        feat5: "Planning de chantier de base",
-        cta: "Essayer gratuitement 14 jours",
-      },
-      pro: {
-        name: "Professionnel",
-        tagline: "Pour les artisans établis qui veulent tout automatiser.",
-        feat1: "Tout le forfait Indépendant",
-        feat2: "Page de réservation en ligne",
-        feat3: "Annonces sur la Marketplace",
-        feat4: "Relances de paiement automatiques",
-        feat5: "Suivi des certifications & Alertes",
-        feat6: "Support prioritaire",
-        cta: "Essayer gratuitement 14 jours",
-      },
-      team: {
-        name: "Équipe & Entreprise",
-        tagline: "Pour les entreprises du bâtiment avec sous-traitants et équipes.",
-        feat1: "Tout le forfait Professionnel",
-        feat2: "Jusqu'à 5 membres d'équipe",
-        feat3: "Accès sous-traitants dédiés",
-        feat4: "Rapports financiers avancés",
-        feat5: "Gestion multi-métiers",
-        feat6: "Gestionnaire de compte dédié",
-        cta: "Contacter l'équipe",
-      },
-    },
-    faq: {
-      title: "Foire aux questions",
-      q1: "Y a-t-il un essai gratuit ?",
-      a1: "Oui, vous pouvez tester Vimen gratuitement pendant 14 jours sans aucune restriction. Aucune carte bancaire requise.",
-      q2: "Puis-je changer de forfait à tout moment ?",
-      a2: "Absolument ! Vous pouvez faire évoluer, réduire ou annuler votre abonnement à tout moment depuis vos paramètres.",
-      q3: "Comment fonctionnent les paiements clients ?",
-      a3: "Grâce à notre intégration Stripe Express, vos clients règlent directement vos devis et factures en ligne par carte bancaire.",
-      q4: "Y a-t-il des commissions cachées ?",
-      a4: "Vimen ne prend aucune commission sur vos chantiers. Seuls les frais bancaires standard de Stripe s'appliquent.",
-    },
-    finalCta: {
-      title: "Prêt à simplifier la gestion de vos chantiers ?",
-      cta: "Commencer dès maintenant",
-    },
-    eyebrow: "Tarifs",
-  limitModal: {
-    title: "Limite atteinte",
-    description: "Tu as atteint la limite de ton offre actuelle. Passe à l'offre supérieure pour continuer.",
-    btn: "Voir les offres",
-    cancel: "Annuler",
-  },
-},
+
   home: {
     nav: {
       features: "Fonctionnalités",
@@ -1915,23 +1812,7 @@ loading: {
     },
   },
 
-  "pricingPage": {
-    "title": "Une tarification simple et transparente",
-    "subtitle": "Choisissez le forfait adapté à votre activité. Aucun frais caché.",
-    "monthly": "Mensuel",
-    "annual": "Annuel (-20%)",
-    "eyebrow": "Tarifs",
-    "finalCta": {
-      "title": "Prêt à simplifier votre gestion au quotidien ?",
-      "cta": "Créer mon compte gratuit"
-    },
-    "limitModal": {
-      "title": "Limite atteinte",
-      "description": "Tu as atteint la limite de ton offre actuelle. Passe à l'offre supérieure pour continuer.",
-      "btn": "Voir les offres",
-      "cancel": "Annuler"
-    }
-  },
+
   "home": {
     "nav": {
       "features": "Fonctionnalités",
@@ -1943,130 +1824,7 @@ loading: {
     }
   },
 
-"pricingPage": {
-  "nav": {
-    "signIn": "Se connecter",
-    "signUp": "S'inscrire"
-  },
-  "hero": {
-    "title": "Une tarification simple et transparente",
-    "subtitle": "Choisissez le forfait idéal pour développer votre activité. Sans frais cachés."
-  },
-  "billing": {
-    "monthly": "Mensuel",
-    "annual": "Annuel",
-    "saveDiscount": "-20%"
-  },
-  "popularBadge": "Populaire",
-  "monthAbbr": "mois",
-  "plans": {
-    "solo": {
-      "name": "Solo",
-      "tagline": "Idéal pour les indépendants qui débutent.",
-      "feat1": "Jusqu'à 15 clients",
-      "feat2": "Factures et devis illimités",
-      "feat3": "Prise de rendez-vous en ligne",
-      "feat4": "Rappels automatiques par e-mail",
-      "feat5": "Support standard",
-      "cta": "Commencer gratuitement"
-    },
-    "pro": {
-      "name": "Pro",
-      "tagline": "Pour les professionnels en plein développement.",
-      "feat1": "Clients illimités",
-      "feat2": "Factures & Devis avec paiements en ligne",
-      "feat3": "Rappels SMS automatiques",
-      "feat4": "Gestion des avis Google",
-      "feat5": "Module de certification",
-      "feat6": "Support prioritaire",
-      "cta": "Essayer le Forfait Pro"
-    },
-    "team": {
-      "name": "Équipe",
-      "tagline": "Pour les petites équipes et entreprises.",
-      "feat1": "Tout ce qui est inclus dans Pro",
-      "feat2": "Jusqu'à 5 membres d'équipe",
-      "feat3": "Planning partagé",
-      "feat4": "Rapports d'activité avancés",
-      "feat5": "Export comptable en 1 clic",
-      "feat6": "Gestionnaire dédié",
-      "cta": "Contacter l'équipe"
-    }
-  },
-  "faq": {
-    "title": "Foire Aux Questions",
-    "q1": "Puis-je changer de forfait à tout moment ?",
-    "a1": "Oui, vous pouvez passer à un forfait supérieur ou inférieur à tout moment depuis vos paramètres.",
-    "q2": "Y a-t-il un engagement ?",
-    "a2": "Aucun engagement pour l'abonnement mensuel. Vous pouvez résilier en un clic.",
-    "q3": "Comment fonctionne l'essai gratuit ?",
-    "a3": "Vous bénéficiez de 14 jours d'essai complet sans carte bancaire requise.",
-    "q4": "Quels moyens de paiement acceptez-vous ?",
-    "a4": "Nous acceptons toutes les cartes bancaires principales (Visa, Mastercard, Carte Bleue)."
-  },
-  "finalCta": {
-    "title": "Prêt à automatiser votre gestion ?",
-    "cta": "Démarrer maintenant"
-  },
-    hero: {
-      title: "Des tarifs simples et transparents",
-      subtitle: "Tout ce dont vous avez besoin pour gérer vos réservations et vos clients. Commencez gratuitement et évoluez à votre rythme.",
-    },
-    billing: {
-      monthly: "Mensuel",
-      annual: "Annuel",
-      saveDiscount: "-20%",
-    },
-    popularBadge: "Le plus populaire",
-    monthAbbr: "mois",
-    plans: {
-      free: {
-        name: "Gratuit",
-        tagline: "Les outils essentiels pour lancer votre page de réservation.",
-        cta: "Commencer gratuitement",
-        feat1: "Gestion de services de base",
-        feat2: "Jusqu'à 2 certifications affichées",
-        feat3: "Lien de réservation public standard",
-        feat4: "Gestion du calendrier et des disponibilités",
-        feat5: "Messagerie directe avec vos clients",
-        feat6: "Support communautaire",
-      },
-      pro: {
-        name: "Pro",
-        tagline: "Tout ce qu'il faut pour développer votre activité en toute autonomie.",
-        cta: "Passer au plan Pro",
-        feat1: "Tout ce qui est inclus dans le plan Gratuit",
-        feat2: "Services et demandes personnalisées illimités",
-        feat3: "Certifications et badges illimités",
-        feat4: "Branding personnalisé & Slug sur-mesure",
-        feat5: "Contrôle avancé des créneaux & disponibilités",
-        feat6: "Analyses des réservations et revenus",
-        feat7: "Support client prioritaire",
-      },
-    },
-    faq: {
-      title: "Foire Aux Questions",
-      q1: "Puis-je commencer avec le plan Gratuit ?",
-      a1: "Oui, vous pouvez utiliser le plan Gratuit aussi longtemps que vous le souhaitez, sans aucune carte bancaire requise.",
-      q2: "Puis-je changer ou annuler mon abonnement à tout moment ?",
-      a2: "Absolument. Vous pouvez passer au niveau supérieur, rétrograder ou annuler votre abonnement directement depuis vos paramètres.",
-      q3: "Y a-t-il des frais cachés sur les transactions ?",
-      a3: "Aucun frais caché. Vous ne payez que le montant fixé pour votre abonnement si vous choisissez de passer au plan Pro.",
-      q4: "Quels moyens de paiement acceptez-vous ?",
-      a4: "Nous acceptons toutes les principales cartes bancaires via Stripe.",
-    },
-    finalCta: {
-      title: "Prêt à simplifier vos réservations ?",
-      cta: "Créer un compte gratuit",
-    },
-    eyebrow: "Tarifs",
-    limitModal: {
-      title: "Limite atteinte",
-      description: "Tu as atteint la limite de ton offre actuelle. Passe à l'offre supérieure pour continuer.",
-      btn: "Voir les offres",
-      cancel: "Annuler",
-    },
-},
+
 
 // Add inside your src/i18n/fr.js object under the "home" key:
 home: {
@@ -2326,6 +2084,15 @@ booking: {
 
     // Notifications Toast
     nameAndPriceRequired: "Le nom et le prix du service sont obligatoires",
+    depositEnabled: "Demander un acompte",
+    depositEnabledSub: "Un acompte sera demandé au client une fois sa demande de réservation acceptée.",
+    depositTypeLabel: "Type",
+    depositTypeFixed: "Montant fixe",
+    depositTypePercent: "Pourcentage du prix",
+    depositAmountFixedLabel: "Montant de l'acompte",
+    depositAmountPercentLabel: "Pourcentage (%)",
+    depositAmountRequired: "Merci d'indiquer le montant de l'acompte",
+    depositBadge: "Acompte {{amount}}",
     addFailed: "Échec de la création du service",
     addedToast: "Service ajouté avec succès",
     updateFailed: "Échec de la mise à jour du service",
@@ -2342,6 +2109,8 @@ booking: {
   loadErrorWhat: "Impossible de charger les demandes de réservation",
   loadErrorWhy: "La synchronisation des données avec le serveur a échoué.",
   loadErrorNext: "Vérifiez votre connexion réseau et essayez de rafraîchir la page.",
+  depositStripeNotConnected: "Un acompte est requis pour ce service, mais aucun compte Stripe n'est connecté — connecte-le dans Paramètres pour pouvoir l'encaisser.",
+  depositLinkSentToast: "Email de confirmation envoyé avec le lien de paiement de l'acompte",
 },
 
 
@@ -3278,7 +3047,7 @@ referrals: {
     intro: "Envoyez une invitation directement dans sa boîte mail. Il recevra un lien personnalisé pour commencer.",
     theirNameLabel: "Son nom (optionnel)",
     theirEmailLabel: "Son adresse e-mail",
-    giftNote: "Récompense : Vous bénéficiez tous les deux de 2 mois d'abonnement Pro gratuits lorsqu'il crée un compte et réalise son premier chantier.",
+    giftNote: "En le parrainant, vous lui faites gagner du temps sur son administratif — et vous bénéficiez tous les deux d'un accès prioritaire à notre support une fois son compte actif.",
     cancel: "Annuler",
     send: "Envoyer l'invitation",
     namePlaceholder: "ex. Jean Dupont",
@@ -3288,8 +3057,8 @@ referrals: {
   metrics: {
     successfulReferrals: "Parrainages réussis",
     totalSent: "{{count}} invitations envoyées",
-    monthsProEarned: "Mois Pro gagnés",
-    appliedToAccount: "Crédités sur votre compte",
+    monthsProEarned: "Récompenses débloquées",
+    appliedToAccount: "Accès prioritaire activé",
     pending: "Invitations en attente",
     waitingToSignUp: "En attente d'inscription",
     yourReferralCode: "Votre code de parrainage",
@@ -3298,7 +3067,7 @@ referrals: {
 
   linkCard: {
     title: "Partagez votre lien de parrainage",
-    description: "Partagez votre lien personnel avec vos confrères artisans, collègues ou sous-traitants. Lorsqu'ils s'inscrivent et utilisent Vimen, vous obtenez tous les deux un accès Pro gratuit.",
+    description: "Partagez votre lien personnel avec vos confrères, collègues ou sous-traitants. Vimen est 100% gratuit pour eux comme pour vous — et vous débloquez tous les deux un accès prioritaire au support.",
     copied: "Copié !",
     copyLink: "Copier le lien",
   },
@@ -3318,8 +3087,8 @@ referrals: {
       desc: "Dès qu'ils créent et terminent leur première intervention, les deux comptes deviennent éligibles.",
     },
     step4: {
-      title: "2 mois Pro offerts à chacun",
-      desc: "Nous créditons automatiquement 2 mois de version Pro gratuite sur vos deux comptes.",
+      title: "Support prioritaire débloqué",
+      desc: "Vous bénéficiez tous les deux d'un accès prioritaire à notre support.",
     },
   },
 
@@ -3327,7 +3096,7 @@ referrals: {
     title: "Vos parrainages",
     empty: "Vous n'avez parrainé personne pour l'instant",
     referFirst: "Envoyer votre premier parrainage",
-    rewardMonths: "{{count}} mois Pro offerts",
+    rewardEarned: "Récompense débloquée",
     headers: {
       name: "Nom",
       email: "E-mail",
@@ -3350,7 +3119,7 @@ referrals: {
     pending: "En attente d'inscription de l'utilisateur",
     signed_up: "Compte créé, en attente du 1er chantier",
     qualified: "Éligible pour la récompense",
-    rewarded: "2 mois Pro crédités",
+    rewarded: "Accès prioritaire au support débloqué",
   },
   shareMessages: {
     whatsapp: "Salut ! {{name}} t'invite à essayer Vimen, l'app gratuite pour gérer ton activité pro. Inscris-toi ici : {{url}}",
@@ -3489,6 +3258,17 @@ settings: {
     deleteConfirmBtn: "Confirmer la suppression",
     deleting: "Suppression en cours…",
     deleteError: "Échec de la suppression, veuillez réessayer",
+  },
+  stripeConnectTitle: "Connexion Stripe Connect",
+  stripeConnectSub: "Associe ton compte Stripe pour recevoir tes versements.",
+  stripeTitle: "Stripe",
+  documentVisibility: {
+    title: "Visibilité sur vos documents",
+    sub: "Choisissez ce qui apparaît par défaut sur vos devis, factures et confirmations de réservation. Vous pourrez ajuster ce choix à chaque envoi.",
+    showIban: "Afficher mon IBAN",
+    showIbanSub: "Vos coordonnées bancaires apparaîtront sur vos documents pour permettre un paiement par virement.",
+    showStripe: "Afficher mon lien de paiement Stripe",
+    showStripeSub: "Un lien de paiement par carte sera inclus pour permettre à vos clients de payer en ligne.",
   },
 },
 
@@ -3659,6 +3439,15 @@ invoices: {
     unpaid: "En attente",
     overdue: "En retard",
   },
+  sendOptionsModal: {
+    title: "Envoyer la facture",
+    intro: "Choisissez ce qui doit être inclus dans l'email envoyé à {{email}}.",
+    includeIban: "Inclure mon IBAN",
+    includeIbanSub: "Vos coordonnées bancaires apparaîtront dans l'email pour un paiement par virement.",
+    includeStripe: "Inclure le lien de paiement Stripe",
+    includeStripeSub: "Un bouton de paiement par carte sera inclus dans l'email.",
+    confirmBtn: "Envoyer l'email",
+  },
 },
 
 reviews: {
@@ -3803,5 +3592,49 @@ publicQuote: {
     copy: "Copier",
     loading: "Chargement...",
     save: "Enregistrer",
+  },
+
+  pricingPage: {
+    eyebrow: "Tarifs",
+    hero: {
+      title: "100% gratuit, sans conditions cachées",
+      subtitle: "Aucun abonnement, aucun engagement, aucune carte bancaire requise. Toutes les fonctionnalités sont incluses.",
+    },
+    popularBadge: "Inclus",
+    monthAbbr: "mois",
+    plans: {
+      free: {
+        name: "Vimen",
+        tagline: "Tout ce dont vous avez besoin pour gérer votre activité, sans limite.",
+        feat1: "Devis & Factures illimités",
+        feat2: "Gestion clients & historique complet",
+        feat3: "Paiements en ligne via Stripe, ou par virement IBAN",
+        feat4: "Rappels automatiques par e-mail",
+        feat5: "Page de réservation en ligne personnalisée",
+        feat6: "Avis clients & programme de parrainage",
+        cta: "Créer mon compte gratuit",
+      },
+    },
+    faq: {
+      title: "Foire aux questions",
+      q1: "Vimen est-il vraiment gratuit ?",
+      a1: "Oui, entièrement. Il n'y a aucun abonnement payant, aucune limite de clients, factures ou devis, et aucune carte bancaire n'est requise pour créer un compte.",
+      q2: "Comment fonctionnent les paiements clients ?",
+      a2: "Vos clients peuvent régler vos devis et factures directement en ligne par carte bancaire via Stripe, ou par virement bancaire en utilisant l'IBAN que vous choisissez d'afficher.",
+      q3: "Y a-t-il des commissions cachées ?",
+      a3: "Non. Vimen ne prend aucune commission sur vos paiements. Seuls les frais standard de Stripe s'appliquent lors d'un paiement par carte.",
+      q4: "Puis-je supprimer mon compte à tout moment ?",
+      a4: "Oui, à tout moment depuis vos paramètres. Aucun engagement, aucune pénalité.",
+    },
+    finalCta: {
+      title: "Prêt à simplifier votre gestion au quotidien ?",
+      cta: "Créer mon compte gratuit",
+    },
+    limitModal: {
+      title: "Limite atteinte",
+      description: "Tu as atteint la limite de ton offre actuelle. Passe à l'offre supérieure pour continuer.",
+      btn: "Voir les offres",
+      cancel: "Annuler",
+    },
   },
 }
