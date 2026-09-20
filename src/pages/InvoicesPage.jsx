@@ -14,7 +14,7 @@ import { useTranslation } from "../i18n/index.js";
 import {
   PageShell, Card, Btn, Badge, Table, TD,
   Modal, ConfirmModal, Field, FieldRow, FormActions,
-  Tabs, Empty, MetricCard,
+  Tabs, Empty, MetricCard, Toggle,
 } from "../components/UI";
 import UpgradeModal from "../components/UpgradeModal"; // ✅ Import de la modale d'upgrade
 import { formatCurrency } from "../lib/currency.js";
@@ -80,6 +80,8 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
   const [form,       setForm]       = useState({});
   const [formErrors, setFormErrors] = useState({});
   const [showUpgradeModal, setShowUpgradeModal] = useState(false); // ✅ State pour la modale d'upgrade
+  const [sendOptionsInv, setSendOptionsInv] = useState(null); // facture en attente de confirmation d'envoi
+  const [sendOptions, setSendOptions] = useState({ includeIban: true, includeStripeLink: true });
 
   const fld = k => e => { setForm(p=>({...p,[k]:e.target.value})); setFormErrors(p=>({...p,[k]:""})); };
 
@@ -333,6 +335,18 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
   }
 
   // ── Send email ─────────────────────────────────────
+  function openSendConfirm(inv) {
+    if (!inv.client?.email) {
+      toast.error(t("invoices.noClientEmail") || "This client has no email address.");
+      return;
+    }
+    setSendOptions({
+      includeIban: profile?.show_iban_on_documents ?? true,
+      includeStripeLink: profile?.show_stripe_link_on_documents ?? true,
+    });
+    setSendOptionsInv(inv);
+  }
+
   async function handleSendEmail(inv) {
     if (!inv.client?.email) {
       toast.error(t("invoices.noClientEmail") || "This client has no email address.");
@@ -340,7 +354,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
     }
     setBusy(true);
     try {
-      const result = await sendInvoiceEmail(inv.id);
+      const result = await sendInvoiceEmail(inv.id, false, sendOptions);
       if (result.success) {
         toast.success(t("invoices.emailedToast",{email:inv.client.email}));
       } else {
@@ -352,6 +366,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
       toast.error(t("invoices.emailFailedToast") || "Email failed to send.");
     }
     setBusy(false);
+    setSendOptionsInv(null);
   }
 
   // ── Stripe payment link ────────────────────────────
@@ -477,7 +492,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
         <Modal title={previewInv.invoice_number} onClose={() => setModal(null)} width={560}>
           <div style={{display:"flex",gap:8,marginBottom:20,flexWrap:"wrap"}}>
             {previewInv.status==="unpaid" && <>
-              <Btn size="sm" onClick={() => handleSendEmail(previewInv)} disabled={busy}>
+              <Btn size="sm" onClick={() => openSendConfirm(previewInv)} disabled={busy}>
                 {busy ? t("invoices.sending") : t("invoices.sendEmail")}
               </Btn>
               {!previewInv.stripe_payment_link_url
@@ -578,6 +593,35 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
       {delId && (
         <ConfirmModal title={t("invoices.deleteConfirmTitle")} message={t("invoices.deleteConfirmMessage")}
           confirmLabel={t("common.delete")} onConfirm={handleDelete} onClose={() => setDelId(null)}/>
+      )}
+
+      {/* Send email confirm — choix IBAN / lien Stripe pour cet envoi */}
+      {sendOptionsInv && (
+        <Modal title={t("invoices.sendOptionsModal.title")} onClose={() => setSendOptionsInv(null)} width={440}>
+          <p style={{ fontSize: 13, color: T.muted, marginBottom: 16 }}>
+            {t("invoices.sendOptionsModal.intro", { email: sendOptionsInv.client?.email ?? "" })}
+          </p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${T.border}` }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 500 }}>{t("invoices.sendOptionsModal.includeIban")}</div>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{t("invoices.sendOptionsModal.includeIbanSub")}</div>
+            </div>
+            <Toggle on={sendOptions.includeIban} onChange={v => setSendOptions(p => ({ ...p, includeIban: v }))} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0" }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 500 }}>{t("invoices.sendOptionsModal.includeStripe")}</div>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{t("invoices.sendOptionsModal.includeStripeSub")}</div>
+            </div>
+            <Toggle on={sendOptions.includeStripeLink} onChange={v => setSendOptions(p => ({ ...p, includeStripeLink: v }))} />
+          </div>
+          <FormActions>
+            <Btn variant="ghost" onClick={() => setSendOptionsInv(null)}>{t("common.cancel")}</Btn>
+            <Btn onClick={() => handleSendEmail(sendOptionsInv)} disabled={busy}>
+              {busy ? t("invoices.sending") : t("invoices.sendOptionsModal.confirmBtn")}
+            </Btn>
+          </FormActions>
+        </Modal>
       )}
 
       {/* Metrics */}
