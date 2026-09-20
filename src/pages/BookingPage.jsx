@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import { T } from "../styles/tokens";
 import { getBookingRequests, updateBookingStatus, submitBookingRequest, createClient, createJob } from "../lib/db";
 import { supabase } from "../lib/supabase";
+import { useAuth } from "@clerk/clerk-react";
 import { getTerms, getVerticalColor, getVerticalForProfession } from "../lib/professions.js";
 import { useTranslation } from "../i18n/index.js";
 import {
@@ -44,6 +45,7 @@ function copyToClipboard(text) {
 
 export default function BookingPage({ profile }) {
   const { t } = useTranslation();
+  const { getToken } = useAuth();
   const fmt = n => formatCurrency(n, profile?.currency);
   const terms = getTerms(profile?.trade);
   const verticalColor = getVerticalColor(profile?.trade);
@@ -107,6 +109,27 @@ export default function BookingPage({ profile }) {
       } catch (err) {
         console.error("[Auto job creation failed]:", err);
         toast.error(t("booking.jobCreateFailedToast") || "Booking accepted, but the job could not be created automatically — add it manually.");
+      }
+
+      // Envoie la confirmation au client (+ lien de paiement d'acompte si le
+      // service réservé en demande un). Non-bloquant : un échec ici ne doit
+      // pas remettre en cause l'acceptation de la réservation elle-même.
+      if (data.customer_email) {
+        try {
+          const token = await getToken();
+          const { data: result, error: confirmError } = await supabase.functions.invoke(
+            "send-booking-confirmation",
+            { body: { bookingRequestId: id }, headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (confirmError) throw confirmError;
+          if (result?.stripeNotConnected) {
+            toast.error(t("booking.depositStripeNotConnected") || "Un acompte est requis pour ce service, mais aucun compte Stripe n'est connecté — connecte-le dans Paramètres pour pouvoir l'encaisser.");
+          } else if (result?.depositLinkCreated) {
+            toast.success(t("booking.depositLinkSentToast") || "Email de confirmation envoyé avec le lien de paiement de l'acompte");
+          }
+        } catch (err) {
+          console.error("[Booking confirmation email failed]:", err);
+        }
       }
     }
   }
