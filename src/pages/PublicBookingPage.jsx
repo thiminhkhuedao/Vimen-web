@@ -509,6 +509,13 @@ function ServiceCard({ service, selected, onClick, currency }) {
         {service.description && (
           <div style={{ fontSize: 12, color: THEME.muted, marginTop: 4, lineHeight: 1.5 }}>{service.description}</div>
         )}
+        {service.deposit_enabled && (
+          <div style={{ fontSize: 12, fontWeight: 600, color: THEME.brand, marginTop: 6 }}>
+            {service.deposit_type === "percent"
+              ? `Deposit required: ${service.deposit_amount}% (${formatCurrency(service.price * service.deposit_amount / 100, currency)})`
+              : `Deposit required: ${formatCurrency(service.deposit_amount, currency)}`}
+          </div>
+        )}
         {selected && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: THEME.brand }}>Selected</div>}
       </div>
     </button>
@@ -893,6 +900,15 @@ function PublicBookingPageInner() {
           {selectedService && (
             <div style={{ background: THEME.brandLight, borderRadius: THEME.radius.md, padding: "12px 16px", marginBottom: 16, fontSize: 14 }}>
               <strong>{selectedService.name}</strong> — {fmt(selectedService.price)}
+              {selectedService.deposit_enabled && (
+                <div style={{ fontSize: 12, color: THEME.brand, marginTop: 4 }}>
+                  A deposit of{" "}
+                  {selectedService.deposit_type === "percent"
+                    ? `${selectedService.deposit_amount}% (${fmt(selectedService.price * selectedService.deposit_amount / 100)})`
+                    : fmt(selectedService.deposit_amount)}{" "}
+                  will be requested once your booking is confirmed.
+                </div>
+              )}
             </div>
           )}
           <div style={{ fontSize: 13, color: THEME.muted }}>
@@ -1132,6 +1148,14 @@ function PublicBookingPageInner() {
                 {selectedService && (
                   <div style={{ fontSize: 14, fontWeight: 700, color: THEME.brand }}>
                     {selectedService.name} — {fmt(selectedService.price)}
+                  </div>
+                )}
+                {selectedService?.deposit_enabled && (
+                  <div style={{ fontSize: 12, color: THEME.brand, marginTop: 2 }}>
+                    Deposit required upon confirmation:{" "}
+                    {selectedService.deposit_type === "percent"
+                      ? `${selectedService.deposit_amount}% (${fmt(selectedService.price * selectedService.deposit_amount / 100)})`
+                      : fmt(selectedService.deposit_amount)}
                   </div>
                 )}
                 {selDate && selTime && (
