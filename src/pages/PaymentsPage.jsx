@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "../i18n/index.js";
 import { toast } from "react-hot-toast";
+import { useAuth } from "@clerk/clerk-react";
 import { T } from "../styles/tokens";
 import {
   PageShell, Card, Btn, Badge, Table, TD,
@@ -95,6 +96,7 @@ const formatIbanDisplay = (raw) => (raw || "").replace(/\s+/g, "").replace(/(.{4
 ══════════════════════════════════════════════════════ */
 export default function PaymentsPage({ profile, state, dispatch, refresh }) {
   const { t: tr } = useTranslation();
+  const { getToken } = useAuth();
   const fmt = n => formatCurrency(n, profile?.currency);
   const [tab, setTab] = useState("overview");
   
@@ -185,7 +187,8 @@ export default function PaymentsPage({ profile, state, dispatch, refresh }) {
     setPageError(null);
     try {
       const returnUrl = `${window.location.origin}/payments?tab=connect`;
-      const { data, error } = await getStripeConnectUrl(profile?.id, returnUrl);
+      const token = await getToken();
+      const { data, error } = await getStripeConnectUrl(token, returnUrl);
       if (error || !data?.url) {
         throw new Error(error?.message || "URL Stripe manquante");
       }
