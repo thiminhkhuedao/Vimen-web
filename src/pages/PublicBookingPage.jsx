@@ -28,10 +28,6 @@ function useOptionalClerkUser() {
 
 // ── CONSTANTS & STYLES ─────────────────────────────────
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
 
 const THEME = {
   brand: "#E8500A",
@@ -240,9 +236,10 @@ function DiscreteToast({ message, onDone }) {
 }
 
 function Steps({ current, hasServices }) {
+  const { t: tr } = useTranslation();
   const steps = hasServices
-    ? ["Service", "Date & time", "Your details"]
-    : ["Date & time", "Your details"];
+    ? [tr("publicBooking.stepService"), tr("publicBooking.stepDateTime"), tr("publicBooking.stepDetails")]
+    : [tr("publicBooking.stepDateTime"), tr("publicBooking.stepDetails")];
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 24 }}>
@@ -294,6 +291,7 @@ function Steps({ current, hasServices }) {
 
 // ── CALENDAR ───────────────────────────────────────────
 function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, selectedDate, selectedTime }) {
+  const { t: tr, lang } = useTranslation();
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -360,21 +358,21 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
       {/* Month Navigation */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", borderBottom: `1px solid ${THEME.border}` }}>
         <button onClick={handlePrevMonth} style={{ background: "none", border: `1px solid ${THEME.border}`, borderRadius: THEME.radius.md, width: 34, height: 34, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          Prev
+          &larr;
         </button>
-        <div style={{ fontWeight: 700, fontSize: 16 }}>
-          {MONTHS[month]} {year}
+        <div style={{ fontWeight: 700, fontSize: 16, textTransform: "capitalize" }}>
+          {new Date(year, month, 1).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { month: "long", year: "numeric" })}
         </div>
         <button onClick={handleNextMonth} style={{ background: "none", border: `1px solid ${THEME.border}`, borderRadius: THEME.radius.md, width: 34, height: 34, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          Next
+          &rarr;
         </button>
       </div>
 
       {/* Weekday Labels */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", padding: "10px 16px 4px" }}>
-        {DAYS.map((d) => (
-          <div key={d} style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: THEME.muted, paddingBottom: 8 }}>
-            {d}
+        {DAYS.map((d, i) => (
+          <div key={d} style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: THEME.muted, paddingBottom: 8, textTransform: "capitalize" }}>
+            {new Date(2024, 0, 7 + i).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { weekday: "short" })}
           </div>
         ))}
       </div>
@@ -442,7 +440,7 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
             {selectedDateObj?.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
           </div>
           {activeDaySlots.length === 0 ? (
-            <div style={{ fontSize: 13, color: THEME.muted }}>No available slots for this day.</div>
+            <div style={{ fontSize: 13, color: THEME.muted }}>{tr("publicBooking.noSlotsThisDay")}</div>
           ) : (
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {activeDaySlots.map((slot) => (
@@ -474,6 +472,7 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
 
 // ── SERVICE CARD ───────────────────────────────────────
 function ServiceCard({ service, selected, onClick, currency }) {
+  const { t: tr } = useTranslation();
   return (
     <button
       onClick={onClick}
@@ -512,11 +511,11 @@ function ServiceCard({ service, selected, onClick, currency }) {
         {service.deposit_enabled && (
           <div style={{ fontSize: 12, fontWeight: 600, color: THEME.brand, marginTop: 6 }}>
             {service.deposit_type === "percent"
-              ? `Deposit required: ${service.deposit_amount}% (${formatCurrency(service.price * service.deposit_amount / 100, currency)})`
-              : `Deposit required: ${formatCurrency(service.deposit_amount, currency)}`}
+              ? tr("publicBooking.depositRequiredPercent", { percent: service.deposit_amount, amount: formatCurrency(service.price * service.deposit_amount / 100, currency) })
+              : tr("publicBooking.depositRequiredFixed", { amount: formatCurrency(service.deposit_amount, currency) })}
           </div>
         )}
-        {selected && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: THEME.brand }}>Selected</div>}
+        {selected && <div style={{ marginTop: 8, fontSize: 12, fontWeight: 700, color: THEME.brand }}>{tr("publicBooking.selectedLabel")}</div>}
       </div>
     </button>
   );
@@ -524,6 +523,7 @@ function ServiceCard({ service, selected, onClick, currency }) {
 
 // ── IMAGE UPLOAD ───────────────────────────────────────
 function ImageUpload({ value, onChange, label, hint }) {
+  const { t: tr } = useTranslation();
   const fileInputRef = useRef(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -592,7 +592,7 @@ function ImageUpload({ value, onChange, label, hint }) {
         {uploading ? (
           <div style={{ padding: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}>
             <Spinner />
-            <span style={{ fontSize: 14, color: THEME.muted }}>Uploading...</span>
+            <span style={{ fontSize: 14, color: THEME.muted }}>{tr("publicBooking.uploading")}</span>
           </div>
         ) : preview ? (
           <div style={{ position: "relative" }}>
@@ -619,8 +619,8 @@ function ImageUpload({ value, onChange, label, hint }) {
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: THEME.text }}>Drop image or tap to upload</div>
-            <div style={{ fontSize: 11, color: THEME.muted, marginTop: 2 }}>JPG, PNG up to 10MB</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: THEME.text }}>{tr("publicBooking.dropImage")}</div>
+            <div style={{ fontSize: 11, color: THEME.muted, marginTop: 2 }}>{tr("publicBooking.imageFormats")}</div>
           </div>
         )}
         <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => handleFile(e.target.files[0])} />
@@ -628,17 +628,17 @@ function ImageUpload({ value, onChange, label, hint }) {
 
       {uploadError && (
         <div style={{ marginTop: 10 }}>
-          <ErrorNotice error={uploadError} action actionLabel="Try again" onAction={() => { setUploadError(null); fileInputRef.current?.click(); }} />
+          <ErrorNotice error={uploadError} action actionLabel={tr("publicBooking.tryAgain")} onAction={() => { setUploadError(null); fileInputRef.current?.click(); }} />
         </div>
       )}
-      {showToast && <DiscreteToast message="Photo uploaded" onDone={() => setShowToast(false)} />}
+      {showToast && <DiscreteToast message={tr("publicBooking.photoUploaded")} onDone={() => setShowToast(false)} />}
     </div>
   );
 }
 
 // ── MAIN COMPONENT ─────────────────────────────────────
 function PublicBookingPageInner() {
-  const { t: tr } = useTranslation();
+  const { t: tr, lang, setLanguage, languages } = useTranslation();
   const { slug } = useParams();
   const { user } = useOptionalClerkUser();
 
@@ -684,7 +684,7 @@ function PublicBookingPageInner() {
     try {
       const { data: prof, error } = await supabase
         .from("public_profiles")
-        .select("id, name, trade, bio, hourly_rate, booking_slug, extra_fields, plan, currency")
+        .select("id, name, trade, bio, hourly_rate, booking_slug, extra_fields, plan, currency, language")
         .eq("booking_slug", slug)
         .single();
 
@@ -699,6 +699,17 @@ function PublicBookingPageInner() {
       if (!prof) { setStatus("notfound"); return; }
 
       setProfile(prof);
+
+      // Par défaut, la page affiche la langue du compte du pro — mais si ce
+      // visiteur a déjà choisi une langue ici auparavant (ou via le
+      // sélecteur), on respecte son choix plutôt que d'écraser sa préférence
+      // à chaque visite.
+      try {
+        const hasVisitorChoice = typeof localStorage !== "undefined" && localStorage.getItem("Vimen_language");
+        if (!hasVisitorChoice && prof.language && prof.language !== lang) {
+          setLanguage(prof.language);
+        }
+      } catch { /* localStorage indisponible — pas bloquant */ }
 
       const [{ data: svcs }, { data: avail }, { data: blk }] = await Promise.all([
         supabase.from("services").select("*").eq("profile_id", prof.id).eq("active", true).order("sort_order"),
@@ -770,11 +781,11 @@ function PublicBookingPageInner() {
 
   function validateContactFields() {
     const errors = {};
-    if (!form.customer_name.trim()) errors.customer_name = "Please enter your name";
+    if (!form.customer_name.trim()) errors.customer_name = tr("publicBooking.errors.nameRequired");
     if (!form.customer_email.trim()) {
-      errors.customer_email = "Please enter your email";
+      errors.customer_email = tr("publicBooking.errors.emailRequired");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customer_email.trim())) {
-      errors.customer_email = "That email address doesn't look right";
+      errors.customer_email = tr("publicBooking.errors.emailInvalid");
     }
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -787,7 +798,7 @@ function PublicBookingPageInner() {
     if (isBotSubmission(honeypot)) return; // Bot détecté, rejet silencieux.
     if (!validateContactFields()) return;
     if (!selDate || !selTime) {
-      setFormError({ what: "Pick a date and time first", why: "Select an available slot above before sending your request." });
+      setFormError({ what: tr("publicBooking.errors.pickDateWhat"), why: tr("publicBooking.errors.pickDateWhy") });
       return;
     }
     if (!captchaToken) {
@@ -850,9 +861,9 @@ function PublicBookingPageInner() {
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: THEME.bg, padding: 20 }}>
         <div style={{ maxWidth: 380, width: "100%" }}>
           <ErrorNotice
-            error={{ what: "Couldn't load this booking page", why: "This is usually a temporary connection issue, not a problem with the link itself." }}
+            error={{ what: tr("publicBooking.loadErrorWhat"), why: tr("publicBooking.loadErrorWhy") }}
             action
-            actionLabel="Try again"
+            actionLabel={tr("publicBooking.tryAgain")}
             onAction={loadData}
           />
         </div>
@@ -864,7 +875,7 @@ function PublicBookingPageInner() {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: THEME.bg, padding: 20 }}>
         <div style={{ textAlign: "center" }}>
-          <h2>Page not found</h2>
+          <h2>{tr("publicBooking.pageNotFound")}</h2>
         </div>
       </div>
     );
@@ -889,30 +900,29 @@ function PublicBookingPageInner() {
     return (
       <div style={{ minHeight: "100vh", background: THEME.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
         <div style={{ maxWidth: 420, width: "100%", background: THEME.surface, borderRadius: THEME.radius.xl, padding: "48px 40px", boxShadow: THEME.shadow, textAlign: "center" }}>
-          <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>Request sent!</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>{tr("publicBooking.requestSentTitle")}</h2>
           <p style={{ fontSize: 15, color: THEME.muted, lineHeight: 1.7, marginBottom: 16 }}>
-            <strong>{profile.name}</strong> will confirm your{" "}
             {selDate && selTime
-              ? `${selTime} slot on ${new Date(selDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}`
-              : "request"}{" "}
-            shortly.
+              ? tr("publicBooking.requestSentBodySlot", {
+                  name: profile.name,
+                  slot: `${selTime} ${new Date(selDate + "T00:00:00").toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { weekday: "long", day: "numeric", month: "long" })}`,
+                })
+              : tr("publicBooking.requestSentBodyGeneric", { name: profile.name })}
           </p>
           {selectedService && (
             <div style={{ background: THEME.brandLight, borderRadius: THEME.radius.md, padding: "12px 16px", marginBottom: 16, fontSize: 14 }}>
               <strong>{selectedService.name}</strong> — {fmt(selectedService.price)}
               {selectedService.deposit_enabled && (
                 <div style={{ fontSize: 12, color: THEME.brand, marginTop: 4 }}>
-                  A deposit of{" "}
                   {selectedService.deposit_type === "percent"
-                    ? `${selectedService.deposit_amount}% (${fmt(selectedService.price * selectedService.deposit_amount / 100)})`
-                    : fmt(selectedService.deposit_amount)}{" "}
-                  will be requested once your booking is confirmed.
+                    ? tr("publicBooking.depositOnConfirmPercent", { percent: selectedService.deposit_amount, amount: fmt(selectedService.price * selectedService.deposit_amount / 100) })
+                    : tr("publicBooking.depositOnConfirmFixed", { amount: fmt(selectedService.deposit_amount) })}
                 </div>
               )}
             </div>
           )}
           <div style={{ fontSize: 13, color: THEME.muted }}>
-            Confirmation sent to <strong>{form.customer_email}</strong>
+            {tr("publicBooking.confirmationSentTo")} <strong>{form.customer_email}</strong>
           </div>
         </div>
       </div>
@@ -928,7 +938,31 @@ function PublicBookingPageInner() {
           <a href="/" style={{ fontSize: 15, fontWeight: 900, color: THEME.brand, textDecoration: "none" }}>
             Vimen
           </a>
-          <span style={{ fontSize: 13, color: THEME.muted }}>{profile.name}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{ display: "flex", border: `1px solid ${THEME.border}`, borderRadius: 100, padding: 2 }}>
+              {languages.map(l => (
+                <button
+                  key={l.code}
+                  type="button"
+                  onClick={() => setLanguage(l.code)}
+                  style={{
+                    border: "none",
+                    background: lang === l.code ? THEME.brand : "transparent",
+                    color: lang === l.code ? "#fff" : THEME.muted,
+                    borderRadius: 100,
+                    padding: "3px 10px",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  {l.code.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <span style={{ fontSize: 13, color: THEME.muted }}>{profile.name}</span>
+          </div>
         </div>
       </div>
 
@@ -952,7 +986,7 @@ function PublicBookingPageInner() {
             }}
           >
             <span>
-              This is a preview of the booking page your clients see. You can't submit a request to yourself — share the link below with clients instead.
+              {tr("publicBooking.ownerPreviewNotice")}
             </span>
             <button
               type="button"
@@ -970,7 +1004,7 @@ function PublicBookingPageInner() {
                 fontFamily: "inherit",
               }}
             >
-              {linkCopied ? "Copied!" : "Copy link"}
+              {linkCopied ? tr("publicBooking.copiedLabel") : tr("publicBooking.copyLinkBtn")}
             </button>
           </div>
         )}
@@ -1004,8 +1038,8 @@ function PublicBookingPageInner() {
         {/* STEP 1: SERVICE SELECTION */}
         {step === 1 && hasServices && (
           <div>
-            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>Choose a service</div>
-            <div style={{ fontSize: 13, color: THEME.muted, marginBottom: 16 }}>Select what you'd like to book, or choose "Something else".</div>
+            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>{tr("publicBooking.chooseServiceTitle")}</div>
+            <div style={{ fontSize: 13, color: THEME.muted, marginBottom: 16 }}>{tr("publicBooking.chooseServiceSub")}</div>
 
             <div style={{ display: "grid", gridTemplateColumns: services.some((s) => s.image_url) ? "repeat(2,1fr)" : "1fr", gap: 12, marginBottom: 12 }}>
               {services.map((svc) => (
@@ -1044,10 +1078,10 @@ function PublicBookingPageInner() {
               }}
             >
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: custom ? THEME.brand : THEME.text }}>Something else</div>
-                <div style={{ fontSize: 12, color: THEME.muted }}>Describe a custom request</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: custom ? THEME.brand : THEME.text }}>{tr("publicBooking.somethingElse")}</div>
+                <div style={{ fontSize: 12, color: THEME.muted }}>{tr("publicBooking.somethingElseSub")}</div>
               </div>
-              {custom && <span style={{ marginLeft: "auto", color: THEME.brand, fontWeight: 700 }}>Selected</span>}
+              {custom && <span style={{ marginLeft: "auto", color: THEME.brand, fontWeight: 700 }}>{tr("publicBooking.selectedLabel")}</span>}
             </button>
 
             <button
@@ -1067,7 +1101,7 @@ function PublicBookingPageInner() {
                 fontFamily: "inherit",
               }}
             >
-              Continue &rarr;
+              {tr("publicBooking.continueBtn")}
             </button>
           </div>
         )}
@@ -1075,16 +1109,16 @@ function PublicBookingPageInner() {
         {/* STEP 2: DATE & TIME SELECTION */}
         {step === 2 && (
           <div>
-            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>Pick a date & time</div>
+            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>{tr("publicBooking.pickDateTimeTitle")}</div>
             <div style={{ fontSize: 13, color: THEME.muted, marginBottom: 16 }}>
-              {selectedService ? `Slots shown for ${selectedService.duration_min} minute sessions.` : "Choose your preferred slot."}
+              {selectedService ? tr("publicBooking.slotsShownFor", { minutes: selectedService.duration_min }) : tr("publicBooking.choosePreferredSlot")}
             </div>
 
             {availability.length === 0 ? (
               <div style={{ background: THEME.surface, borderRadius: THEME.radius.xl, border: `1px solid ${THEME.border}`, padding: "32px 24px", textAlign: "center", color: THEME.muted, fontSize: 14 }}>
-                This professional hasn't set their availability yet.
+                {tr("publicBooking.noAvailabilitySet")}
                 <br />
-                Please contact them directly to arrange a time.
+                {tr("publicBooking.contactDirectly")}
               </div>
             ) : (
               <Calendar
@@ -1113,7 +1147,7 @@ function PublicBookingPageInner() {
                     fontFamily: "inherit",
                   }}
                 >
-                  &larr; Back
+                  {tr("publicBooking.backBtn")}
                 </button>
               )}
               <button
@@ -1133,7 +1167,7 @@ function PublicBookingPageInner() {
                   fontFamily: "inherit",
                 }}
               >
-                Continue &rarr;
+                {tr("publicBooking.continueBtn")}
               </button>
             </div>
           </div>
@@ -1160,42 +1194,42 @@ function PublicBookingPageInner() {
                 )}
                 {selDate && selTime && (
                   <div style={{ fontSize: 13, color: THEME.muted }}>
-                    {new Date(selDate + "T00:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} at {selTime}
+                    {new Date(selDate + "T00:00:00").toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { weekday: "long", day: "numeric", month: "long" })} {tr("publicBooking.atTime")} {selTime}
                   </div>
                 )}
               </div>
               <button type="button" onClick={() => setStep(2)} style={{ fontSize: 12, color: THEME.brand, background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
-                Change
+                {tr("publicBooking.changeBtn")}
               </button>
             </div>
 
-            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>Your details</div>
-            <div style={{ fontSize: 13, color: THEME.muted, marginBottom: 16 }}>Enter your contact information so {profile.name} can reach you.</div>
+            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>{tr("publicBooking.yourDetailsTitle")}</div>
+            <div style={{ fontSize: 13, color: THEME.muted, marginBottom: 16 }}>{tr("publicBooking.yourDetailsSub", { name: profile.name })}</div>
 
             <div style={{ background: THEME.surface, borderRadius: THEME.radius.xl, border: `1px solid ${THEME.border}`, padding: "24px", marginBottom: 16, boxShadow: THEME.shadow, display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>Your Name *</label>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.nameLabel")}</label>
                 <input type="text" placeholder="John Doe" value={form.customer_name} onChange={updateFormField("customer_name")} style={{ ...inputStyle, ...(fieldErrors.customer_name ? { borderColor: "#DC2626" } : {}) }} />
                 {fieldErrors.customer_name && <div style={{ fontSize: 12, color: "#DC2626", marginTop: 5 }}>{fieldErrors.customer_name}</div>}
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>Email Address *</label>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.emailLabel")}</label>
                 <input type="email" placeholder="john@example.com" value={form.customer_email} onChange={updateFormField("customer_email")} style={{ ...inputStyle, ...(fieldErrors.customer_email ? { borderColor: "#DC2626" } : {}) }} />
                 {fieldErrors.customer_email && <div style={{ fontSize: 12, color: "#DC2626", marginTop: 5 }}>{fieldErrors.customer_email}</div>}
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>Phone Number</label>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.phoneLabel")}</label>
                 <input type="tel" placeholder="+1 (555) 000-0000" value={form.customer_phone} onChange={updateFormField("customer_phone")} style={inputStyle} />
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>Notes or Instructions</label>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.notesLabel")}</label>
                 <textarea placeholder="Any specific details or gate codes..." rows={3} value={form.client_instructions} onChange={updateFormField("client_instructions")} style={{ ...inputStyle, resize: "vertical" }} />
               </div>
 
-              <ImageUpload value={clientImage} onChange={setClientImage} label="Attach photo or file (optional)" hint="Show us the problem or area to help the professional prepare." />
+              <ImageUpload value={clientImage} onChange={setClientImage} label={tr("publicBooking.attachPhotoLabel")} hint={tr("publicBooking.attachPhotoHint")} />
             </div>
 
             <Honeypot value={honeypot} onChange={setHoneypot} />
@@ -1212,7 +1246,7 @@ function PublicBookingPageInner() {
 
             <div style={{ display: "flex", gap: 10 }}>
               <button type="button" onClick={() => setStep(2)} style={{ flex: 1, padding: "13px", borderRadius: THEME.radius.lg, border: `1px solid ${THEME.border}`, background: THEME.surface, fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
-                &larr; Back
+                {tr("publicBooking.backBtn")}
               </button>
               <button
                 type="submit"
@@ -1232,7 +1266,7 @@ function PublicBookingPageInner() {
                   fontFamily: "inherit",
                 }}
               >
-                {isOwner ? "This is your own page" : sending ? "Sending request..." : "Request Booking"}
+                {isOwner ? tr("publicBooking.ownPageBtn") : sending ? tr("publicBooking.sendingRequestBtn") : tr("publicBooking.requestBookingBtn")}
               </button>
             </div>
           </form>
