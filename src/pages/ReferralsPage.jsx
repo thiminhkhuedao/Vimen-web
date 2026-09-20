@@ -291,7 +291,7 @@ export default function ReferralsPage({ state, dispatch, profile }) {
                 </TD>
                 <TD style={{ fontWeight: 600, color: r.status === "rewarded" ? T.green : T.muted }}>
                   {r.status === "rewarded" ? (
-                    t("referrals.table.rewardMonths", { count: r.reward_months })
+                    t("referrals.table.rewardEarned")
                   ) : (r.status === "signed_up" || r.status === "qualified") ? (
                     <Btn size="sm" variant="success" onClick={() => qualify(r)}>
                       {t("referrals.table.applyReward")}
