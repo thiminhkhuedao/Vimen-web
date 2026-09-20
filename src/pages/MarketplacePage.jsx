@@ -84,7 +84,8 @@ export default function MarketplacePage({ profile }) {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const [view, setView] = useState("browse"); // browse | mine
-  const [modal, setModal] = useState(null); // null | "post" | "interest" | listing obj (detail)
+  const [modal, setModal] = useState(null); // null | "post" | "interest"
+  const [activeListing, setActiveListing] = useState(null); // annonce actuellement ouverte (détail / intérêt)
   const [delId, setDelId] = useState(null);
   const [search, setSearch] = useState("");
   const [filterTrade, setFilterTrade] = useState("All trades");
@@ -148,7 +149,7 @@ export default function MarketplacePage({ profile }) {
 
   // Open listing detail + increment views
   function openDetail(listing) {
-    setModal(listing);
+    setActiveListing(listing);
     incrementViews(listing.id);
   }
 
@@ -191,10 +192,11 @@ export default function MarketplacePage({ profile }) {
   // After expressing interest
   function onInterestSent() {
     setModal(null);
+    setActiveListing(null);
     toast.success(t("marketplace.toast.interestSent"));
   }
 
-  const detailListing = modal && typeof modal === "object" && modal.id ? modal : null;
+  const detailListing = activeListing;
 
   return (
     <PageShell 
@@ -235,7 +237,7 @@ export default function MarketplacePage({ profile }) {
             listing={detailListing}
             profile={profile}
             fmt={fmt}
-            onClose={() => setModal(null)}
+            onClose={() => { setActiveListing(null); setModal(null); }}
             onInterest={() => setModal("interest")}
           />
         )}
