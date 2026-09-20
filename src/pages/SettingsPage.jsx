@@ -1,6 +1,6 @@
 // src/pages/SettingsPage.jsx
 
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "react-hot-toast";
 import { updateProfile, uploadImage, getStripeConnectUrl } from "../lib/db";
@@ -39,6 +39,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
   const [tab, setTab] = useState("account");
   const [saving, setSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const avatarInputRef = useRef(null);
 
   const [form, setForm] = useState({
     name: profile?.name ?? "",
@@ -181,7 +183,10 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
       if (typeof refresh === "function") {
         await refresh();
       }
-      
+
+      setSelectedFile(null);
+      setAvatarPreview(null);
+
       toast.success(t("settings.successSave") || "Modifications enregistrées !");
     } catch (err) {
       console.error("[Settings save error detailed]:", err);
@@ -309,16 +314,89 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
                 borderBottom: `1px solid ${T.border}`,
               }}
             >
-              <Avatar name={form.name || "?"} size={56} src={form.avatar_url} />
+              <div style={{ position: "relative" }}>
+                <Avatar name={form.name || "?"} size={56} src={avatarPreview || form.avatar_url} />
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  title={t("settings.changePhoto")}
+                  style={{
+                    position: "absolute",
+                    bottom: -2,
+                    right: -2,
+                    width: 24,
+                    height: 24,
+                    borderRadius: "50%",
+                    border: `2px solid ${T.surface}`,
+                    background: T.brand,
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    padding: 0,
+                  }}
+                >
+                  ✎
+                </button>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setSelectedFile(file);
+                    setAvatarPreview(URL.createObjectURL(file));
+                  }}
+                  style={{ display: "none" }}
+                />
+              </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 16 }}>{form.name || t("settings.yourName")}</div>
                 <div style={{ fontSize: 13, color: T.muted, marginBottom: 8 }}>{form.trade}</div>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  onChange={(e) => setSelectedFile(e.target.files[0])} 
-                  style={{ fontSize: 12 }}
-                />
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      color: T.brand,
+                      fontWeight: 600,
+                      fontSize: 13,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    {t("settings.changePhoto")}
+                  </button>
+                  {(avatarPreview || form.avatar_url) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setAvatarPreview(null);
+                        setForm(p => ({ ...p, avatar_url: "" }));
+                        if (avatarInputRef.current) avatarInputRef.current.value = "";
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        padding: 0,
+                        color: T.muted,
+                        fontWeight: 600,
+                        fontSize: 13,
+                        cursor: "pointer",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {t("settings.removePhoto")}
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
