@@ -59,14 +59,22 @@ function toStripeParams(obj: unknown, prefix = ""): [string, string][] {
   return pairs;
 }
 
-async function stripeRequest(path: string, body: Record<string, unknown>) {
+async function stripeRequest(path: string, body: Record<string, unknown>, connectedAccountId?: string) {
   const params = new URLSearchParams(toStripeParams(body));
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+    "Content-Type": "application/x-www-form-urlencoded",
+  };
+  // CRITIQUE : sans cet en-tête, Stripe crée la ressource sur le compte
+  // PLATEFORME (Vimen) au lieu du compte Express connecté du pro — l'argent
+  // du client irait alors chez Vimen et jamais chez le pro. Avec cet
+  // en-tête, la ressource est créée DIRECTEMENT sur le compte connecté :
+  // c'est bien le pro qui reçoit ses propres fonds, Vimen ne les touche
+  // jamais (charge directe, pas de destination charge).
+  if (connectedAccountId) headers["Stripe-Account"] = connectedAccountId;
   const res = await fetch(`https://api.stripe.com/v1/${path}`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers,
     body: params.toString(),
   });
   const json = await res.json();
@@ -104,7 +112,7 @@ Deno.serve(async (req: Request) => {
     // 3. La facture existe et appartient VRAIMENT à l'appelant authentifié
     const { data: invoice, error: invErr } = await supabase
       .from("invoices")
-      .select("*, client:clients(name,email), job:jobs(title), profile:profiles(name)")
+      .select("*, client:clients(name,email), job:jobs(title), profile:profiles(name,stripe_account_id)")
       .eq("id", invoiceId)
       .single();
 
@@ -118,6 +126,14 @@ Deno.serve(async (req: Request) => {
     }
     if (invoice.status === "paid") {
       return json({ error: "Cette facture est déjà payée" }, 400);
+    }
+
+    // Sans compte Stripe connecté, impossible de créer un lien de paiement
+    // qui verse l'argent au bon endroit — on refuse plutôt que de risquer
+    // d'envoyer les fonds du client vers le compte Vimen par erreur.
+    const connectedAccountId = invoice.profile?.stripe_account_id;
+    if (!connectedAccountId) {
+      return json({ error: "Connecte d'abord ton compte Stripe dans Paramètres > Paiements pour pouvoir encaisser en ligne." }, 400);
     }
 
     // 4. Montant : TOUJOURS celui de la base, jamais celui fourni par le client
@@ -146,7 +162,7 @@ Deno.serve(async (req: Request) => {
         client_name: invoice.client?.name ?? "",
         client_email: invoice.client?.email ?? "",
       },
-    });
+    }, connectedAccountId);
 
     return json({ url: link.url, id: link.id }, 200);
   } catch (err) {
