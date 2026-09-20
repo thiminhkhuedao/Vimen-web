@@ -684,7 +684,7 @@ function PublicBookingPageInner() {
     try {
       const { data: prof, error } = await supabase
         .from("public_profiles")
-        .select("id, name, trade, bio, hourly_rate, booking_slug, extra_fields, plan, currency, language")
+        .select("id, name, trade, bio, hourly_rate, booking_slug, extra_fields, plan, currency, language, avatar_url")
         .eq("booking_slug", slug)
         .single();
 
@@ -1011,7 +1011,7 @@ function PublicBookingPageInner() {
 
         {/* Profile Card Header */}
         <div style={{ background: THEME.surface, borderRadius: THEME.radius.xl, border: `1px solid ${THEME.border}`, padding: "22px 26px", marginBottom: 20, boxShadow: THEME.shadow, display: "flex", gap: 16, alignItems: "center" }}>
-          <Avatar name={profile.name} size={56} />
+          <Avatar name={profile.name} size={56} src={profile.avatar_url} />
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5, margin: 0 }}>{profile.name}</h1>
             <div style={{ marginTop: 6, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
