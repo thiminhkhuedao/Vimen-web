@@ -40,7 +40,31 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
   const [saving, setSaving] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
+
+  async function handleAvatarFile(file) {
+    if (!file) return;
+    const targetId = profile?.id || profile?.clerk_id;
+    if (!targetId) {
+      toast.error(t("settings.avatarNoProfile") || "Profil non chargé, réessaie dans un instant.");
+      return;
+    }
+    setAvatarPreview(URL.createObjectURL(file));
+    setAvatarUploading(true);
+    try {
+      const { data: publicUrl, error } = await uploadImage(targetId, file, "avatars");
+      if (error) throw error;
+      setForm(p => ({ ...p, avatar_url: publicUrl }));
+      setSelectedFile(null);
+    } catch (err) {
+      console.error("[Settings avatar upload failed]:", err);
+      toast.error(t("settings.avatarUploadFailed") || "Échec de l'envoi de la photo, réessaie.");
+      setAvatarPreview(null);
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
 
   const [form, setForm] = useState({
     name: profile?.name ?? "",
@@ -125,12 +149,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
     setSaving(true);
 
     try {
-      let avatarUrl = form.avatar_url;
-      if (selectedFile) {
-        const { data: publicUrl, error: uploadError } = await uploadImage(targetId, selectedFile, "avatars");
-        if (uploadError) throw uploadError;
-        avatarUrl = publicUrl;
-      }
+      const avatarUrl = form.avatar_url;
 
       const payload = {
         name: form.name,
@@ -316,9 +335,20 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
             >
               <div style={{ position: "relative" }}>
                 <Avatar name={form.name || "?"} size={56} src={avatarPreview || form.avatar_url} />
+                {avatarUploading && (
+                  <div style={{
+                    position: "absolute", inset: 0, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.45)", display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                    color: "#fff", fontSize: 10, fontWeight: 700,
+                  }}>
+                    …
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
+                  disabled={avatarUploading}
                   title={t("settings.changePhoto")}
                   style={{
                     position: "absolute",
@@ -334,7 +364,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 12,
-                    cursor: "pointer",
+                    cursor: avatarUploading ? "default" : "pointer",
                     padding: 0,
                   }}
                 >
@@ -346,9 +376,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
                   accept="image/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (!file) return;
-                    setSelectedFile(file);
-                    setAvatarPreview(URL.createObjectURL(file));
+                    handleAvatarFile(file);
+                    e.target.value = "";
                   }}
                   style={{ display: "none" }}
                 />
@@ -360,6 +389,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
                   <button
                     type="button"
                     onClick={() => avatarInputRef.current?.click()}
+                    disabled={avatarUploading}
                     style={{
                       background: "none",
                       border: "none",
@@ -367,11 +397,11 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
                       color: T.brand,
                       fontWeight: 600,
                       fontSize: 13,
-                      cursor: "pointer",
+                      cursor: avatarUploading ? "default" : "pointer",
                       fontFamily: "inherit",
                     }}
                   >
-                    {t("settings.changePhoto")}
+                    {avatarUploading ? (t("settings.uploadingPhoto") || "Envoi...") : t("settings.changePhoto")}
                   </button>
                   {(avatarPreview || form.avatar_url) && (
                     <button
