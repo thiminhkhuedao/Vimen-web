@@ -1265,7 +1265,7 @@ export default {
     successfulReferrals: "Successful referrals",
     totalSent: "{{count}} total sent",
     monthsProEarned: "Months Pro earned",
-    appliedToAccount: "Applied to your account",
+    appliedToAccount: "Priority support activated",
     pending: "Pending",
     waitingToSignUp: "Waiting to sign up",
     yourReferralCode: "Your referral code",
@@ -1601,38 +1601,7 @@ publicBooking: {
 },
 
 
-pricingPage: {
-  eyebrow: "Pricing",
-  title: "Simple pricing that grows with you",
-  sub: "Start for free. Move to Unlimited when you are ready for more.",
-  mostPopular: "Most popular",
-  perMonth: "/mo",
-  feeNote: "A two percent processing fee applies to payments made through Vimen Pay on every plan.",
-  free: {
-    name: "Free",
-    sub: "Everything you need to get started",
-    cta: "Start free",
-    feature1: "Up to five clients",
-    feature2: "Up to ten invoices a month",
-    feature3: "One booking page",
-    feature4: "Community support",
-  },
-  unlimited: {
-    name: "Unlimited",
-    sub: "For businesses ready to grow",
-    cta: "Start free trial",
-    feature1: "Unlimited clients",
-    feature2: "Unlimited invoices and quotes",
-    feature3: "Custom booking page",
-    feature4: "Automatic review requests",
-    feature5: "Referral programme",
-    feature6: "Priority support",
-  },
-  finalCta: {
-    title: "Start free, upgrade whenever you are ready",
-    cta: "Start free",
-  },
-},
+
 
   errors: {
     sectionUnavailable: "This section is currently unavailable.",
@@ -1827,72 +1796,7 @@ pricingPage: {
     },
   },
 
-  pricingPage: {
-    nav: {
-      signIn: "Sign In",
-      signUp: "Start Free Trial",
-    },
-    hero: {
-      title: "Simple, Transparent Pricing",
-      subtitle: "Everything you need to run your trade business. No hidden fees or contracts.",
-    },
-    billing: {
-      monthly: "Monthly Billing",
-      annual: "Annual Billing",
-      saveDiscount: "Save 20%",
-    },
-    popularBadge: "Most Popular",
-    monthAbbr: "mo",
-    plans: {
-      solo: {
-        name: "Solo Vimen",
-        tagline: "Perfect for independent sole traders getting started.",
-        feat1: "Unlimited Quotes & Invoices",
-        feat2: "Client CRM & History",
-        feat3: "Online Card Payments",
-        feat4: "SMS & Email Reminders",
-        feat5: "Basic Job Scheduling",
-        cta: "Start 14-Day Free Trial",
-      },
-      pro: {
-        name: "Professional",
-        tagline: "For established tradesmen who need complete automation.",
-        feat1: "Everything in Solo",
-        feat2: "Public Online Booking Page",
-        feat3: "Marketplace Listing Rights",
-        feat4: "Automated Payment Reminders",
-        feat5: "Certification Tracking & Alerts",
-        feat6: "Priority Support",
-        cta: "Start 14-Day Free Trial",
-      },
-      team: {
-        name: "Business Team",
-        tagline: "For growing trade businesses with subcontractors & teams.",
-        feat1: "Everything in Professional",
-        feat2: "Up to 5 Team Members",
-        feat3: "Subcontractor Access Control",
-        feat4: "Advanced Financial Reports",
-        feat5: "Multi-Vertical Support",
-        feat6: "Dedicated Account Manager",
-        cta: "Contact Sales",
-      },
-    },
-    faq: {
-      title: "Frequently Asked Questions",
-      q1: "Is there a free trial?",
-      a1: "Yes, you can try Vimen free for 14 days with full access to all features. No credit card required.",
-      q2: "Can I change my plan later?",
-      a2: "Absolutely! You can upgrade, downgrade, or cancel your subscription at any time directly from your account settings.",
-      q3: "How do client payments work?",
-      a3: "We connect directly with Stripe Express, so your clients can pay quotes and invoices instantly online with a debit or credit card.",
-      q4: "Are there any hidden transaction fees?",
-      a4: "Vimen charges zero commission on your jobs. Standard payment processing fees apply directly through Stripe.",
-    },
-    finalCta: {
-      title: "Ready to simplify your business?",
-      cta: "Get Started Now",
-    },
-  },
+
   home: {
     nav: {
       features: "Features",
@@ -1904,16 +1808,7 @@ pricingPage: {
     },
   },
 
-  "pricingPage": {
-    "title": "Simple, Transparent Pricing",
-    "subtitle": "Choose the plan that fits your business needs. No hidden fees.",
-    "monthly": "Monthly",
-    "annual": "Annual (Save 20%)",
-    "finalCta": {
-      "title": "Ready to get started?",
-      "cta": "Start Free Trial"
-    }
-  },
+
   "home": {
     "nav": {
       "features": "Features",
@@ -1925,72 +1820,7 @@ pricingPage: {
     }
   },
 
-  "pricingPage": {
-    "nav": {
-      "signIn": "Sign In",
-      "signUp": "Get Started"
-    },
-    "hero": {
-      "title": "Simple, Transparent Pricing",
-      "subtitle": "Choose the perfect plan to grow your business. No hidden fees."
-    },
-    "billing": {
-      "monthly": "Monthly",
-      "annual": "Annual",
-      "saveDiscount": "Save 20%"
-    },
-    "popularBadge": "Most Popular",
-    "monthAbbr": "mo",
-    "plans": {
-      "solo": {
-        "name": "Solo",
-        "tagline": "Ideal for sole traders and freelancers getting started.",
-        "feat1": "Up to 15 clients",
-        "feat2": "Unlimited quotes and invoices",
-        "feat3": "Online booking page",
-        "feat4": "Automated email reminders",
-        "feat5": "Standard email support",
-        "cta": "Start Free Trial"
-      },
-      "pro": {
-        "name": "Pro",
-        "tagline": "For growing professionals who need full automation.",
-        "feat1": "Unlimited clients",
-        "feat2": "Quotes & Invoices with online payments",
-        "feat3": "Automated SMS reminders",
-        "feat4": "Google review collection",
-        "feat5": "Certifications module",
-        "feat6": "Priority support",
-        "cta": "Start Pro Trial"
-      },
-      "team": {
-        "name": "Team",
-        "tagline": "For small teams and growing trade businesses.",
-        "feat1": "Everything in Pro included",
-        "feat2": "Up to 5 team members",
-        "feat3": "Shared team schedule",
-        "feat4": "Advanced business analytics",
-        "feat5": "1-click accounting export",
-        "feat6": "Dedicated account manager",
-        "cta": "Contact Sales"
-      }
-    },
-    "faq": {
-      "title": "Frequently Asked Questions",
-      "q1": "Can I change my plan at any time?",
-      "a1": "Yes, you can upgrade or downgrade your subscription plan at any time directly from your account settings.",
-      "q2": "Is there any long-term contract?",
-      "a2": "No contracts required for monthly plans. You can cancel your subscription whenever you want in one click.",
-      "q3": "How does the free trial work?",
-      "a3": "You get 14 days of unrestricted access to all features. No credit card required to start.",
-      "q4": "What payment methods do you accept?",
-      "a4": "We accept all major credit and debit cards, including Visa, Mastercard, and American Express."
-    },
-    "finalCta": {
-      "title": "Ready to get started?",
-      "cta": "Get Started Now"
-    }
-  },
+
 
 home: {
   nav: {
@@ -2249,6 +2079,15 @@ booking: {
 
     // Toast Notifications
     nameAndPriceRequired: "Service name and price are required",
+    depositEnabled: "Require a deposit",
+    depositEnabledSub: "A deposit will be requested from the client once their booking request is accepted.",
+    depositTypeLabel: "Type",
+    depositTypeFixed: "Fixed amount",
+    depositTypePercent: "Percentage of price",
+    depositAmountFixedLabel: "Deposit amount",
+    depositAmountPercentLabel: "Percentage (%)",
+    depositAmountRequired: "Please enter the deposit amount",
+    depositBadge: "Deposit {{amount}}",
     addFailed: "Failed to create service",
     addedToast: "Service added successfully",
     updateFailed: "Failed to update service",
@@ -2265,6 +2104,8 @@ booking: {
   loadErrorWhat: "Failed to load booking requests",
   loadErrorWhy: "Could not synchronize data with the server.",
   loadErrorNext: "Please check your network connection and try refreshing.",
+  depositStripeNotConnected: "A deposit is required for this service, but no Stripe account is connected — connect it in Settings to be able to collect it.",
+  depositLinkSentToast: "Confirmation email sent with the deposit payment link",
 },
 
 certifications: {
@@ -2512,6 +2353,15 @@ invoices: {
     paid: "Paid",
     unpaid: "Unpaid",
     overdue: "Overdue",
+  },
+  sendOptionsModal: {
+    title: "Send invoice",
+    intro: "Choose what to include in the email sent to {{email}}.",
+    includeIban: "Include my IBAN",
+    includeIbanSub: "Your bank details will appear in the email to allow payment by bank transfer.",
+    includeStripe: "Include Stripe payment link",
+    includeStripeSub: "A card payment button will be included in the email.",
+    confirmBtn: "Send email",
   },
 },
 
@@ -3198,7 +3048,7 @@ referrals: {
     intro: "Send an invitation directly to their inbox. They'll get a personal link to get started.",
     theirNameLabel: "Their Name (optional)",
     theirEmailLabel: "Their Email",
-    giftNote: "Reward: You both get 2 months free Pro subscription when they create an account and complete their first job.",
+    giftNote: "By referring them, you're helping them get their admin sorted faster — and you both unlock priority support access once their account is active.",
     cancel: "Cancel",
     send: "Send Invitation",
     namePlaceholder: "e.g., John Smith",
@@ -3208,8 +3058,8 @@ referrals: {
   metrics: {
     successfulReferrals: "Successful Referrals",
     totalSent: "{{count}} invites sent",
-    monthsProEarned: "Months Pro Earned",
-    appliedToAccount: "Applied to your account",
+    monthsProEarned: "Rewards Unlocked",
+    appliedToAccount: "Priority support activated",
     pending: "Pending Invites",
     waitingToSignUp: "Awaiting registration",
     yourReferralCode: "Your Referral Code",
@@ -3218,7 +3068,7 @@ referrals: {
 
   linkCard: {
     title: "Share your referral link",
-    description: "Share your personal link with fellow trade professionals, colleagues, or subcontractors. When they sign up and start using Vimen, you both get free Pro access.",
+    description: "Share your personal link with fellow professionals, colleagues, or subcontractors. Vimen is 100% free for both of you — and you both unlock priority support access.",
     copied: "Copied!",
     copyLink: "Copy link",
   },
@@ -3238,8 +3088,8 @@ referrals: {
       desc: "Once they create and complete their first booking, both accounts qualify.",
     },
     step4: {
-      title: "Both get 2 months free Pro",
-      desc: "We automatically credit 2 free months of Pro to both of your accounts.",
+      title: "Priority support unlocked",
+      desc: "You both get priority access to our support team.",
     },
   },
 
@@ -3247,7 +3097,7 @@ referrals: {
     title: "Your Referrals",
     empty: "You haven't referred anyone yet",
     referFirst: "Send your first referral",
-    rewardMonths: "{{count}} months Pro free",
+    rewardEarned: "Reward unlocked",
     headers: {
       name: "Name",
       email: "Email",
@@ -3270,7 +3120,7 @@ referrals: {
     pending: "Waiting for user to sign up",
     signed_up: "Account created, awaiting first job",
     qualified: "Eligible for reward",
-    rewarded: "2 months Pro applied",
+    rewarded: "Priority support unlocked",
   },
   shareMessages: {
     whatsapp: "Hey! {{name}} is inviting you to try Vimen, the free app for running your business. Sign up here: {{url}}",
@@ -3398,6 +3248,17 @@ settings: {
     deleting: "Deleting…",
     deleteError: "Delete failed, please try again",
   },
+  stripeConnectTitle: "Stripe Connect",
+  stripeConnectSub: "Link your Stripe account to receive payouts.",
+  stripeTitle: "Stripe",
+  documentVisibility: {
+    title: "Document Visibility",
+    sub: "Choose what appears by default on your quotes, invoices, and booking confirmations. You can adjust this each time you send one.",
+    showIban: "Show my IBAN",
+    showIbanSub: "Your bank details will appear on your documents to allow payment by bank transfer.",
+    showStripe: "Show my Stripe payment link",
+    showStripeSub: "A card payment link will be included to let your clients pay online.",
+  },
 },
 
 nav: {
@@ -3424,127 +3285,7 @@ nav: {
   tagline: "Service platform for professionals",
 },
 
-pricingPage: {
-  nav: {
-    signIn: "Sign In",
-    signUp: "Get Started",
-  },
-  hero: {
-    title: "Simple, transparent pricing",
-    subtitle: "Start for free and upgrade as your trade business grows. No hidden fees.",
-  },
-  billing: {
-    monthly: "Monthly billing",
-    annual: "Annual billing",
-    saveDiscount: "Save 20%",
-  },
-  popularBadge: "Most popular",
-  monthAbbr: "mo",
-  plans: {
-    free: {
-      name: "Free",
-      tagline: "Everything you need to launch and manage your first jobs.",
-      feat1: "Up to 5 clients",
-      feat2: "Up to 10 invoices total",
-      feat3: "Unlimited quotes & reviews",
-      feat4: "5 unpaid invoice reminders",
-      feat5: "Max 2 public certifications",
-      feat6: "Public booking page",
-      cta: "Get Started Free",
-    },
-    pro: {
-      name: "Pro",
-      tagline: "For busy professionals who need unlimited capacity and automation.",
-      feat1: "Unlimited clients",
-      feat2: "Unlimited invoices & quotes",
-      feat3: "Unlimited automatic payment reminders",
-      feat4: "Unlimited public certifications",
-      feat5: "Custom booking URL & no branding",
-      feat6: "Automated SMS reminders",
-      feat7: "Priority support",
-      cta: "Upgrade to Pro",
-    },
-  },
-  limitModal: {
-    title: "Limit Reached",
-    description: "You've reached the limits of the Free plan for this feature. Upgrade to Pro for €10/month for unlimited access.",
-    btn: "Upgrade to Pro (€10/mo)",
-    cancel: "Maybe later",
-  },
-  faq: {
-    title: "Frequently Asked Questions",
-    q1: "Is the Free plan really free forever?",
-    a1: "Yes! You can use the Free plan for as long as you want within the 5 clients and 10 invoices limits.",
-    q2: "Can I cancel my Pro subscription at any time?",
-    a2: "Absolutely. There are no contracts. You can downgrade or cancel whenever you like.",
-    q3: "What happens when I reach the 10 invoices limit?",
-    a3: "You can still manage existing invoices and send unlimited quotes, but you will need to upgrade to Pro to issue new invoices.",
-    q4: "Are client reviews limited on the Free plan?",
-    a4: "No! Reviews and quotes are 100% unlimited on both Free and Pro plans.",
-  },
-  finalCta: {
-    title: "Ready to get started?",
-    cta: "Start Free Today",
-  },
-    hero: {
-      title: "Simple, transparent pricing",
-      subtitle: "Everything you need to manage your bookings and clients. Start for free and upgrade whenever you are ready.",
-    },
-    billing: {
-      monthly: "Monthly",
-      annual: "Annual",
-      saveDiscount: "Save 20%",
-    },
-    popularBadge: "Most Popular",
-    monthAbbr: "mo",
-    plans: {
-      free: {
-        name: "Free",
-        tagline: "Essential tools to get your booking page up and running.",
-        cta: "Get Started for Free",
-        feat1: "Basic services listing",
-        feat2: "Up to 2 visible certifications",
-        feat3: "Standard booking page link",
-        feat4: "Availability & calendar management",
-        feat5: "Direct client messaging",
-        feat6: "Community support",
-      },
-      pro: {
-        name: "Pro",
-        tagline: "Built for growing independent professionals who need more room to work.",
-        cta: "Upgrade to Pro",
-        feat1: "Everything in Free",
-        feat2: "Unlimited services & custom requests",
-        feat3: "Unlimited visible certifications",
-        feat4: "Custom branding & personalized slug",
-        feat5: "Advanced slot & availability controls",
-        feat6: "Booking & revenue analytics",
-        feat7: "Priority customer support",
-      },
-    },
-    faq: {
-      title: "Frequently Asked Questions",
-      q1: "Can I start with the Free plan?",
-      a1: "Yes, you can use the Free plan for as long as you like with no credit card required.",
-      q2: "Can I cancel or change my plan anytime?",
-      a2: "Absolutely. You can upgrade, downgrade, or cancel your subscription directly from your settings panel at any time.",
-      q3: "Are there any hidden transaction fees?",
-      a3: "No hidden fees. You only pay for your subscription plan if you choose to upgrade to Pro.",
-      q4: "What payment methods do you accept?",
-      a4: "We support all major credit cards and debit cards via Stripe.",
-    },
-    finalCta: {
-      title: "Ready to simplify your bookings?",
-      cta: "Create Your Free Account",
-    },
-  eyebrow: "Pricing",
-  limitModal: {
-    title: "Limit reached",
-    description: "You've reached the limit of your current plan. Upgrade to keep going.",
-    btn: "View plans",
-    cancel: "Cancel",
-  },
-},
+
 footerNav: {
   faq: "FAQ",
   about: "About",
@@ -3745,5 +3486,49 @@ publicQuote: {
     copy: "Copy",
     loading: "Loading...",
     save: "Save",
+  },
+
+  pricingPage: {
+    eyebrow: "Pricing",
+    hero: {
+      title: "100% free, no hidden catch",
+      subtitle: "No subscription, no contract, no credit card required. Every feature is included.",
+    },
+    popularBadge: "Included",
+    monthAbbr: "mo",
+    plans: {
+      free: {
+        name: "Vimen",
+        tagline: "Everything you need to run your business, with no limits.",
+        feat1: "Unlimited quotes & invoices",
+        feat2: "Client management & full history",
+        feat3: "Online payments via Stripe, or bank transfer (IBAN)",
+        feat4: "Automatic email reminders",
+        feat5: "Custom public booking page",
+        feat6: "Client reviews & referral program",
+        cta: "Create my free account",
+      },
+    },
+    faq: {
+      title: "Frequently Asked Questions",
+      q1: "Is Vimen really free?",
+      a1: "Yes, entirely. There's no paid subscription, no limit on clients, invoices, or quotes, and no credit card is required to create an account.",
+      q2: "How do client payments work?",
+      a2: "Your clients can pay your quotes and invoices directly online by card via Stripe, or by bank transfer using the IBAN you choose to display.",
+      q3: "Are there any hidden fees?",
+      a3: "No. Vimen doesn't take any commission on your payments. Only Stripe's standard card processing fees apply.",
+      q4: "Can I delete my account at any time?",
+      a4: "Yes, anytime from your settings. No contract, no penalty.",
+    },
+    finalCta: {
+      title: "Ready to simplify your day-to-day?",
+      cta: "Create my free account",
+    },
+    limitModal: {
+      title: "Limit reached",
+      description: "You've reached the limit of your current plan. Upgrade to keep going.",
+      btn: "View plans",
+      cancel: "Cancel",
+    },
   },
 }
