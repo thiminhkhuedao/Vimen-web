@@ -17,7 +17,7 @@ import { formatCurrency } from "../lib/currency.js";
 
 const fmt = n => `€${Number(n||0).toLocaleString("en-GB",{minimumFractionDigits:2})}`;
 
-const EMPTY_FORM = { name:"", price:"", duration_min:"", description:"", image_url:null };
+const EMPTY_FORM = { name:"", price:"", duration_min:"", description:"", image_url:null, deposit_enabled:false, deposit_type:"fixed", deposit_amount:"" };
 
 export default function ServiceEditor({ profile }) {
   const fmt = n => formatCurrency(n, profile?.currency);
@@ -45,6 +45,9 @@ export default function ServiceEditor({ profile }) {
     setForm({
       name: s.name, price: String(s.price ?? ""), duration_min: s.duration_min ? String(s.duration_min) : "",
       description: s.description ?? "", image_url: s.image_url ?? null,
+      deposit_enabled: s.deposit_enabled ?? false,
+      deposit_type: s.deposit_type ?? "fixed",
+      deposit_amount: s.deposit_amount != null ? String(s.deposit_amount) : "",
     });
     setModal(s);
   }
@@ -52,6 +55,10 @@ export default function ServiceEditor({ profile }) {
   async function handleSave(e) {
     e.preventDefault();
     if (!form.name || !form.price) { toast.error(t("booking.services.nameAndPriceRequired")); return; }
+    if (form.deposit_enabled && (!form.deposit_amount || parseFloat(form.deposit_amount) <= 0)) {
+      toast.error(t("booking.services.depositAmountRequired"));
+      return;
+    }
     setSaving(true);
     const payload = {
       name: form.name,
@@ -59,6 +66,9 @@ export default function ServiceEditor({ profile }) {
       duration_min: form.duration_min ? parseInt(form.duration_min, 10) : null,
       description: form.description || "",
       image_url: form.image_url || null,
+      deposit_enabled: form.deposit_enabled,
+      deposit_type: form.deposit_enabled ? form.deposit_type : null,
+      deposit_amount: form.deposit_enabled ? parseFloat(form.deposit_amount) || 0 : null,
     };
 
     if (modal === "add") {
@@ -140,6 +150,7 @@ export default function ServiceEditor({ profile }) {
                   {fmt(s.price)}
                   {s.duration_min ? ` · ${s.duration_min} ${t("booking.services.minutesShort")}` : ""}
                   {!s.active ? ` · ${t("booking.services.hiddenLabel")}` : ""}
+                  {s.deposit_enabled ? ` · ${t("booking.services.depositBadge", { amount: s.deposit_type === "percent" ? `${s.deposit_amount}%` : fmt(s.deposit_amount) })}` : ""}
                 </div>
               </div>
               <div style={{ display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
@@ -172,6 +183,43 @@ export default function ServiceEditor({ profile }) {
             <Field label={t("booking.services.descriptionLabel")}>
               <Textarea value={form.description} onChange={fld("description")} placeholder={t("booking.services.descriptionPlaceholder")}/>
             </Field>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 500 }}>{t("booking.services.depositEnabled")}</div>
+                <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{t("booking.services.depositEnabledSub")}</div>
+              </div>
+              <Toggle on={form.deposit_enabled} onChange={v => setForm(p => ({ ...p, deposit_enabled: v }))} />
+            </div>
+
+            {form.deposit_enabled && (
+              <FieldRow>
+                <Field label={t("booking.services.depositTypeLabel")} flex="1">
+                  <select
+                    value={form.deposit_type}
+                    onChange={e => setForm(p => ({ ...p, deposit_type: e.target.value }))}
+                    style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: `1px solid ${T.border}`, fontSize: 14, background: T.surface, color: T.text }}
+                  >
+                    <option value="fixed">{t("booking.services.depositTypeFixed")}</option>
+                    <option value="percent">{t("booking.services.depositTypePercent")}</option>
+                  </select>
+                </Field>
+                <Field
+                  label={form.deposit_type === "percent" ? t("booking.services.depositAmountPercentLabel") : t("booking.services.depositAmountFixedLabel")}
+                  flex="1"
+                >
+                  <Input
+                    type="number" min="0"
+                    step={form.deposit_type === "percent" ? "1" : "0.01"}
+                    max={form.deposit_type === "percent" ? "100" : undefined}
+                    value={form.deposit_amount}
+                    onChange={fld("deposit_amount")}
+                    placeholder={form.deposit_type === "percent" ? "20" : "50.00"}
+                  />
+                </Field>
+              </FieldRow>
+            )}
+
             <Field label={t("booking.services.photoLabel")}>
               <PhotoUpload
                 profileId={profile.id}
