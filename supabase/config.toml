@@ -395,6 +395,28 @@ deno_version = 2
 [functions.stripe-connect]
 verify_jwt = false
 
+# Même raison que stripe-connect ci-dessus : ces fonctions vérifient
+# elles-mêmes le JWT Clerk en interne (voir verifyToken / CLERK_SECRET_KEY
+# dans leur index.ts) — sans cette ligne, la passerelle Supabase les
+# bloque avec une erreur 401 avant même qu'elles ne s'exécutent.
+[functions.create-payment-link]
+verify_jwt = false
+
+[functions.send-booking-confirmation]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
+[functions.export-data]
+verify_jwt = false
+
+# Appelée en fetch() brut, sans jeton du tout, depuis des pages où le
+# visiteur n'est pas encore connecté (login, inscription, contact,
+# réservation publique) — elle doit donc rester accessible sans JWT.
+[functions.check-rate-limit]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
