@@ -301,7 +301,7 @@ export default function BookingPage({ profile }) {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 20 }}>
             <Card style={{ marginBottom: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16, paddingBottom: 20, borderBottom: `1px solid ${T.border}`, marginBottom: 20 }}>
-                <Avatar name={profile?.name || "?"} size={60} />
+                <Avatar name={profile?.name || "?"} size={60} src={profile?.avatar_url} />
                 <div>
                   <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: -0.5 }}>{profile?.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
