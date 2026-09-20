@@ -55,23 +55,6 @@ export default function PricingPage({ onSignIn, onSignUp }) {
       ],
       ctaKey: "pricingPage.plans.free.cta",
     },
-    {
-      id: "pro",
-      nameKey: "pricingPage.plans.pro.name",
-      taglineKey: "pricingPage.plans.pro.tagline",
-      price: 10,
-      popular: true,
-      features: [
-        "pricingPage.plans.pro.feat1",
-        "pricingPage.plans.pro.feat2",
-        "pricingPage.plans.pro.feat3",
-        "pricingPage.plans.pro.feat4",
-        "pricingPage.plans.pro.feat5",
-        "pricingPage.plans.pro.feat6",
-        "pricingPage.plans.pro.feat7",
-      ],
-      ctaKey: "pricingPage.plans.pro.cta",
-    },
   ];
 
   const faqs = [
