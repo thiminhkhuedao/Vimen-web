@@ -35,7 +35,7 @@ const iStyle = {
 export default function JobsPage({ profile }) {
   const { t } = useTranslation();
   const fmt = n => formatCurrency(n, profile?.currency);
-  const terms = getTerms(profile?.trade);
+  const terms = getTerms(profile?.trade, t);
   
   const [jobs, setJobs] = useState([]);
   const [clients, setClients] = useState([]);
