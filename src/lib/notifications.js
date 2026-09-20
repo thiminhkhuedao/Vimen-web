@@ -49,11 +49,16 @@ export async function sendPushNotification(profileId, title, body, data) {
  * @param {string} invoiceId
  * @param {boolean} [reminder=false] - true pour un email de rappel
  */
-export async function sendInvoiceEmail(invoiceId, reminder = false) {
+export async function sendInvoiceEmail(invoiceId, reminder = false, options = {}) {
   if (!invoiceId) {
     return { success: false, error: "Missing invoice id" };
   }
-  return invoke("send-invoice-email", { invoiceId, reminder });
+  return invoke("send-invoice-email", {
+    invoiceId,
+    reminder,
+    includeIban: options.includeIban ?? true,
+    includeStripeLink: options.includeStripeLink ?? true,
+  });
 }
 
 /**
