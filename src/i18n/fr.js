@@ -2111,6 +2111,7 @@ booking: {
   loadErrorNext: "Vérifiez votre connexion réseau et essayez de rafraîchir la page.",
   depositStripeNotConnected: "Un acompte est requis pour ce service, mais aucun compte Stripe n'est connecté — connecte-le dans Paramètres pour pouvoir l'encaisser.",
   depositLinkSentToast: "Email de confirmation envoyé avec le lien de paiement de l'acompte",
+  perHourSuffix: "/h",
 },
 
 
