@@ -3262,6 +3262,9 @@ settings: {
   },
   changePhoto: "Change photo",
   removePhoto: "Remove",
+  avatarUploadFailed: "Failed to upload photo, please try again.",
+  avatarNoProfile: "Profile not loaded yet, please try again in a moment.",
+  uploadingPhoto: "Uploading...",
 },
 
 nav: {
