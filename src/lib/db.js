@@ -382,11 +382,12 @@ export const getPaymentStats = async (profileId) => {
 
 // Connect Stripe account (returns OAuth URL)
 export const getStripeConnectUrl = async (
-  profileId,
+  clerkToken,
   returnUrl = `${window.location.origin}/settings?tab=payment`
 ) => {
   const { data, error } = await supabase.functions.invoke("stripe-connect", {
-    body: { profileId, returnUrl },
+    body: { returnUrl },
+    headers: { Authorization: `Bearer ${clerkToken}` },
   });
 
   if (error) {
