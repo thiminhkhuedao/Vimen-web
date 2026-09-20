@@ -2106,6 +2106,7 @@ booking: {
   loadErrorNext: "Please check your network connection and try refreshing.",
   depositStripeNotConnected: "A deposit is required for this service, but no Stripe account is connected — connect it in Settings to be able to collect it.",
   depositLinkSentToast: "Confirmation email sent with the deposit payment link",
+  perHourSuffix: "/hr",
 },
 
 certifications: {
