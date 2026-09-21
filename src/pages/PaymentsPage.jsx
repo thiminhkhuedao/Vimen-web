@@ -288,7 +288,7 @@ export default function PaymentsPage({ profile, state, dispatch, refresh }) {
                   {tr("payments.overview.notConnectedDesc")}
                 </div>
               </div>
-              <Btn onClick={handleStripeStandardConnect}>{tr("payments.overview.connectStripeBtn")}</Btn>
+              <Btn disabled title={tr("payments.comingSoon")}>{tr("payments.comingSoon")}</Btn>
             </div>
           ) : (
             <div style={{ 
@@ -577,9 +577,7 @@ export default function PaymentsPage({ profile, state, dispatch, refresh }) {
                 <div style={{ fontSize: 13, color: T.muted, marginBottom: 16, lineHeight: 1.6 }}>
                   {tr("payments.connect.notConnectedBody")}
                 </div>
-                <Btn onClick={handleStripeStandardConnect} disabled={isLoading}>
-                  {isLoading ? "Chargement..." : tr("payments.connect.connectAccountBtn")}
-                </Btn>
+                <Btn disabled title={tr("payments.comingSoon")}>{tr("payments.comingSoon")}</Btn>
               </div>
             )}
           </Card>
