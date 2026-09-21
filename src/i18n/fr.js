@@ -2796,6 +2796,7 @@ errors: {
   syncFailedWhy: "Le service de paiement est temporairement indisponible",
   syncFailedAction: "Veuillez réessayer dans quelques instants",
 },
+  comingSoon: "Bientôt disponible",
 },
 
 publicBooking: {
@@ -3276,6 +3277,7 @@ settings: {
   avatarUploadFailed: "Échec de l'envoi de la photo, réessaie.",
   avatarNoProfile: "Profil non chargé, réessaie dans un instant.",
   uploadingPhoto: "Envoi...",
+  stripeComingSoon: "Bientôt disponible",
 },
 
 nav: {
