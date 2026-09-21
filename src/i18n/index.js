@@ -55,18 +55,28 @@ export function getLanguage() {
   return _current;
 }
 
-/** Switch language — persists to localStorage on web */
+/** Switch language — persists to localStorage on web, and to the
+ *  profile server-side (profiles.language) when a persister is
+ *  registered (see setLanguagePersister) — used to generate emails
+ *  (invoices, quotes...) in the right language. */
 export function setLanguage(lang) {
   if (!SUPPORTED.includes(lang)) {
     console.warn(`[i18n] Unsupported language: ${lang}. Supported: ${SUPPORTED.join(", ")}`);
     return;
   }
+  const changed = _current !== lang;
   _current = lang;
   try {
     if (typeof localStorage !== "undefined") {
       localStorage.setItem("Vimen_language", lang);
     }
   } catch { /* SSR or storage blocked */ }
+
+  if (changed && typeof _persistLanguage === "function") {
+    Promise.resolve(_persistLanguage(lang)).catch((err) => {
+      console.error("[i18n] Failed to persist language to profile:", err);
+    });
+  }
 }
 
 /** All supported language codes */
