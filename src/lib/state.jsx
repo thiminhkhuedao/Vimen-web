@@ -13,7 +13,7 @@ export const SEED = {
     bio: "Fully qualified electrician with 12 years experience. Domestic & commercial. 18th edition certified.",
     hourly_rate: 65, bank_name: "Barclays Business",
     sort_code: "20-12-34", account_number: "12345678",
-    payment_terms: "14 days", invoice_notes: "VAT not registered.",
+    payment_terms: "14", invoice_notes: "VAT not registered.",
     booking_slug: "jakemorrison", plan: "pro",
     notif_email_booking: true, notif_sms_paid: false,
     notif_weekly_digest: true, notif_overdue_reminder: true,
