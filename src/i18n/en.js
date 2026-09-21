@@ -2787,6 +2787,7 @@ payments: {
     syncFailedWhy: "The payment service is temporarily unavailable",
     syncFailedAction: "Please try again in a moment",
   },
+  comingSoon: "Coming soon",
 },
 
 publicBooking: {
@@ -3265,6 +3266,7 @@ settings: {
   avatarUploadFailed: "Failed to upload photo, please try again.",
   avatarNoProfile: "Profile not loaded yet, please try again in a moment.",
   uploadingPhoto: "Uploading...",
+  stripeComingSoon: "Coming soon",
 },
 
 nav: {
