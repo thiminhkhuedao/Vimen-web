@@ -4,6 +4,7 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { toast } from "react-hot-toast";
 import { updateProfile, uploadImage, getStripeConnectUrl } from "../lib/db";
+import { PAYMENT_TERMS_KEYS, getPaymentTermsLabel } from "../lib/paymentTerms.js";
 import { T } from "../styles/tokens";
 import {
   PageShell, Card, Btn, Badge, Avatar,
@@ -77,7 +78,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
     bank_name: profile?.bank_name ?? "",
     sort_code: profile?.sort_code ?? "",
     account_number: profile?.account_number ?? "",
-    payment_terms: profile?.payment_terms ?? "14 days",
+    payment_terms: profile?.payment_terms ?? "14",
     invoice_notes: profile?.invoice_notes ?? "",
     booking_slug: profile?.booking_slug ?? "",
     google_review_url: profile?.google_review_url ?? "",
@@ -105,7 +106,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         bank_name: profile.bank_name ?? "",
         sort_code: profile.sort_code ?? "",
         account_number: profile.account_number ?? "",
-        payment_terms: profile.payment_terms ?? "14 days",
+        payment_terms: profile.payment_terms ?? "14",
         invoice_notes: profile.invoice_notes ?? "",
         booking_slug: profile.booking_slug ?? "",
         google_review_url: profile.google_review_url ?? "",
@@ -299,12 +300,6 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
     </div>
   );
 
-  const TERMS_OPTIONS = [
-    t("settings.termsImmediate"),
-    t("settings.terms7"),
-    t("settings.terms14"),
-    t("settings.terms30"),
-  ];
 
   return (
     <PageShell title={t("settings.title")}>
@@ -536,8 +531,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
                 temporaire de l'abonnement Pro — Stripe Connect reste actif */}
             <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{t("settings.stripeConnectTitle")}</div>
             <div style={{ fontSize: 13, color: T.muted, marginBottom: 12 }}>{t("settings.stripeConnectSub")}</div>
-            <Btn variant="ghost" size="sm" onClick={handleConnectStripe}>
-              {t("settings.connectStripe") || "Connecter mon compte Stripe"}
+            <Btn variant="ghost" size="sm" disabled title={t("settings.stripeComingSoon")}>
+              {t("settings.stripeComingSoon")}
             </Btn>
 
             <Divider />
@@ -603,9 +598,9 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t("settings.invoiceDefaults")}</div>
             <Field label={t("settings.paymentTerms")} htmlFor="payment-terms">
               <select id="payment-terms" style={INPUT_STYLE} value={form.payment_terms} onChange={fld("payment_terms")}>
-                {TERMS_OPTIONS.map(o => (
-                  <option key={o} value={o}>
-                    {o}
+                {PAYMENT_TERMS_KEYS.map(key => (
+                  <option key={key} value={key}>
+                    {getPaymentTermsLabel(key, t)}
                   </option>
                 ))}
               </select>
@@ -624,8 +619,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{t("settings.stripeTitle")}</div>
             <div style={{ fontSize: 13, color: T.muted, marginBottom: 14 }}>{t("settings.stripeDesc")}</div>
             
-            <Btn variant="ghost" onClick={handleConnectStripe}>
-              {t("settings.connectStripe")}
+            <Btn variant="ghost" disabled title={t("settings.stripeComingSoon")}>
+              {t("settings.stripeComingSoon")}
             </Btn>
 
             <Divider />
