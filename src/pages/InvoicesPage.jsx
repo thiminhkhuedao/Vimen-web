@@ -18,6 +18,7 @@ import {
 } from "../components/UI";
 import UpgradeModal from "../components/UpgradeModal"; // ✅ Import de la modale d'upgrade
 import { formatCurrency } from "../lib/currency.js";
+import { getPaymentTermsLabel } from "../lib/paymentTerms.js";
 
 const fmtDate = d => { try { return new Date(d).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); } catch { return d||""; } };
 
@@ -310,7 +311,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
     doc.setFontSize(9);
     doc.setTextColor(140, 140, 140);
     doc.text(
-      `${t("invoices.referenceLabel")} ${inv.invoice_number} · ${profile?.payment_terms || t("invoices.defaultPaymentTerms")}`,
+      `${t("invoices.referenceLabel")} ${inv.invoice_number} · ${getPaymentTermsLabel(profile?.payment_terms, t)}`,
       marginX, y
     );
     if (profile?.invoice_notes) { y += 14; doc.text(profile.invoice_notes, marginX, y, { maxWidth: 499 }); }
@@ -582,7 +583,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
             )}
 
             <div style={{marginTop:14,fontSize:12,color:T.muted,borderTop:`1px solid ${T.border}`,paddingTop:12}}>
-              <div>{t("invoices.referenceLabel")} {previewInv.invoice_number} · {profile.payment_terms||t("invoices.defaultPaymentTerms")}</div>
+              <div>{t("invoices.referenceLabel")} {previewInv.invoice_number} · {getPaymentTermsLabel(profile.payment_terms, t)}</div>
               {profile.invoice_notes && <div style={{marginTop:6}}>{profile.invoice_notes}</div>}
             </div>
           </div>
