@@ -9,7 +9,7 @@ import Honeypot, { isBotSubmission } from "./components/Honeypot";
 import Turnstile       from "./components/Turnstile";
 import {  useSignIn,  useSignUp,  useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import { setClerkTokenGetter, supabase } from "./lib/supabase";
-import { useTranslation, setLanguagePersister } from "./i18n/index.js";
+import { useTranslation, setLanguagePersister, getLanguage } from "./i18n/index.js";
 
 // Marketing / logged-out
 import HomePage         from "./pages/HomePage";
@@ -613,6 +613,15 @@ function AppShell() {
   useEffect(() => {
     if (!profile?.id) return;
     setLanguagePersister((newLang) => saveProfile({ ...profile, language: newLang }));
+    // Rattrapage pour les comptes déjà existants : si l'affichage local
+    // (choisi avant ce correctif) ne correspond pas à ce qui est
+    // enregistré côté serveur, on synchronise une bonne fois — sinon
+    // ces comptes resteraient bloqués sur des emails en anglais tant
+    // que l'utilisateur ne retouche pas manuellement le sélecteur.
+    const displayedLang = getLanguage();
+    if (profile.language !== displayedLang) {
+      saveProfile({ ...profile, language: displayedLang });
+    }
     return () => setLanguagePersister(null);
   }, [profile?.id, saveProfile]);
 
