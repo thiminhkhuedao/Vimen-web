@@ -497,8 +497,8 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
                 {busy ? t("invoices.sending") : t("invoices.sendEmail")}
               </Btn>
               {!previewInv.stripe_payment_link_url
-                ? <Btn size="sm" variant="ghost" onClick={() => handleStripeLink(previewInv)} disabled={busy}>
-                    {busy ? t("invoices.creating") : t("invoices.createPaymentLink")}
+                ? <Btn size="sm" variant="ghost" disabled title={t("payments.comingSoon")}>
+                    {t("payments.comingSoon")}
                   </Btn>
                 : <a href={previewInv.stripe_payment_link_url} target="_blank" rel="noopener noreferrer">
                     <Btn size="sm" variant="success">{t("invoices.openPaymentLink")} </Btn>
@@ -602,19 +602,12 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
           <p style={{ fontSize: 13, color: T.muted, marginBottom: 16 }}>
             {t("invoices.sendOptionsModal.intro", { email: sendOptionsInv.client?.email ?? "" })}
           </p>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${T.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0" }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 500 }}>{t("invoices.sendOptionsModal.includeIban")}</div>
               <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{t("invoices.sendOptionsModal.includeIbanSub")}</div>
             </div>
             <Toggle on={sendOptions.includeIban} onChange={v => setSendOptions(p => ({ ...p, includeIban: v }))} />
-          </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0" }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 500 }}>{t("invoices.sendOptionsModal.includeStripe")}</div>
-              <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>{t("invoices.sendOptionsModal.includeStripeSub")}</div>
-            </div>
-            <Toggle on={sendOptions.includeStripeLink} onChange={v => setSendOptions(p => ({ ...p, includeStripeLink: v }))} />
           </div>
           <FormActions>
             <Btn variant="ghost" onClick={() => setSendOptionsInv(null)}>{t("common.cancel")}</Btn>
