@@ -37,8 +37,8 @@ En créant un compte ou en utilisant le Service, tu acceptes d'être lié par ce
         b: `Vimen est 100% gratuit : il n'existe aucun abonnement payant, aucun forfait, ni aucune limite sur le nombre de clients, factures, devis ou rendez-vous. Aucune information de carte bancaire n'est requise pour créer un compte ou utiliser le Service.`,
       },
       {
-        h: "4. Paiements et versements (Stripe)",
-        b: `Lorsque tu utilises la fonctionnalité de paiement en ligne, les paiements de tes propres clients et les versements vers ton compte bancaire sont traités directement par Stripe, notre prestataire de paiement — en les utilisant, tu acceptes aussi les conditions de Stripe. Vimen ne prélève aucune commission sur ces paiements et ne détient jamais tes fonds. Tu peux également indiquer tes coordonnées bancaires (IBAN) sur tes factures pour permettre à tes clients de te régler par virement direct, sans passer par Stripe. Tu es seul responsable de déclarer et payer les impôts et cotisations applicables à tes revenus. En cas de litige, rétrofacturation ou fraude concernant un paiement Stripe, les fonds concernés peuvent être temporairement suspendus par Stripe le temps de l'investigation.`,
+        h: "4. Paiements et versements",
+        b: `Actuellement, les paiements de tes clients se font par virement bancaire direct en utilisant l'IBAN que tu affiches sur tes devis et factures — Vimen n'intervient à aucun moment dans ce paiement et ne détient jamais tes fonds. Le paiement en ligne par carte bancaire, via Stripe, notre futur prestataire de paiement, arrivera prochainement ; les présentes CGU seront mises à jour en conséquence à ce moment-là. Tu es seul responsable de déclarer et payer les impôts et cotisations applicables à tes revenus.`,
       },
       {
         h: "5. Ta responsabilité concernant les données de tes clients",
@@ -114,8 +114,8 @@ By creating an account or using the Service, you agree to be bound by these Term
         b: `Vimen is 100% free: there is no paid subscription, no plan, and no limit on the number of clients, invoices, quotes, or bookings. No credit card information is required to create an account or use the Service.`,
       },
       {
-        h: "4. Payments and payouts (Stripe)",
-        b: `When you use the online payment feature, payments from your own clients and payouts to your bank account are processed directly by Stripe, our payment processor — by using this feature, you also agree to Stripe's terms. Vimen charges no commission on these payments and never holds your funds. You may also display your bank details (IBAN) on your invoices so clients can pay you by direct bank transfer instead. You are solely responsible for declaring and paying taxes on your income. In case of a dispute, chargeback, or fraud related to a Stripe payment, the relevant funds may be temporarily held by Stripe pending investigation.`,
+        h: "4. Payments and payouts",
+        b: `Currently, client payments are made by direct bank transfer using the IBAN you display on your quotes and invoices — Vimen never intervenes in this payment and never holds your funds. Online card payment, via Stripe, our upcoming payment processor, is coming soon; these Terms will be updated accordingly at that time. You are solely responsible for declaring and paying taxes on your income.`,
       },
       {
         h: "5. Your responsibility regarding your clients' data",
