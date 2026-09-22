@@ -417,6 +417,60 @@ verify_jwt = false
 [functions.check-rate-limit]
 verify_jwt = false
 
+# Le reste des fonctions ci-dessous a le même problème sous-jacent, pour
+# des raisons différentes selon le cas :
+# - Certaines sont appelées par un visiteur non connecté (formulaire de
+#   contact, devis public, signature de devis) : pas de JWT du tout.
+# - Certaines sont appelées automatiquement par pg_cron ou par Stripe
+#   lui-même (rappels de facture, webhook Stripe) : elles reçoivent leur
+#   propre secret ou signature, jamais un JWT Supabase.
+# - Toutes les autres sont appelées depuis l'app par un utilisateur
+#   connecté via Clerk : leur JWT est bien transmis, mais la passerelle
+#   Supabase ne sait pas le valider elle-même (seules les requêtes
+#   directes à la base via Postgrest le savent, pas les Edge Functions)
+#   — d'où le même correctif partout.
+[functions.get-public-quote]
+verify_jwt = false
+
+[functions.sign-quote]
+verify_jwt = false
+
+[functions.send-contact-email]
+verify_jwt = false
+
+[functions.send-invoice-email]
+verify_jwt = false
+
+[functions.send-invoice-reminders]
+verify_jwt = false
+
+[functions.send-push]
+verify_jwt = false
+
+[functions.send-quote-email]
+verify_jwt = false
+
+[functions.send-referral-email]
+verify_jwt = false
+
+[functions.send-review-request]
+verify_jwt = false
+
+[functions.send-sms]
+verify_jwt = false
+
+[functions.anomaly-check]
+verify_jwt = false
+
+# Stripe envoie sa propre signature (voir stripe-signature / WEBHOOK_SECRET
+# dans le code), jamais un JWT — sans cette ligne, TOUS les appels de
+# Stripe (paiement reçu, etc.) sont rejetés avant même d'atteindre le
+# code de vérification de signature. C'est le cas le plus critique de
+# toute cette liste : sans lui, aucune facture ni acompte ne se marque
+# jamais comme payé automatiquement.
+[functions.stripe-webhook]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
