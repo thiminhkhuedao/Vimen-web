@@ -337,13 +337,18 @@ function PaymentsVisual({ t }) {
       />
 
       <KeyValueRow
-        label={t("home.features.payments.visual.processing")}
-        value="£15.90"
+        label={t("home.features.payments.visual.bankLabel")}
+        value="Vimen Ltd"
+      />
+
+      <KeyValueRow
+        label={t("home.features.payments.visual.ibanLabel")}
+        value="GB29 •••• •••• •••4 5678"
       />
 
       <TotalRow
         label={t("home.features.payments.visual.receive")}
-        value="£534.10"
+        value="£550.00"
       />
     </div>
   );
