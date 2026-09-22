@@ -588,11 +588,6 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
               sub={t("settings.documentVisibility.showIbanSub")}
               k="show_iban_on_documents"
             />
-            <SettingRow
-              label={t("settings.documentVisibility.showStripe")}
-              sub={t("settings.documentVisibility.showStripeSub")}
-              k="show_stripe_link_on_documents"
-            />
 
             <Divider />
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t("settings.invoiceDefaults")}</div>
