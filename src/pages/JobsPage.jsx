@@ -164,20 +164,10 @@ export default function JobsPage({ profile }) {
   }
 
   async function autoSendReviewRequest(job, client) {
-    if (!job || !client?.email) return;
+    if (!job?.id || !client?.email) return;
     try {
-      const googleUrl = profile?.extra_fields?.google_place_id
-        ? `https://g.page/r/${profile.extra_fields.google_place_id}/review`
-        : `https://www.google.com/search?q=${encodeURIComponent((profile?.name || "") + " " + (profile?.trade || ""))}`;
-
       await supabase.functions.invoke("send-review-request", {
-        body: {
-          toEmail: client.email,
-          clientName: client.name,
-          profileName: profile?.name,
-          jobTitle: job?.title,
-          googleUrl,
-        },
+        body: { jobId: job.id },
       });
     } catch (err) {
       // Non-bloquant : on ne perturbe pas le flux si l'email d'avis échoue.
