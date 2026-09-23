@@ -63,39 +63,17 @@ export async function sendInvoiceEmail(invoiceId, reminder = false, options = {}
 
 /**
  * Sends a quote to the client by email, with a link to view and sign
- * it online (no account needed on their end).
+ * it online (no account needed on their end). All content (amount,
+ * client, trade details) is re-read server-side from quoteId — nothing
+ * here is trusted as-is.
  *
- * @param {object} quote    - quote row (needs .public_token — see migration
- *                             003_quote_public_signing.sql)
- * @param {object} client   - client row (must have .email)
- * @param {object} profile  - tradesperson profile
+ * @param {string} quoteId
  */
-export async function sendQuoteEmail(quote, client, profile) {
-  if (!client?.email) {
-    return { success: false, error: "Client has no email address" };
+export async function sendQuoteEmail(quoteId) {
+  if (!quoteId) {
+    return { success: false, error: "Missing quote id" };
   }
-  if (!quote?.public_token) {
-    return { success: false, error: "Quote is missing its public link — try refreshing the page" };
-  }
-
-  const quoteUrl = `${window.location.origin}/quote/${quote.public_token}`;
-
-  return invoke("send-quote-email", {
-    to:          client.email,
-    clientName:  client.name,
-    tradeName:   profile.name,
-    tradeEmail:  profile.email,
-    tradePhone:  profile.phone,
-    quoteNumber: quote.quote_number,
-    total:       quote.total,
-    validUntil:  quote.valid_until
-      ? new Date(quote.valid_until).toLocaleDateString("en-GB", {
-          day: "numeric", month: "long", year: "numeric",
-        })
-      : null,
-    quoteUrl,
-    currencyCode: profile.currency ?? "EUR",
-  });
+  return invoke("send-quote-email", { quoteId });
 }
 
 /* ══════════════════════════════════════════════════

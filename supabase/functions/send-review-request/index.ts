@@ -2,11 +2,28 @@
 //
 // Envoie une demande d'avis Google par EMAIL uniquement, à l'adresse
 // enregistrée du client. Appelée automatiquement quand une intervention
-// est marquée comme terminée (voir JobsPage.jsx -> handleComplete), et
-// aussi manuellement depuis ReviewsPage ("Demander un avis").
+// est marquée comme terminée (voir JobsPage.jsx -> autoSendReviewRequest),
+// et aussi manuellement depuis ReviewsPage ("Demander un avis").
+//
+// Ne prend qu'un jobId — le client, le nom du pro et son lien Google sont
+// relus ici depuis la base, jamais fournis par le navigateur, pour qu'il
+// soit impossible de faire envoyer un faux email "de la part" d'un autre
+// pro à n'importe quelle adresse.
 //
 // Pas de SMS ici : Vimen fonctionne uniquement par email pour ce type
 // de notification.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyToken } from "https://esm.sh/@clerk/backend@1";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const CLERK_SECRET_KEY = Deno.env.get("CLERK_SECRET_KEY");
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "reviews@vimen.app";
+const FROM_NAME  = Deno.env.get("FROM_NAME")  ?? "Vimen";
+
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -14,30 +31,59 @@ const CORS = {
   "Content-Type": "application/json",
 };
 
+async function getVerifiedProfileId(req: Request): Promise<string> {
+  const authHeader = req.headers.get("Authorization") || "";
+  const token = authHeader.replace(/^Bearer\s+/i, "");
+  if (!token) throw new Error("Token de session manquant");
+  if (!CLERK_SECRET_KEY) throw new Error("CLERK_SECRET_KEY non configuré côté serveur");
+
+  const payload = await verifyToken(token, { secretKey: CLERK_SECRET_KEY });
+  const clerkId = payload.sub;
+
+  const { data: profile, error } = await supabase
+    .from("profiles").select("id").eq("clerk_id", clerkId).single();
+  if (error || !profile) throw new Error("Profil introuvable");
+  return profile.id;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
-  try {
-    const {
-      toEmail,       // client email address (required)
-      clientName,
-      profileName,   // tradesperson / business name
-      jobTitle,
-      googleUrl,     // link to leave a Google review
-    } = await req.json();
+  const json = (body: Record<string, unknown>, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: CORS });
 
-    if (!toEmail) {
-      return new Response(JSON.stringify({ error: "Missing client email address" }), {
-        status: 400,
-        headers: CORS,
-      });
+  try {
+    const callerProfileId = await getVerifiedProfileId(req);
+
+    const { jobId } = await req.json();
+    if (typeof jobId !== "string" || !jobId) {
+      return json({ error: "jobId requis" }, 400);
     }
-    if (!googleUrl) {
-      return new Response(JSON.stringify({ error: "Missing Google review link" }), {
-        status: 400,
-        headers: CORS,
-      });
-    }
+
+    const { data: job, error: jErr } = await supabase
+      .from("jobs")
+      .select("title, profile_id, client:clients(name,email)")
+      .eq("id", jobId)
+      .single();
+
+    if (jErr || !job) return json({ error: "Intervention introuvable" }, 404);
+    if (job.profile_id !== callerProfileId) return json({ error: "Intervention introuvable" }, 404);
+    if (!job.client?.email) return json({ error: "Ce client n'a pas d'adresse email" }, 400);
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("name, trade, extra_fields")
+      .eq("id", callerProfileId)
+      .single();
+
+    const placeId = profile?.extra_fields?.google_place_id;
+    const googleUrl = placeId
+      ? `https://g.page/r/${placeId}/review`
+      : `https://www.google.com/search?q=${encodeURIComponent((profile?.name || "") + " " + (profile?.trade || ""))}`;
+
+    const clientName = job.client.name ?? "there";
+    const profileName = profile?.name ?? "us";
+    const jobTitle = job.title ?? "";
 
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -60,15 +106,15 @@ Deno.serve(async (req) => {
 <div class="wrap">
   <div class="top"><div class="logo">Vimen</div></div>
   <div class="body">
-    <p style="font-size:15px;margin-bottom:20px">Hi ${clientName ?? "there"},</p>
+    <p style="font-size:15px;margin-bottom:20px">Hi ${clientName},</p>
     <p style="font-size:14px;color:#555;line-height:1.6;margin-bottom:8px">
-      Thanks for choosing <strong>${profileName ?? "us"}</strong>${jobTitle ? ` for "${jobTitle}"` : ""}.
+      Thanks for choosing <strong>${profileName}</strong>${jobTitle ? ` for "${jobTitle}"` : ""}.
       If you were happy with the work, a quick Google review would mean a lot.
     </p>
     <div class="stars">★★★★★</div>
     <a class="cta-btn" href="${googleUrl}">Leave a Google review →</a>
     <p style="font-size:13px;color:#888;line-height:1.6">
-      It only takes a minute, and it really helps ${profileName ?? "us"} grow.
+      It only takes a minute, and it really helps ${profileName} grow.
     </p>
   </div>
   <div class="footer">Sent via <a href="https://vimen.app" style="color:#E8500A;text-decoration:none">Vimen</a></div>
@@ -76,19 +122,15 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-    const RESEND_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-    const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "reviews@vimen.app";
-    const FROM_NAME  = Deno.env.get("FROM_NAME")  ?? "Vimen";
-
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${RESEND_KEY}`,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: `${profileName ?? FROM_NAME} via ${FROM_NAME} <${FROM_EMAIL}>`,
-        to: [toEmail],
+        from: `${profileName} via ${FROM_NAME} <${FROM_EMAIL}>`,
+        to: [job.client.email],
         subject: `How did we do${profileName ? `, from ${profileName}` : ""}?`,
         html,
       }),
@@ -97,10 +139,10 @@ Deno.serve(async (req) => {
     const result = await res.json();
     if (!res.ok) throw new Error(result.message ?? "Resend API error");
 
-    return new Response(JSON.stringify({ success: true, id: result.id }), { headers: CORS });
+    return json({ success: true, id: result.id });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("send-review-request error:", message);
-    return new Response(JSON.stringify({ error: message }), { status: 500, headers: CORS });
+    return json({ error: message }, 500);
   }
 });
