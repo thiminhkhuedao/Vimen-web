@@ -86,13 +86,7 @@ export default function ReviewsPage({ state, dispatch, profile }) {
 
     try {
       const { error } = await supabase.functions.invoke("send-review-request", {
-        body: {
-          toEmail: cl.email,
-          clientName: cl.name,
-          profileName: profile?.name,
-          jobTitle: job?.title,
-          googleUrl: googleUrl,
-        },
+        body: { jobId: job.id },
       });
 
       if (error) throw error;
