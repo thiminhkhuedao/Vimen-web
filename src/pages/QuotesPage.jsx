@@ -162,7 +162,7 @@ export default function QuotesPage({ state, dispatch, profile, refresh, isLoadin
     }
     setBusy(true);
     try {
-      const result = await sendQuoteEmail(q, client, profile);
+      const result = await sendQuoteEmail(q.id);
       if (!result.success) throw new Error(result.error);
 
       const { error } = await updateQuote(q.id, { status: "sent" });
