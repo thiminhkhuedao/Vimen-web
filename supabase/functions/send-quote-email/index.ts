@@ -1,9 +1,23 @@
 // supabase/functions/send-quote-email/index.ts
 //
 // Envoi manuel d'un devis par email (bouton "Envoyer par email" dans
-// QuotesPage). Ne touche pas la base — comme send-invoice-email, c'est
-// une fonction "stateless" ; c'est le front-end qui marque le devis
-// comme "sent" après un envoi réussi (voir QuotesPage.jsx).
+// QuotesPage). Ne prend qu'un quoteId — TOUT le contenu de l'email
+// (montant, nom du client, coordonnées du pro) est relu ici depuis la
+// base, jamais fourni par le navigateur, pour qu'il soit impossible
+// d'usurper un autre pro ou de fabriquer un faux montant.
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyToken } from "https://esm.sh/@clerk/backend@1";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const CLERK_SECRET_KEY = Deno.env.get("CLERK_SECRET_KEY");
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "quotes@vimen.app";
+const FROM_NAME = Deno.env.get("FROM_NAME") ?? "Vimen";
+const APP_URL = Deno.env.get("APP_URL") ?? "https://vimen.app";
+
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -11,26 +25,61 @@ const CORS = {
   "Content-Type": "application/json",
 };
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  GBP: "£", EUR: "€", USD: "$", CAD: "C$", AUD: "A$", CHF: "CHF ",
+};
+
+async function getVerifiedProfileId(req: Request): Promise<string> {
+  const authHeader = req.headers.get("Authorization") || "";
+  const token = authHeader.replace(/^Bearer\s+/i, "");
+  if (!token) throw new Error("Token de session manquant");
+  if (!CLERK_SECRET_KEY) throw new Error("CLERK_SECRET_KEY non configuré côté serveur");
+
+  const payload = await verifyToken(token, { secretKey: CLERK_SECRET_KEY });
+  const clerkId = payload.sub;
+
+  const { data: profile, error } = await supabase
+    .from("profiles").select("id").eq("clerk_id", clerkId).single();
+  if (error || !profile) throw new Error("Profil introuvable");
+  return profile.id;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
-  try {
-    const {
-      to,            // client email address
-      clientName,
-      tradeName,
-      tradeEmail,
-      tradePhone,
-      quoteNumber,
-      total,
-      validUntil,    // formatted string, e.g. "28 May 2026"
-      quoteUrl,      // link to the public quote/sign page
-      currencyCode = "EUR", // devise du profil (voir lib/currency.js) — plus de £ codé en dur
-    } = await req.json();
+  const json = (body: Record<string, unknown>, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: CORS });
 
-    const CURRENCY_SYMBOLS: Record<string, string> = {
-      GBP: "£", EUR: "€", USD: "$", CAD: "C$", AUD: "A$", CHF: "CHF ",
-    };
+  try {
+    const callerProfileId = await getVerifiedProfileId(req);
+
+    const { quoteId } = await req.json();
+    if (typeof quoteId !== "string" || !quoteId) {
+      return json({ error: "quoteId requis" }, 400);
+    }
+
+    const { data: quote, error: qErr } = await supabase
+      .from("quotes")
+      .select("*, client:clients(name,email), profile:profiles(name,email,phone,currency)")
+      .eq("id", quoteId)
+      .single();
+
+    if (qErr || !quote) return json({ error: "Devis introuvable" }, 404);
+    // Ne révèle jamais si le devis existe pour quelqu'un d'autre.
+    if (quote.profile_id !== callerProfileId) return json({ error: "Devis introuvable" }, 404);
+    if (!quote.client?.email) return json({ error: "Ce client n'a pas d'adresse email" }, 400);
+    if (!quote.public_token) return json({ error: "Ce devis n'a pas de lien public" }, 400);
+
+    const clientName = quote.client.name ?? "";
+    const tradeName = quote.profile?.name ?? "";
+    const tradeEmail = quote.profile?.email ?? "";
+    const tradePhone = quote.profile?.phone ?? "";
+    const currencyCode = quote.profile?.currency ?? "EUR";
+    const quoteUrl = `${APP_URL}/quote/${quote.public_token}`;
+    const validUntil = quote.valid_until
+      ? new Date(quote.valid_until).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+      : null;
+
     const fmtMoney = (n: number) =>
       `${CURRENCY_SYMBOLS[currencyCode] ?? CURRENCY_SYMBOLS.EUR}${Number(n).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
 
@@ -65,11 +114,11 @@ Deno.serve(async (req) => {
       ${validUntil ? `This quote is valid until <strong>${validUntil}</strong>.` : ""}
     </p>
 
-    <div class="quote-num">${quoteNumber}</div>
+    <div class="quote-num">${quote.quote_number}</div>
 
     <div class="amount-box">
       <div class="amount-lbl">Quote total</div>
-      <div class="amount-val">${fmtMoney(total)}</div>
+      <div class="amount-val">${fmtMoney(quote.total)}</div>
     </div>
 
     <a class="cta-btn" href="${quoteUrl}">View & sign quote →</a>
@@ -84,20 +133,16 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-    const RESEND_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-    const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "quotes@vimen.app";
-    const FROM_NAME  = Deno.env.get("FROM_NAME")  ?? "Vimen";
-
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${RESEND_KEY}`,
+        Authorization: `Bearer ${RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         from: `${tradeName} via ${FROM_NAME} <${FROM_EMAIL}>`,
-        to: [to],
-        subject: `Quote ${quoteNumber} from ${tradeName} — ${fmtMoney(total)}`,
+        to: [quote.client.email],
+        subject: `Quote ${quote.quote_number} from ${tradeName} — ${fmtMoney(quote.total)}`,
         html,
       }),
     });
@@ -105,10 +150,10 @@ Deno.serve(async (req) => {
     const result = await res.json();
     if (!res.ok) throw new Error(result.message ?? "Resend API error");
 
-    return new Response(JSON.stringify({ success: true, id: result.id }), { headers: CORS });
+    return json({ success: true, id: result.id });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("send-quote-email error:", message);
-    return new Response(JSON.stringify({ error: message }), { status: 500, headers: CORS });
+    return json({ error: message }, 500);
   }
 });
