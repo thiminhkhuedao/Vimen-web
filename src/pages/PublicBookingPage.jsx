@@ -1209,24 +1209,24 @@ function PublicBookingPageInner() {
             <div style={{ background: THEME.surface, borderRadius: THEME.radius.xl, border: `1px solid ${THEME.border}`, padding: "24px", marginBottom: 16, boxShadow: THEME.shadow, display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.nameLabel")}</label>
-                <input type="text" placeholder="John Doe" value={form.customer_name} onChange={updateFormField("customer_name")} style={{ ...inputStyle, ...(fieldErrors.customer_name ? { borderColor: "#DC2626" } : {}) }} />
+                <input type="text" placeholder={tr("publicBooking.namePlaceholder")} value={form.customer_name} onChange={updateFormField("customer_name")} style={{ ...inputStyle, ...(fieldErrors.customer_name ? { borderColor: "#DC2626" } : {}) }} />
                 {fieldErrors.customer_name && <div style={{ fontSize: 12, color: "#DC2626", marginTop: 5 }}>{fieldErrors.customer_name}</div>}
               </div>
 
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.emailLabel")}</label>
-                <input type="email" placeholder="john@example.com" value={form.customer_email} onChange={updateFormField("customer_email")} style={{ ...inputStyle, ...(fieldErrors.customer_email ? { borderColor: "#DC2626" } : {}) }} />
+                <input type="email" placeholder={tr("publicBooking.emailPlaceholder")} value={form.customer_email} onChange={updateFormField("customer_email")} style={{ ...inputStyle, ...(fieldErrors.customer_email ? { borderColor: "#DC2626" } : {}) }} />
                 {fieldErrors.customer_email && <div style={{ fontSize: 12, color: "#DC2626", marginTop: 5 }}>{fieldErrors.customer_email}</div>}
               </div>
 
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.phoneLabel")}</label>
-                <input type="tel" placeholder="+1 (555) 000-0000" value={form.customer_phone} onChange={updateFormField("customer_phone")} style={inputStyle} />
+                <input type="tel" placeholder={tr("publicBooking.phonePlaceholder")} value={form.customer_phone} onChange={updateFormField("customer_phone")} style={inputStyle} />
               </div>
 
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.notesLabel")}</label>
-                <textarea placeholder="Any specific details or gate codes..." rows={3} value={form.client_instructions} onChange={updateFormField("client_instructions")} style={{ ...inputStyle, resize: "vertical" }} />
+                <textarea placeholder={tr("publicBooking.notesPlaceholder")} rows={3} value={form.client_instructions} onChange={updateFormField("client_instructions")} style={{ ...inputStyle, resize: "vertical" }} />
               </div>
 
               <ImageUpload value={clientImage} onChange={setClientImage} label={tr("publicBooking.attachPhotoLabel")} hint={tr("publicBooking.attachPhotoHint")} />
