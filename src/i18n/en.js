@@ -2975,6 +2975,7 @@ quotes: {
       signBtn: "Confirm & Sign",
     },
     sendEmail: "Send by email",
+    downloadPdf: "Download PDF",
     table: {
       description: "Description",
       type: "Type",
@@ -3597,5 +3598,9 @@ publicQuote: {
       pickDateWhat: "Pick a date and time first",
       pickDateWhy: "Select an available slot above before sending your request.",
     },
-  },
+    namePlaceholder: "John Doe",
+  emailPlaceholder: "john@example.com",
+  phonePlaceholder: "+1 (555) 000-0000",
+  notesPlaceholder: "Any specific details or gate codes...",
+},
 }
