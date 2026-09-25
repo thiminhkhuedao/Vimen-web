@@ -2974,6 +2974,7 @@ quotes: {
       signBtn: "Confirmer & Signer",
     },
     sendEmail: "Envoyer par email",
+    downloadPdf: "Télécharger le PDF",
     table: {
       description: "Description",
       type: "Type",
@@ -3703,5 +3704,9 @@ publicQuote: {
       pickDateWhat: "Choisissez d'abord une date et un horaire",
       pickDateWhy: "Sélectionnez un créneau disponible ci-dessus avant d'envoyer votre demande.",
     },
-  },
+    namePlaceholder: "Jean Dupont",
+  emailPlaceholder: "jean@exemple.fr",
+  phonePlaceholder: "06 12 34 56 78",
+  notesPlaceholder: "Détails particuliers, code d'accès...",
+},
 }
