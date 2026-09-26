@@ -44,6 +44,11 @@ async function getVerifiedProfileId(req: Request): Promise<string> {
   return profile.id;
 }
 
+type QuoteRow = Record<string, any> & {
+  client: { name: string | null; email: string | null } | null;
+  profile: { name: string | null; email: string | null; phone: string | null; currency: string | null } | null;
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -62,7 +67,7 @@ Deno.serve(async (req) => {
       .from("quotes")
       .select("*, client:clients(name,email), profile:profiles(name,email,phone,currency)")
       .eq("id", quoteId)
-      .single();
+      .single<QuoteRow>();
 
     if (qErr || !quote) return json({ error: "Devis introuvable" }, 404);
     // Ne révèle jamais si le devis existe pour quelqu'un d'autre.
