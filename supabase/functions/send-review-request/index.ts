@@ -46,6 +46,12 @@ async function getVerifiedProfileId(req: Request): Promise<string> {
   return profile.id;
 }
 
+type JobWithClient = {
+  title: string | null;
+  profile_id: string;
+  client: { name: string | null; email: string | null } | null;
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
@@ -64,7 +70,7 @@ Deno.serve(async (req) => {
       .from("jobs")
       .select("title, profile_id, client:clients(name,email)")
       .eq("id", jobId)
-      .single();
+      .single<JobWithClient>();
 
     if (jErr || !job) return json({ error: "Intervention introuvable" }, 404);
     if (job.profile_id !== callerProfileId) return json({ error: "Intervention introuvable" }, 404);
