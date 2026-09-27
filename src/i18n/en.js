@@ -2108,6 +2108,8 @@ booking: {
   depositStripeNotConnected: "A deposit is configured for this service, but online payment isn't available yet — the confirmation was sent without a payment link.",
   depositLinkSentToast: "Confirmation email sent with the deposit payment link",
   perHourSuffix: "/hr",
+  confirmationEmailSentToast: "Confirmation email sent to the client",
+  confirmationEmailFailedToast: "Failed to send confirmation email: {{error}}",
 },
 
 certifications: {
