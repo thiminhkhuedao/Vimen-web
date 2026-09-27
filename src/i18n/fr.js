@@ -2113,6 +2113,8 @@ booking: {
   depositStripeNotConnected: "Un acompte est configuré pour ce service, mais le paiement en ligne n'est pas encore disponible — la confirmation a été envoyée sans lien de paiement.",
   depositLinkSentToast: "Email de confirmation envoyé avec le lien de paiement de l'acompte",
   perHourSuffix: "/h",
+  confirmationEmailSentToast: "Email de confirmation envoyé au client",
+  confirmationEmailFailedToast: "Échec de l'envoi de l'email de confirmation : {{error}}",
 },
 
 
