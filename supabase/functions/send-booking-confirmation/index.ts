@@ -85,6 +85,17 @@ async function stripeRequest(path: string, body: Record<string, unknown>, connec
   return json;
 }
 
+// deno-lint-ignore no-explicit-any
+type BookingRow = Record<string, any> & {
+  service: {
+    name: string | null;
+    price: number | null;
+    deposit_enabled: boolean | null;
+    deposit_type: string | null;
+    deposit_amount: number | null;
+  } | null;
+};
+
 Deno.serve(async (req: Request) => {
   const preflight = handleCors(req);
   if (preflight) return preflight;
@@ -111,7 +122,7 @@ Deno.serve(async (req: Request) => {
       .from("booking_requests")
       .select("*, service:services(name, price, deposit_enabled, deposit_type, deposit_amount)")
       .eq("id", bookingRequestId)
-      .single();
+      .single<BookingRow>();
 
     if (bErr || !booking) return json({ error: "Réservation introuvable" }, 404);
     if (booking.profile_id !== callerProfileId) return json({ error: "Réservation introuvable" }, 404);
@@ -130,8 +141,8 @@ Deno.serve(async (req: Request) => {
     let depositLinkCreated = false;
     let stripeNotConnected = false;
 
-    if (depositEnabled) {
-      const basePrice = Number(booking.quoted_price ?? service?.price ?? 0);
+    if (service && depositEnabled) {
+      const basePrice = Number(booking.quoted_price ?? service.price ?? 0);
       depositAmount = service.deposit_type === "percent"
         ? Math.round(basePrice * (Number(service.deposit_amount) / 100) * 100) / 100
         : Number(service.deposit_amount);
