@@ -126,9 +126,12 @@ export default function BookingPage({ profile }) {
             toast.error(t("booking.depositStripeNotConnected") || "Un acompte est requis pour ce service, mais aucun compte Stripe n'est connecté — connecte-le dans Paramètres pour pouvoir l'encaisser.");
           } else if (result?.depositLinkCreated) {
             toast.success(t("booking.depositLinkSentToast") || "Email de confirmation envoyé avec le lien de paiement de l'acompte");
+          } else {
+            toast.success(t("booking.confirmationEmailSentToast") || "Email de confirmation envoyé au client");
           }
         } catch (err) {
           console.error("[Booking confirmation email failed]:", err);
+          toast.error(t("booking.confirmationEmailFailedToast", { error: err?.message ?? String(err) }) || `Échec de l'envoi de l'email de confirmation : ${err?.message ?? err}`);
         }
       }
     }
