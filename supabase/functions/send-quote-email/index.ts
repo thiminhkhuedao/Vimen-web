@@ -44,6 +44,7 @@ async function getVerifiedProfileId(req: Request): Promise<string> {
   return profile.id;
 }
 
+// deno-lint-ignore no-explicit-any
 type QuoteRow = Record<string, any> & {
   client: { name: string | null; email: string | null } | null;
   profile: { name: string | null; email: string | null; phone: string | null; currency: string | null } | null;
