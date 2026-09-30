@@ -662,6 +662,7 @@ function PublicBookingPageInner() {
     customer_phone: "",
     client_instructions: "",
     quoted_price: "",
+    custom_description: "",
   });
 
   const [clientImage, setClientImage] = useState(null);
@@ -820,16 +821,19 @@ function PublicBookingPageInner() {
     }
 
     const selectedService = services.find((s) => s.id === selSvc);
+    const combinedInstructions = custom
+      ? [form.custom_description, form.client_instructions].filter(Boolean).join(" — ")
+      : form.client_instructions;
     const payload = {
       profile_id: profile.id,
       customer_name: form.customer_name,
       customer_email: form.customer_email,
       customer_phone: form.customer_phone || null,
       preferred_date: selDate,
-      notes: `${selTime} — ${form.client_instructions || ""}`.trim(),
+      notes: `${selTime} — ${combinedInstructions || ""}`.trim(),
       service_id: selSvc || null,
       client_image_url: clientImage || null,
-      client_instructions: form.client_instructions || null,
+      client_instructions: combinedInstructions || null,
       quoted_price: custom && form.quoted_price ? parseFloat(form.quoted_price) : selectedService?.price ?? null,
       status: "pending",
     };
@@ -1083,6 +1087,33 @@ function PublicBookingPageInner() {
               </div>
               {custom && <span style={{ marginLeft: "auto", color: THEME.brand, fontWeight: 700 }}>{tr("publicBooking.selectedLabel")}</span>}
             </button>
+
+            {custom && (
+              <div style={{ marginBottom: 20, marginTop: -8 }}>
+                <textarea
+                  placeholder={tr("publicBooking.customDescriptionPlaceholder")}
+                  rows={3}
+                  value={form.custom_description}
+                  onChange={updateFormField("custom_description")}
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    borderRadius: THEME.radius.md,
+                    border: `1px solid ${THEME.border}`,
+                    fontFamily: "inherit",
+                    fontSize: 14,
+                    resize: "vertical",
+                    marginBottom: 12,
+                  }}
+                />
+                <ImageUpload
+                  value={clientImage}
+                  onChange={setClientImage}
+                  label={tr("publicBooking.attachPhotoLabel")}
+                  hint={tr("publicBooking.attachPhotoHint")}
+                />
+              </div>
+            )}
 
             <button
               onClick={() => setStep(2)}
