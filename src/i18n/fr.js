@@ -3710,5 +3710,6 @@ publicQuote: {
   emailPlaceholder: "jean@exemple.fr",
   phonePlaceholder: "06 12 34 56 78",
   notesPlaceholder: "Détails particuliers, code d'accès...",
+  customDescriptionPlaceholder: "Décrivez ce dont vous avez besoin...",
 },
 }
