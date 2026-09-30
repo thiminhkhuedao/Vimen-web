@@ -3604,5 +3604,6 @@ publicQuote: {
   emailPlaceholder: "john@example.com",
   phonePlaceholder: "+1 (555) 000-0000",
   notesPlaceholder: "Any specific details or gate codes...",
+  customDescriptionPlaceholder: "Describe what you need...",
 },
 }
