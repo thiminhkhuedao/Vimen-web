@@ -26,7 +26,7 @@ function setCanonical(href) {
   el.setAttribute("href", href);
 }
 
-export default function Seo({ title, description, path = "/" }) {
+export default function Seo({ title, description, path = "/", noindex = false }) {
   useEffect(() => {
     const url = SITE + path;
     document.title = title;
@@ -37,7 +37,9 @@ export default function Seo({ title, description, path = "/" }) {
     setMeta('meta[name="twitter:title"]', { name: "twitter:title" }, title);
     setMeta('meta[name="twitter:description"]', { name: "twitter:description" }, description);
     setCanonical(url);
-  }, [title, description, path]);
+    // Pages pas encore finalisées (ex. placeholders légaux) : demandent à Google de ne pas les indexer.
+    setMeta('meta[name="robots"]', { name: "robots" }, noindex ? "noindex, follow" : "index, follow");
+  }, [title, description, path, noindex]);
 
   return null;
 }
