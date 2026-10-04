@@ -872,14 +872,17 @@ const SEO_PAGES = {
   "/privacy": {
     title: "Privacy Policy — Vimen",
     description: "How Vimen collects, uses and protects your personal data.",
+    noindex: true, // retirer quand les [À COMPLÉTER] sont remplis
   },
   "/terms": {
     title: "Terms of Service — Vimen",
     description: "The terms and conditions for using Vimen.",
+    noindex: true, // retirer quand les [À COMPLÉTER] sont remplis
   },
   "/mentions-legales": {
     title: "Legal Notice (Mentions légales) — Vimen",
     description: "Legal information about the publisher and host of Vimen (mentions légales).",
+    noindex: true, // retirer quand les [À COMPLÉTER] sont remplis
   },
 };
 
