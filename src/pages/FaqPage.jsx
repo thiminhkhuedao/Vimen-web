@@ -59,8 +59,8 @@ function FAQItem({ id, question, answer, open, onToggle }) {
           +
         </span>
       </button>
-      {open && (
-        <div id={contentId} role="region">
+      {(
+        <div id={contentId} role="region" hidden={!open}>
           <p
             style={{
               fontSize: 15,
