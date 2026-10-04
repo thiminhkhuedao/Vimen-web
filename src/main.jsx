@@ -9,6 +9,10 @@ import "./styles/globals.css";
 
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
+// Chargées à la demande : la page d'accueil ne télécharge plus ces pages.
+const PublicBookingPage = React.lazy(() => import("./pages/PublicBookingPage.jsx"));
+const PublicQuotePage = React.lazy(() => import("./pages/PublicQuotePage.jsx"));
+
 // Initialisé en tout premier, avant même bootstrap() — pour capter aussi
 // les erreurs qui arriveraient pendant le chargement dynamique des pages
 // (import() plus bas), pas seulement les erreurs de rendu React.
@@ -21,19 +25,18 @@ Sentry.init({
 });
 
 async function bootstrap() {
-  const { default: App } = await import("./App.jsx");
-  const { default: PublicBookingPage } = await import("./pages/PublicBookingPage.jsx");
-  const { default: PublicQuotePage } = await import("./pages/PublicQuotePage.jsx");
-
+  // En parallèle (au lieu d'attendre chaque import l'un après l'autre) :
+  // le navigateur télécharge App et Clerk en même temps → page affichée plus tôt.
   // Chargé seulement si Clerk est configuré — nécessaire pour la route
   // /sso-callback qui finalise la connexion Google (et tout autre OAuth).
-  let AuthenticateWithRedirectCallback = null;
-  let ClerkProvider = null;
-  if (CLERK_KEY) {
-    const clerkReact = await import("@clerk/clerk-react");
-    ClerkProvider = clerkReact.ClerkProvider;
-    AuthenticateWithRedirectCallback = clerkReact.AuthenticateWithRedirectCallback;
-  }
+  const [{ default: App }, clerkReact] = await Promise.all([
+    import("./App.jsx"),
+    CLERK_KEY ? import("@clerk/clerk-react") : Promise.resolve(null),
+  ]);
+  const ClerkProvider = clerkReact ? clerkReact.ClerkProvider : null;
+  const AuthenticateWithRedirectCallback = clerkReact
+    ? clerkReact.AuthenticateWithRedirectCallback
+    : null;
 
   // Wrap the routes inside AppProvider here — ErrorBoundary en tout premier
   // pour attraper n'importe quel crash de rendu, n'importe où dans l'app,
@@ -42,6 +45,7 @@ async function bootstrap() {
     <ErrorBoundary fullPage>
       <AppProvider>
         <BrowserRouter>
+          <React.Suspense fallback={null}>
           <Routes>
             <Route path="/b/:slug" element={<PublicBookingPage />} />
             <Route path="/quote/:token" element={<PublicQuotePage />} />
@@ -50,6 +54,7 @@ async function bootstrap() {
             )}
             <Route path="*" element={<App useClerk={!!CLERK_KEY} />} />
           </Routes>
+          </React.Suspense>
         </BrowserRouter>
       </AppProvider>
     </ErrorBoundary>
