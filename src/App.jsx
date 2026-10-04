@@ -1,5 +1,5 @@
 // src/App.jsx — Complete app with ALL pages wired (Icons & Emojis Removed)
-import { useState, useEffect, useReducer, useCallback } from "react";
+import { useState, useEffect, useReducer, useCallback, lazy, Suspense } from "react";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Toaster, toast as hotToast } from "react-hot-toast";
 import Sidebar        from "./components/Sidebar";
@@ -14,33 +14,38 @@ import { useTranslation, setLanguagePersister, getLanguage } from "./i18n/index.
 // Marketing / logged-out
 import HomePage         from "./pages/HomePage";
 // import PricingPage      from "./pages/PricingPage"; // désactivé temporairement — pas de Stripe/SIRET pour l'instant, tout est gratuit
-import AboutPage        from "./pages/AboutPage.jsx";
-import ContactPage      from "./pages/ContactPage.jsx";
-import PrivacyPolicyPage from "./pages/PrivacyPolicyPage.jsx";
-import TermsOfServicePage from "./pages/TermsOfServicePage.jsx";
-import MentionsLegalesPage from "./pages/MentionsLegalesPage.jsx";
-import FaqPage          from "./pages/FaqPage.jsx";
+const AboutPage = lazy(() => import("./pages/AboutPage.jsx"));
+const ContactPage = lazy(() => import("./pages/ContactPage.jsx"));
+const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage.jsx"));
+const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage.jsx"));
+const MentionsLegalesPage = lazy(() => import("./pages/MentionsLegalesPage.jsx"));
+const FaqPage = lazy(() => import("./pages/FaqPage.jsx"));
 
 // Core pages
-import DashboardPage    from "./pages/DashboardPage";
-import JobsPage         from "./pages/JobsPage";
-import ClientsPage      from "./pages/ClientsPage";
-import InvoicesPage     from "./pages/InvoicesPage";
-import BookingPage      from "./pages/BookingPage";
-import SettingsPage     from "./pages/SettingsPage";
-import MarketplacePage  from "./pages/MarketplacePage";
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const JobsPage = lazy(() => import("./pages/JobsPage"));
+const ClientsPage = lazy(() => import("./pages/ClientsPage"));
+const InvoicesPage = lazy(() => import("./pages/InvoicesPage"));
+const BookingPage = lazy(() => import("./pages/BookingPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const MarketplacePage = lazy(() => import("./pages/MarketplacePage"));
 
 // Feature pages
-import QuotesPage         from "./pages/QuotesPage";
-import ReviewsPage        from "./pages/ReviewsPage";
-import CertificationsPage from "./pages/CertificationsPage";
-import ReferralsPage      from "./pages/ReferralsPage";
-import PaymentsPage       from "./pages/PaymentsPage";
+const QuotesPage = lazy(() => import("./pages/QuotesPage"));
+const ReviewsPage = lazy(() => import("./pages/ReviewsPage"));
+const CertificationsPage = lazy(() => import("./pages/CertificationsPage"));
+const ReferralsPage = lazy(() => import("./pages/ReferralsPage"));
+const PaymentsPage = lazy(() => import("./pages/PaymentsPage"));
 
 import { SEED, reducer, AppCtx } from "./lib/state.jsx";
 import { useAppData } from "./hooks/useAppData.js";
 import { T } from "./styles/tokens";
 import "./styles/globals.css";
+
+/* ── Fallback pendant le chargement d'une page (code splitting) ── */
+function PageFallback() {
+  return <div style={{ padding: 40, color: T.muted, fontSize: 14 }}>Loading…</div>;
+}
 
 /* ── Toast hook ─────────────────────────────────────── */
 function useToasts() {
@@ -758,7 +763,7 @@ function AppShell() {
           >
             ☰
           </button>
-          {PAGES[page] || PAGES.dashboard}
+          <Suspense fallback={<PageFallback />}>{PAGES[page] || PAGES.dashboard}</Suspense>
         </div>
       </div>
       <ToastStack messages={toasts}/>
@@ -837,12 +842,20 @@ function DemoAppShell() {
           >
             ☰
           </button>
-          {PAGES[page] || PAGES.dashboard}
+          <Suspense fallback={<PageFallback />}>{PAGES[page] || PAGES.dashboard}</Suspense>
         </div>
       </div>
       <ToastStack messages={toasts}/>
     </AppCtx.Provider>
   );
+}
+
+// Petit indice stocké dans le navigateur : « cet utilisateur était connecté ».
+// Sert uniquement à choisir entre afficher la page d'accueil tout de suite
+// (visiteur) ou attendre Clerk (utilisateur déjà connecté).
+const SIGNED_IN_HINT = "vimen_was_signed_in";
+function wasSignedInBefore() {
+  try { return localStorage.getItem(SIGNED_IN_HINT) === "1"; } catch { return false; }
 }
 
 /* ── Clerk-gated app (real auth) ────────────────────── */
@@ -857,37 +870,54 @@ function ClerkGatedApp() {
     setClerkTokenGetter(() => getToken());
   }, [getToken]);
 
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      if (isSignedIn) localStorage.setItem(SIGNED_IN_HINT, "1");
+      else localStorage.removeItem(SIGNED_IN_HINT);
+    } catch { /* stockage indisponible : sans conséquence */ }
+  }, [isLoaded, isSignedIn]);
+
   const wantsSignup   = searchParams.get("signup") === "1";
   const hasAuthIntent = searchParams.has("signup") || searchParams.has("login");
   const initialMode   = wantsSignup ? "signup" : "login";
 
-  if (!isLoaded) return <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center" }}>Loading…</div>;
+  // Visiteur non connecté : on affiche tout de suite la page publique, sans attendre
+  // que Clerk ait fini de charger (c'était le principal frein à l'affichage et à
+  // l'indexation Google). Si le navigateur se souvient que l'utilisateur était
+  // connecté, on garde l'ancien « Loading… » pour éviter un flash de la page d'accueil.
+  const publicPageProps = {
+    onSignIn: () => navigate("/?login=1", { replace: false }),
+    onSignUp: () => navigate("/?signup=1", { replace: false }),
+  };
 
-  if (!isSignedIn && !hasAuthIntent) {
-    const publicPageProps = {
-      onSignIn: () => navigate("/?login=1", { replace: false }),
-      onSignUp: () => navigate("/?signup=1", { replace: false }),
-    };
-
+  const renderPublicPage = () => {
     switch (location.pathname) {
       // "/pricing" désactivé temporairement — retiré du switch, tombe sur
       // "default" (homepage) tant qu'on n'a pas de Stripe/SIRET actif.
       case "/about":
-        return <AboutPage {...publicPageProps} />;
+        return <Suspense fallback={null}><AboutPage {...publicPageProps} /></Suspense>;
       case "/contact":
-        return <ContactPage {...publicPageProps} />;
+        return <Suspense fallback={null}><ContactPage {...publicPageProps} /></Suspense>;
       case "/privacy":
-        return <PrivacyPolicyPage {...publicPageProps} />;
+        return <Suspense fallback={null}><PrivacyPolicyPage {...publicPageProps} /></Suspense>;
       case "/terms":
-        return <TermsOfServicePage {...publicPageProps} />;
+        return <Suspense fallback={null}><TermsOfServicePage {...publicPageProps} /></Suspense>;
       case "/mentions-legales":
-        return <MentionsLegalesPage {...publicPageProps} />;;
+        return <Suspense fallback={null}><MentionsLegalesPage {...publicPageProps} /></Suspense>;
       case "/faq":
-        return <FaqPage {...publicPageProps} />;
+        return <Suspense fallback={null}><FaqPage {...publicPageProps} /></Suspense>;
       default:
         return <HomePage {...publicPageProps} />;
     }
+  };
+
+  if (!isLoaded) {
+    if (!hasAuthIntent && !wasSignedInBefore()) return renderPublicPage();
+    return <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center" }}>Loading…</div>;
   }
+
+  if (!isSignedIn && !hasAuthIntent) return renderPublicPage();
 
   if (!isSignedIn)
     return <AuthPage initialMode={initialMode}/>;
