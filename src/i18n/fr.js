@@ -1841,9 +1841,9 @@ home: {
       legal: "Mentions légales",
   },
   hero: {
-    titleLine1: "Gérez toute votre activité",
-    titleLine2: "en pilote automatique.",
-    sub: "Une plateforme unique pour les professionnels et artisans : réservations, devis, factures, paiements et clients.",
+    titleLine1: "Devis, factures et réservations",
+    titleLine2: "dans une seule application.",
+    sub: "Vimen est l'application tout-en-un pour les professionnels de services. Envoyez devis et factures, recevez des réservations en ligne, soyez payé et gérez vos clients au même endroit.",
     ctaPrimary: "Commencer gratuitement",
     ctaSecondary: "Voir les fonctionnalités",
     stats: {
@@ -1854,7 +1854,7 @@ home: {
   },
   features: {
     eyebrow: "TOUT CE DONT VOUS AVEZ BESOIN",
-    title: "Conçu pour les professionnels d'aujourd'hui",
+    title: "Conçu pour les professionnels de services d'aujourd'hui",
     booking: {
       tabLabel: "Réservation en ligne",
       title: "Recevez des rendez-vous pendant votre sommeil",
@@ -1957,7 +1957,7 @@ home: {
   },
   finalCta: {
     title: "Prêt à simplifier votre gestion au quotidien ?",
-    sub: "Rejoignez des milliers de professionnels qui gagnent plus de 5 heures par semaine sur l'administratif.",
+    sub: "Passez moins de temps sur l'administratif et plus de temps avec vos clients.",
     cta: "Créer mon compte gratuit",
   },
   footer: {
