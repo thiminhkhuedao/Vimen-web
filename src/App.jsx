@@ -5,6 +5,7 @@ import { Toaster, toast as hotToast } from "react-hot-toast";
 import Sidebar        from "./components/Sidebar";
 import { ToastStack }   from "./components/UI";
 import CookieConsent   from "./components/CookieConsent";
+import Seo              from "./components/Seo";
 import Honeypot, { isBotSubmission } from "./components/Honeypot";
 import Turnstile       from "./components/Turnstile";
 import {  useSignIn,  useSignUp,  useAuth, useClerk, useUser } from "@clerk/clerk-react";
@@ -850,6 +851,38 @@ function DemoAppShell() {
   );
 }
 
+// Titre / description / canonical de chaque page publique (voir components/Seo.jsx).
+const SEO_PAGES = {
+  "/": {
+    title: "Vimen — Quotes, Invoices & Bookings App for Professionals",
+    description: "Vimen is the all-in-one app for service professionals: send quotes and invoices, take online bookings and manage your clients. Free to start, set up in minutes.",
+  },
+  "/about": {
+    title: "About Vimen — The All-in-One App for Service Professionals",
+    description: "Learn about Vimen, the free all-in-one app that helps service professionals manage quotes, invoices, bookings and clients in one place.",
+  },
+  "/faq": {
+    title: "FAQ — Vimen Quotes, Invoices & Bookings App",
+    description: "Answers to common questions about Vimen: quotes, invoices, online bookings, payments and your account.",
+  },
+  "/contact": {
+    title: "Contact Vimen — Questions, Feedback & Support",
+    description: "Get in touch with the Vimen team for questions, feedback or support.",
+  },
+  "/privacy": {
+    title: "Privacy Policy — Vimen",
+    description: "How Vimen collects, uses and protects your personal data.",
+  },
+  "/terms": {
+    title: "Terms of Service — Vimen",
+    description: "The terms and conditions for using Vimen.",
+  },
+  "/mentions-legales": {
+    title: "Legal Notice (Mentions légales) — Vimen",
+    description: "Legal information about the publisher and host of Vimen (mentions légales).",
+  },
+};
+
 // Petit indice stocké dans le navigateur : « cet utilisateur était connecté ».
 // Sert uniquement à choisir entre afficher la page d'accueil tout de suite
 // (visiteur) ou attendre Clerk (utilisateur déjà connecté).
@@ -891,7 +924,7 @@ function ClerkGatedApp() {
     onSignUp: () => navigate("/?signup=1", { replace: false }),
   };
 
-  const renderPublicPage = () => {
+  const renderPublicPageContent = () => {
     switch (location.pathname) {
       // "/pricing" désactivé temporairement — retiré du switch, tombe sur
       // "default" (homepage) tant qu'on n'a pas de Stripe/SIRET actif.
@@ -910,6 +943,17 @@ function ClerkGatedApp() {
       default:
         return <HomePage {...publicPageProps} />;
     }
+  };
+
+  // Même logique que le switch : tout chemin inconnu affiche l'accueil → canonical « / ».
+  const renderPublicPage = () => {
+    const path = SEO_PAGES[location.pathname] ? location.pathname : "/";
+    return (
+      <>
+        <Seo {...SEO_PAGES[path]} path={path} />
+        {renderPublicPageContent()}
+      </>
+    );
   };
 
   if (!isLoaded) {
