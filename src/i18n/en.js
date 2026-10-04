@@ -1836,9 +1836,9 @@ home: {
       legal: "Legal Notice",
   },
   hero: {
-    titleLine1: "Run your entire business",
-    titleLine2: "on auto-pilot.",
-    sub: "One platform for trade professionals to manage bookings, quotes, invoices, payments, and clients.",
+    titleLine1: "Quotes, invoices and bookings",
+    titleLine2: "in one simple app.",
+    sub: "Vimen is the all-in-one app for service professionals. Send quotes and invoices, take online bookings, get paid and manage your clients in one place.",
     ctaPrimary: "Get Started Free",
     ctaSecondary: "See Features",
     stats: {
@@ -1849,7 +1849,7 @@ home: {
   },
   features: {
     eyebrow: "EVERYTHING YOU NEED",
-    title: "Built for modern trade professionals",
+    title: "Built for modern service professionals",
     booking: {
       tabLabel: "Online Booking",
       title: "Get booked while you sleep",
@@ -1951,7 +1951,7 @@ home: {
   },
   finalCta: {
     title: "Ready to get started?",
-    sub: "Join thousands of tradespeople saving over 5 hours every week on admin.",
+    sub: "Spend less time on admin and more time on your clients.",
     cta: "Create my free account",
   },
   footer: {
