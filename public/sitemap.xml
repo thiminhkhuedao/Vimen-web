@@ -34,22 +34,7 @@
     <priority>0.6</priority>
   </url>
 
-  <!-- ── Pages légales ── -->
-  <url>
-    <loc>https://vimen.app/privacy</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://vimen.app/terms</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://vimen.app/mentions-legales</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
+  <!-- Pages légales (/privacy, /terms, /mentions-legales) : à ajouter ici quand elles seront complétées et indexables. -->
 
   <!--
     ── Pages de réservation publiques (/b/[slug]) ──
