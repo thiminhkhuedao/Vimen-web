@@ -161,7 +161,7 @@ function BookingVisual({ t }) {
             fontWeight: 700,
           }}
         >
-          £65
+          €65
         </div>
       </div>
 
@@ -190,7 +190,7 @@ function BookingVisual({ t }) {
             fontWeight: 700,
           }}
         >
-          £120
+          €120
         </div>
       </div>
 
@@ -245,17 +245,17 @@ function QuotesVisual({ t }) {
 
       <KeyValueRow
         label={t("home.features.quotes.visual.line1")}
-        value="£320"
+        value="€320"
       />
 
       <KeyValueRow
         label={t("home.features.quotes.visual.line2")}
-        value="£180"
+        value="€180"
       />
 
       <TotalRow
         label={t("home.features.quotes.visual.totalLabel")}
-        value="£500"
+        value="€500"
       />
     </div>
   );
@@ -300,12 +300,12 @@ function InvoicesVisual({ t }) {
 
       <KeyValueRow
         label={t("home.features.invoices.visual.line")}
-        value="£850"
+        value="€850"
       />
 
       <TotalRow
         label={t("home.features.invoices.visual.totalLabel")}
-        value="£850"
+        value="€850"
       />
     </div>
   );
@@ -333,22 +333,22 @@ function PaymentsVisual({ t }) {
 
       <KeyValueRow
         label={t("home.features.payments.visual.amount")}
-        value="£550"
+        value="€550"
       />
 
       <KeyValueRow
         label={t("home.features.payments.visual.bankLabel")}
-        value="Vimen Ltd"
+        value="Vimen"
       />
 
       <KeyValueRow
         label={t("home.features.payments.visual.ibanLabel")}
-        value="GB29 •••• •••• •••4 5678"
+        value="FR76 •••• •••• •••4 5678"
       />
 
       <TotalRow
         label={t("home.features.payments.visual.receive")}
-        value="£550.00"
+        value="€550.00"
       />
     </div>
   );
@@ -378,17 +378,17 @@ function ClientsVisual({ t }) {
         [
           t("home.features.clients.visual.client1"),
           "8",
-          "£3,240",
+          "€3,240",
         ],
         [
           t("home.features.clients.visual.client2"),
           "3",
-          "£1,120",
+          "€1,120",
         ],
         [
           t("home.features.clients.visual.client3"),
           "12",
-          "£5,880",
+          "€5,880",
         ],
       ].map(([name, jobs, revenue]) => (
         <div
@@ -535,7 +535,6 @@ const FEATURE_VISUALS = {
 
 function FeatureTabs({ t }) {
   const [active, setActive] = useState("booking");
-  const Visual = FEATURE_VISUALS[active];
 
   return (
     <section id="features" style={{ padding: "100px 0" }}>
@@ -609,79 +608,87 @@ function FeatureTabs({ t }) {
           }
         `}</style>
 
-        <div
-          className="vimen-features-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 64,
-            alignItems: "center",
-            minWidth: 0,
-          }}
-        >
-          <div style={{ minHeight: 180, minWidth: 0 }}>
-            <h3
-              style={{
-                fontSize: 26,
-                fontWeight: 800,
-                letterSpacing: -0.5,
-                margin: "0 0 16px",
-              }}
-            >
-              {t(`home.features.${active}.title`)}
-            </h3>
+        {FEATURE_TABS.map((id) => {
+          const Visual = FEATURE_VISUALS[id];
 
-            <p
+          return (
+            <div
+              key={id}
+              role="tabpanel"
+              className="vimen-features-grid"
               style={{
-                fontSize: 15,
-                color: T.muted,
-                lineHeight: 1.7,
-                marginBottom: 24,
+                display: active === id ? "grid" : "none",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 64,
+                alignItems: "center",
+                minWidth: 0,
               }}
             >
-              {t(`home.features.${active}.desc`)}
-            </p>
-
-            <ul
-              style={{
-                listStyle: "none",
-                padding: 0,
-                margin: 0,
-              }}
-            >
-              {[1, 2, 3].map((i) => (
-                <li
-                  key={i}
+              <div style={{ minHeight: 180, minWidth: 0 }}>
+                <h3
                   style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 10,
-                    marginBottom: 14,
-                    fontSize: 14,
-                    color: T.text,
+                    fontSize: 26,
+                    fontWeight: 800,
+                    letterSpacing: -0.5,
+                    margin: "0 0 16px",
                   }}
                 >
-                  <span
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: "50%",
-                      background: T.brand,
-                      marginTop: 7,
-                      flexShrink: 0,
-                    }}
-                  />
+                  {t(`home.features.${id}.title`)}
+                </h3>
 
-                  {t(`home.features.${active}.bullet${i}`)}
-                </li>
-              ))}
-            </ul>
-          </div>
+                <p
+                  style={{
+                    fontSize: 15,
+                    color: T.muted,
+                    lineHeight: 1.7,
+                    marginBottom: 24,
+                  }}
+                >
+                  {t(`home.features.${id}.desc`)}
+                </p>
 
-          <div style={{ minWidth: 0 }}>
-            <Visual t={t} />
-          </div>
-        </div>
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                  }}
+                >
+                  {[1, 2, 3].map((i) => (
+                    <li
+                      key={i}
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        marginBottom: 14,
+                        fontSize: 14,
+                        color: T.text,
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: T.brand,
+                          marginTop: 7,
+                          flexShrink: 0,
+                        }}
+                      />
+
+                      {t(`home.features.${id}.bullet${i}`)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div style={{ minWidth: 0 }}>
+                <Visual t={t} />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
