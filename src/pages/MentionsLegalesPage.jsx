@@ -21,7 +21,7 @@ const CONTENT = {
   fr: {
     title: "Mentions Légales",
     updated: "Dernière mise à jour : [À COMPLÉTER — date de publication]",
-    intro: `Les présentes mentions légales s'appliquent au site et à l'application Vimen (« le Service »), accessible à l'adresse vimen.com.`,
+    intro: `Les présentes mentions légales s'appliquent au site et à l'application Vimen (« le Service »), accessible à l'adresse vimen.app.`,
     sections: [
       {
         h: "1. Éditeur du site",
@@ -66,7 +66,7 @@ Hébergement de la base de données : Supabase Inc. — 970 Toa Payoh North #07-
   en: {
     title: "Legal Notice",
     updated: "Last updated: [TO COMPLETE — publication date]",
-    intro: `This legal notice applies to the Vimen website and application ("the Service"), accessible at vimen.com.`,
+    intro: `This legal notice applies to the Vimen website and application ("the Service"), accessible at vimen.app.`,
     sections: [
       {
         h: "1. Site publisher",
