@@ -7,7 +7,6 @@ Web app (Vite + React) for tradespeople, beauty/wellness professionals and other
 - Vite 5 + React 18, routed with `react-router-dom`
 - Clerk — auth
 - Supabase — database + Edge Functions
-- Stripe — payments (Vimen Pay)
 - Resend (email) / Twilio (SMS), called via Supabase Edge Functions
 - Custom i18n engine (`src/i18n/index.js`) — no external library. Supports `en` and `fr`. Interpolation uses `{{variable}}` only (no pluralization support — count-based strings are phrased count-agnostically, e.g. "1 review(s)")
 
