@@ -85,3 +85,12 @@ https://<your-project>.supabase.co/functions/v1/stripe-webhook
 - **Translations**: `src/i18n/en.js` and `src/i18n/fr.js` must stay in sync — same keys, same `{{placeholder}}` names, no duplicate top-level keys. When adding a page or string, add the key to both files in the same pass.
 - **Buttons inside `<form>`**: always give raw `<button>` elements an explicit `type="button"` unless they're meant to submit — the shared `Btn` component already defaults to `type="button"`, but native `<button>` elements don't.
 - **Demo mode**: `src/lib/supabase.js` degrades to a no-op stub client when Supabase env vars are missing, so the app never crashes on load without keys — but pages that call `lib/db.js` directly (rather than accepting `state`/`dispatch` props) will show empty states in demo mode instead of the seed data.
+
+
+---
+
+## Copyright
+
+Copyright © 2026 Thi Minh Khuê Dao. All rights reserved.
+This project and its source code are public for portfolio viewing purposes only.
+No permission is granted to copy, distribute, modify, or use this code for any other purpose.
