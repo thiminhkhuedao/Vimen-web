@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════
-  src/pages/PublicBookingPage.jsx (Cleaned: No Icons/Emojis)
+  src/pages/PublicBookingPage.jsx (corrigé)
 ══════════════════════════════════════════════════════ */
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useTranslation } from "../i18n/index.js";
 import { supabase } from "../lib/supabase";
-import { getTerms, getVerticalColor, getVerticalForProfession } from "../lib/professions.js";
+import { getVerticalColor } from "../lib/professions.js";
 import { formatCurrency } from "../lib/currency.js";
 import Honeypot, { isBotSubmission } from "../components/Honeypot.jsx";
 import Turnstile from "../components/Turnstile.jsx";
@@ -26,8 +26,22 @@ function useOptionalClerkUser() {
   }
 }
 
+// Traduction avec texte de secours : si la clé n'existe pas encore dans les
+// fichiers de langue, on affiche le texte anglais au lieu de la clé brute.
+function useTf() {
+  const { t } = useTranslation();
+  return useCallback(
+    (key, fallback, vars) => {
+      const value = t(key, vars);
+      return value && value !== key ? value : fallback;
+    },
+    [t]
+  );
+}
+
 // ── CONSTANTS & STYLES ─────────────────────────────────
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // 8 Mo
 
 const THEME = {
   brand: "#E8500A",
@@ -62,7 +76,7 @@ function generateSlots(startTime, endTime, durationMins) {
   const slots = [];
   const [sh, sm] = startTime.split(":").map(Number);
   const [eh, em] = endTime.split(":").map(Number);
-  
+
   let currentMins = sh * 60 + sm;
   const endMins = eh * 60 + em;
 
@@ -74,7 +88,9 @@ function generateSlots(startTime, endTime, durationMins) {
 }
 
 // ── UI ELEMENTS ────────────────────────────────────────
-function Avatar({ name, size = 64 }) {
+function Avatar({ name, src, size = 64 }) {
+  const [failed, setFailed] = useState(false);
+
   const initials = useMemo(() => {
     return (name || "?")
       .split(" ")
@@ -84,6 +100,31 @@ function Avatar({ name, size = 64 }) {
       .toUpperCase()
       .slice(0, 2);
   }, [name]);
+
+  // Si l'URL change (nouvelle photo), on retente le chargement.
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={name}
+        onError={() => {
+          console.warn("Avatar introuvable ou inaccessible :", src);
+          setFailed(true);
+        }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          objectFit: "cover",
+          flexShrink: 0,
+        }}
+      />
+    );
+  }
 
   return (
     <div
@@ -125,10 +166,15 @@ function Spinner() {
 }
 
 // ── Graceful degradation: SafeImage ──────────────────────────────
-// If a service photo's URL 404s or fails to load, falls back to a
-// plain icon block instead of the browser's default broken-image glyph.
+// Si l'URL d'une photo de service est en 404, on affiche un bloc neutre
+// plutôt que l'icône d'image cassée du navigateur.
 function SafeImage({ src, alt, style, fallbackIcon = "photo" }) {
   const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
   if (!src || failed) {
     return (
       <div style={{ ...style, background: THEME.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, color: THEME.muted, textTransform: "uppercase", letterSpacing: 0.5 }}>
@@ -140,8 +186,7 @@ function SafeImage({ src, alt, style, fallbackIcon = "photo" }) {
 }
 
 // ── Graceful degradation: local ErrorBoundary ────────────────────
-// Public, anonymous-visitor-facing page — a blank white screen with no
-// explanation is the worst outcome if something throws mid-render.
+// Page publique : un écran blanc sans explication serait le pire résultat.
 class ErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { hasError: false }; }
   static getDerivedStateFromError() { return { hasError: true }; }
@@ -196,15 +241,14 @@ function PageSkeleton() {
   );
 }
 
-// ── Error state: 3-part rule (what / why / what to do) ───────────
-// `error` can be a plain string (kept for backwards compatibility with
-// messages coming straight from checkRateLimit) or a { what, why } object.
+// ── Error state: règle en 3 parties (quoi / pourquoi / que faire) ─
+// `error` peut être une chaîne (messages de checkRateLimit) ou { what, why }.
 function ErrorNotice({ error, action, actionLabel, onAction }) {
   if (!error) return null;
   const what = typeof error === "string" ? error : error.what;
-  const why  = typeof error === "string" ? null : error.why;
+  const why = typeof error === "string" ? null : error.why;
   return (
-    <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: THEME.radius.md, padding: "12px 16px" }}>
+    <div role="alert" style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: THEME.radius.md, padding: "12px 16px" }}>
       <div style={{ fontWeight: 700, fontSize: 13, color: "#B91C1C", marginBottom: why ? 4 : 0 }}>{what}</div>
       {why && <div style={{ fontSize: 12, color: "#991B1B", marginBottom: action ? 10 : 0, lineHeight: 1.5 }}>{why}</div>}
       {action && (
@@ -217,15 +261,15 @@ function ErrorNotice({ error, action, actionLabel, onAction }) {
   );
 }
 
-// ── Success: discrete toast ───────────────────────────────────────
-// Non-blocking, bottom-right, auto-dismisses. No new dependency.
+// ── Success: toast discret ────────────────────────────────────────
+// `onDone` doit être stable (useCallback) sinon le minuteur repart à chaque rendu.
 function DiscreteToast({ message, onDone }) {
   useEffect(() => {
     const timer = setTimeout(onDone, 2600);
     return () => clearTimeout(timer);
   }, [onDone]);
   return (
-    <div style={{
+    <div role="status" style={{
       position: "fixed", bottom: 20, right: 20, zIndex: 200,
       background: THEME.text, color: "#fff", padding: "10px 16px", borderRadius: THEME.radius.md,
       fontSize: 13, fontWeight: 700, boxShadow: "0 6px 20px rgba(0,0,0,0.2)",
@@ -244,9 +288,10 @@ function Steps({ current, hasServices }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 24 }}>
       {steps.map((label, i) => {
-        const stepIdx = i + (hasServices ? 1 : 2);
-        const isActive = current === stepIdx || (!hasServices && current === stepIdx + 1);
-        const isDone = current > stepIdx || (!hasServices && current > stepIdx + 1);
+        // Numéro réel de l'étape dans le flux : 1/2/3 avec services, 2/3 sans.
+        const stepNumber = hasServices ? i + 1 : i + 2;
+        const isActive = current === stepNumber;
+        const isDone = current > stepNumber;
 
         return (
           <div key={label} style={{ display: "flex", alignItems: "center", flex: 1 }}>
@@ -266,7 +311,7 @@ function Steps({ current, hasServices }) {
                   flexShrink: 0,
                 }}
               >
-                {isDone ? "" : i + 1}
+                {isDone ? "\u2713" : i + 1}
               </div>
               <div
                 style={{
@@ -292,6 +337,8 @@ function Steps({ current, hasServices }) {
 // ── CALENDAR ───────────────────────────────────────────
 function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, selectedDate, selectedTime }) {
   const { t: tr, lang } = useTranslation();
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
+
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -308,7 +355,11 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
   const firstDay = new Date(year, month, 1).getDay();
   const daysCount = new Date(year, month + 1, 0).getDate();
 
+  // On ne remonte pas avant le mois en cours.
+  const canGoPrev = year > today.getFullYear() || (year === today.getFullYear() && month > today.getMonth());
+
   const handlePrevMonth = () => {
+    if (!canGoPrev) return;
     if (month === 0) {
       setMonth(11);
       setYear((y) => y - 1);
@@ -334,9 +385,19 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
 
       const dateStr = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
+      // Aujourd'hui : on masque les créneaux déjà passés.
+      const now = new Date();
+      const isToday = dateStr === `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+
       return dayAvail
         .flatMap((a) => generateSlots(a.start_time.slice(0, 5), a.end_time.slice(0, 5), duration))
         .filter((slot) => !blockedSet.has(`${dateStr} ${slot}`))
+        .filter((slot) => {
+          if (!isToday) return true;
+          const [h, m] = slot.split(":").map(Number);
+          return h * 60 + m > nowMins;
+        })
         .filter((slot, idx, arr) => arr.indexOf(slot) === idx)
         .sort();
     },
@@ -357,13 +418,24 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
     <div style={{ background: THEME.surface, borderRadius: THEME.radius.xl, border: `1px solid ${THEME.border}`, overflow: "hidden", boxShadow: THEME.shadow }}>
       {/* Month Navigation */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", borderBottom: `1px solid ${THEME.border}` }}>
-        <button onClick={handlePrevMonth} style={{ background: "none", border: `1px solid ${THEME.border}`, borderRadius: THEME.radius.md, width: 34, height: 34, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button
+          type="button"
+          onClick={handlePrevMonth}
+          disabled={!canGoPrev}
+          aria-label="Previous month"
+          style={{ background: "none", border: `1px solid ${THEME.border}`, borderRadius: THEME.radius.md, width: 34, height: 34, cursor: canGoPrev ? "pointer" : "not-allowed", opacity: canGoPrev ? 1 : 0.4, fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
           &larr;
         </button>
         <div style={{ fontWeight: 700, fontSize: 16, textTransform: "capitalize" }}>
-          {new Date(year, month, 1).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { month: "long", year: "numeric" })}
+          {new Date(year, month, 1).toLocaleDateString(locale, { month: "long", year: "numeric" })}
         </div>
-        <button onClick={handleNextMonth} style={{ background: "none", border: `1px solid ${THEME.border}`, borderRadius: THEME.radius.md, width: 34, height: 34, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button
+          type="button"
+          onClick={handleNextMonth}
+          aria-label="Next month"
+          style={{ background: "none", border: `1px solid ${THEME.border}`, borderRadius: THEME.radius.md, width: 34, height: 34, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
           &rarr;
         </button>
       </div>
@@ -372,7 +444,7 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", padding: "10px 16px 4px" }}>
         {DAYS.map((d, i) => (
           <div key={d} style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: THEME.muted, paddingBottom: 8, textTransform: "capitalize" }}>
-            {new Date(2024, 0, 7 + i).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { weekday: "short" })}
+            {new Date(2024, 0, 7 + i).toLocaleDateString(locale, { weekday: "short" })}
           </div>
         ))}
       </div>
@@ -398,6 +470,7 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
           return (
             <button
               key={dayNum}
+              type="button"
               onClick={hasSlots ? () => onSelectSlot(dateStr, null) : undefined}
               disabled={!hasSlots}
               style={{
@@ -437,7 +510,7 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
       {selectedDate && (
         <div style={{ borderTop: `1px solid ${THEME.border}`, padding: "16px 20px" }}>
           <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: THEME.muted }}>
-            {selectedDateObj?.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+            {selectedDateObj?.toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })}
           </div>
           {activeDaySlots.length === 0 ? (
             <div style={{ fontSize: 13, color: THEME.muted }}>{tr("publicBooking.noSlotsThisDay")}</div>
@@ -446,6 +519,7 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
               {activeDaySlots.map((slot) => (
                 <button
                   key={slot}
+                  type="button"
                   onClick={() => onSelectSlot(selectedDate, slot)}
                   style={{
                     padding: "8px 16px",
@@ -475,6 +549,7 @@ function ServiceCard({ service, selected, onClick, currency }) {
   const { t: tr } = useTranslation();
   return (
     <button
+      type="button"
       onClick={onClick}
       style={{
         width: "100%",
@@ -486,11 +561,12 @@ function ServiceCard({ service, selected, onClick, currency }) {
         outline: selected ? `2.5px solid ${THEME.brand}` : `1.5px solid ${THEME.border}`,
         background: selected ? THEME.brandLight : THEME.surface,
         transition: "outline .15s, background .15s",
+        fontFamily: "inherit",
       }}
     >
       {service.image_url && (
         <div style={{ height: 140, overflow: "hidden" }}>
-          <SafeImage src={service.image_url} alt={service.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} fallbackIcon="photo"/>
+          <SafeImage src={service.image_url} alt={service.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} fallbackIcon="photo" />
         </div>
       )}
       <div style={{ padding: "12px 16px" }}>
@@ -524,45 +600,85 @@ function ServiceCard({ service, selected, onClick, currency }) {
 // ── IMAGE UPLOAD ───────────────────────────────────────
 function ImageUpload({ value, onChange, label, hint }) {
   const { t: tr } = useTranslation();
+  const tf = useTf();
   const fileInputRef = useRef(null);
+  const previewRef = useRef(null); // URL locale (blob:) à libérer
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
   const [showToast, setShowToast] = useState(false);
 
+  const hideToast = useCallback(() => setShowToast(false), []);
+
+  const releasePreview = () => {
+    if (previewRef.current) {
+      URL.revokeObjectURL(previewRef.current);
+      previewRef.current = null;
+    }
+  };
+
+  // Libère l'URL locale quand le composant disparaît.
+  useEffect(() => () => {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+  }, []);
+
+  // Aperçu local, ou à défaut l'image déjà envoyée (ex. depuis l'étape 1).
+  const shown = preview || value || null;
+
   const handleFile = async (file) => {
     if (!file) return;
-
     setUploadError(null);
-    setPreview(URL.createObjectURL(file));
+
+    if (!file.type.startsWith("image/")) {
+      setUploadError({
+        what: tf("publicBooking.uploadNotImageWhat", "This file isn't an image"),
+        why: tf("publicBooking.uploadNotImageWhy", "Choose a JPG, PNG or WebP photo."),
+      });
+      return;
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setUploadError({
+        what: tf("publicBooking.uploadTooLargeWhat", "This photo is too large"),
+        why: tf("publicBooking.uploadTooLargeWhy", "Choose a photo under 8 MB."),
+      });
+      return;
+    }
+
+    releasePreview();
+    const localUrl = URL.createObjectURL(file);
+    previewRef.current = localUrl;
+    setPreview(localUrl);
     setUploading(true);
 
-    const ext = file.name.split(".").pop();
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "jpg";
     // Doit rester sous "requests/" — c'est le seul chemin autorisé par la
     // policy storage "booking_attachments_public_insert" (voir
     // sql/009_scope_booking_attachments.sql). Un autre préfixe fera
     // échouer l'upload avec une erreur RLS.
     const path = `requests/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const { error } = await supabase.storage.from("booking-attachments").upload(path, file, { cacheControl: "3600" });
-    setUploading(false);
+    try {
+      const { error } = await supabase.storage.from("booking-attachments").upload(path, file, { cacheControl: "3600" });
+      if (error) throw error;
 
-    if (error) {
-      setUploadError({
-        what: "Couldn't upload your photo",
-        why: "This can happen with a slow connection or a file that's too large. Try a smaller image, or continue without one.",
-      });
+      const { data: { publicUrl } } = supabase.storage.from("booking-attachments").getPublicUrl(path);
+      onChange(publicUrl);
+      setShowToast(true);
+    } catch {
+      releasePreview();
       setPreview(null);
-      return;
+      setUploadError({
+        what: tf("publicBooking.uploadErrorWhat", "Couldn't upload your photo"),
+        why: tf("publicBooking.uploadErrorWhy", "This can happen with a slow connection or a file that's too large. Try a smaller image, or continue without one."),
+      });
+    } finally {
+      setUploading(false);
     }
-
-    const { data: { publicUrl } } = supabase.storage.from("booking-attachments").getPublicUrl(path);
-    onChange(publicUrl);
-    setShowToast(true);
   };
 
   const handleClear = (e) => {
     e.stopPropagation();
+    releasePreview();
     setPreview(null);
     onChange(null);
   };
@@ -580,12 +696,12 @@ function ImageUpload({ value, onChange, label, hint }) {
           handleFile(e.dataTransfer.files[0]);
         }}
         style={{
-          border: `2px dashed ${preview ? THEME.brand : THEME.border}`,
+          border: `2px dashed ${shown ? THEME.brand : THEME.border}`,
           borderRadius: THEME.radius.lg,
-          padding: preview ? "0" : "24px 16px",
+          padding: shown ? "0" : "24px 16px",
           textAlign: "center",
           cursor: "pointer",
-          background: preview ? "transparent" : THEME.bg,
+          background: shown ? "transparent" : THEME.bg,
           overflow: "hidden",
         }}
       >
@@ -594,12 +710,13 @@ function ImageUpload({ value, onChange, label, hint }) {
             <Spinner />
             <span style={{ fontSize: 14, color: THEME.muted }}>{tr("publicBooking.uploading")}</span>
           </div>
-        ) : preview ? (
+        ) : shown ? (
           <div style={{ position: "relative" }}>
-            <img src={preview} alt="preview" style={{ width: "100%", maxHeight: 200, objectFit: "cover" }} />
+            <img src={shown} alt="preview" style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
             <button
               type="button"
               onClick={handleClear}
+              aria-label="Remove photo"
               style={{
                 position: "absolute",
                 top: 8,
@@ -623,7 +740,16 @@ function ImageUpload({ value, onChange, label, hint }) {
             <div style={{ fontSize: 11, color: THEME.muted, marginTop: 2 }}>{tr("publicBooking.imageFormats")}</div>
           </div>
         )}
-        <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => handleFile(e.target.files[0])} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={(e) => {
+            handleFile(e.target.files[0]);
+            e.target.value = ""; // permet de rechoisir le même fichier
+          }}
+        />
       </div>
 
       {uploadError && (
@@ -631,7 +757,7 @@ function ImageUpload({ value, onChange, label, hint }) {
           <ErrorNotice error={uploadError} action actionLabel={tr("publicBooking.tryAgain")} onAction={() => { setUploadError(null); fileInputRef.current?.click(); }} />
         </div>
       )}
-      {showToast && <DiscreteToast message={tr("publicBooking.photoUploaded")} onDone={() => setShowToast(false)} />}
+      {showToast && <DiscreteToast message={tr("publicBooking.photoUploaded")} onDone={hideToast} />}
     </div>
   );
 }
@@ -639,6 +765,8 @@ function ImageUpload({ value, onChange, label, hint }) {
 // ── MAIN COMPONENT ─────────────────────────────────────
 function PublicBookingPageInner() {
   const { t: tr, lang, setLanguage, languages } = useTranslation();
+  const tf = useTf();
+  const locale = lang === "fr" ? "fr-FR" : "en-GB";
   const { slug } = useParams();
   const { user } = useOptionalClerkUser();
 
@@ -670,8 +798,11 @@ function PublicBookingPageInner() {
   const [done, setDone] = useState(false);
   const [honeypot, setHoneypot] = useState("");
   const [captchaToken, setCaptchaToken] = useState(null);
-  const [formError, setFormError] = useState(""); // string OR { what, why } — see ErrorNotice
+  const [formError, setFormError] = useState(""); // string OU { what, why } — voir ErrorNotice
   const [fieldErrors, setFieldErrors] = useState({});
+
+  // Évite qu'une réponse lente d'un ancien slug écrase la page courante.
+  const loadRequestId = useRef(0);
 
   const fmt = useCallback((n) => formatCurrency(n, profile?.currency), [profile?.currency]);
   const updateFormField = (key) => (e) => {
@@ -679,8 +810,11 @@ function PublicBookingPageInner() {
     setFieldErrors((prev) => ({ ...prev, [key]: null }));
   };
 
-  // Load profile and availability data
+  // Charge le profil public + disponibilités
   async function loadData() {
+    const requestId = ++loadRequestId.current;
+    const isStale = () => requestId !== loadRequestId.current;
+
     setStatus("loading");
     try {
       const { data: prof, error } = await supabase
@@ -689,11 +823,13 @@ function PublicBookingPageInner() {
         .eq("booking_slug", slug)
         .single();
 
+      if (isStale()) return;
+
       if (error) {
-        // PGRST116 = .single() found zero rows = a genuine 404 (this
-        // booking page doesn't exist). Anything else — network failure,
-        // 500, timeout — is retry-able and shouldn't look like a 404.
+        // PGRST116 = .single() n'a trouvé aucune ligne = vraie 404.
+        // Tout le reste (réseau, 500, timeout) peut être réessayé.
         if (error.code === "PGRST116") { setStatus("notfound"); return; }
+        console.error("public_profiles :", error);
         setStatus("error");
         return;
       }
@@ -703,8 +839,7 @@ function PublicBookingPageInner() {
 
       // Par défaut, la page affiche la langue du compte du pro — mais si ce
       // visiteur a déjà choisi une langue ici auparavant (ou via le
-      // sélecteur), on respecte son choix plutôt que d'écraser sa préférence
-      // à chaque visite.
+      // sélecteur), on respecte son choix.
       try {
         const hasVisitorChoice = typeof localStorage !== "undefined" && localStorage.getItem("Vimen_language");
         if (!hasVisitorChoice && prof.language && prof.language !== lang) {
@@ -718,29 +853,28 @@ function PublicBookingPageInner() {
         supabase.from("blocked_slots").select("*").eq("profile_id", prof.id),
       ]);
 
+      if (isStale()) return;
+
       const fetchedServices = svcs ?? [];
       setServices(fetchedServices);
       setAvailability(avail ?? []);
       setBlocked(blk ?? []);
       setStep(fetchedServices.length > 0 ? 1 : 2);
       setStatus("found");
-    } catch {
-      // Network-level failure (fetch rejected outright) — also retry-able.
+    } catch (err) {
+      if (isStale()) return;
+      console.error("loadData :", err);
       setStatus("error");
     }
   }
 
   useEffect(() => {
-    let isCancelled = false;
-    (async () => {
-      await loadData();
-      if (isCancelled) return;
-    })();
-    return () => { isCancelled = true; };
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   // Détecte si le visiteur connecté est le pro propriétaire de cette page
-  // (ex: il teste/prévisualise son propre lien de réservation).
+  // (ex : il teste son propre lien de réservation).
   useEffect(() => {
     let isCancelled = false;
 
@@ -754,7 +888,7 @@ function PublicBookingPageInner() {
         .from("profiles")
         .select("booking_slug")
         .eq("clerk_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (!isCancelled) setIsOwner(data?.booking_slug === slug);
     })();
@@ -795,6 +929,7 @@ function PublicBookingPageInner() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
+    if (sending) return; // évite le double envoi
     if (isOwner) return; // On ne prend pas de rdv avec soi-même.
     if (isBotSubmission(honeypot)) return; // Bot détecté, rejet silencieux.
     if (!validateContactFields()) return;
@@ -803,7 +938,7 @@ function PublicBookingPageInner() {
       return;
     }
     if (!captchaToken) {
-      setFormError("Please complete the verification challenge.");
+      setFormError(tf("publicBooking.errors.captchaRequired", "Please complete the verification challenge."));
       return;
     }
 
@@ -820,21 +955,21 @@ function PublicBookingPageInner() {
       return;
     }
 
-    const selectedService = services.find((s) => s.id === selSvc);
+    const chosenService = services.find((s) => s.id === selSvc);
     const combinedInstructions = custom
       ? [form.custom_description, form.client_instructions].filter(Boolean).join(" — ")
       : form.client_instructions;
     const payload = {
       profile_id: profile.id,
-      customer_name: form.customer_name,
-      customer_email: form.customer_email,
+      customer_name: form.customer_name.trim(),
+      customer_email: form.customer_email.trim(),
       customer_phone: form.customer_phone || null,
       preferred_date: selDate,
       notes: `${selTime} — ${combinedInstructions || ""}`.trim(),
       service_id: selSvc || null,
       client_image_url: clientImage || null,
       client_instructions: combinedInstructions || null,
-      quoted_price: custom && form.quoted_price ? parseFloat(form.quoted_price) : selectedService?.price ?? null,
+      quoted_price: custom && form.quoted_price ? parseFloat(form.quoted_price) : chosenService?.price ?? null,
       status: "pending",
     };
 
@@ -843,9 +978,10 @@ function PublicBookingPageInner() {
       setSending(false);
 
       if (error) {
+        console.error("booking_requests insert :", error);
         setFormError({
-          what: "Couldn't send your request",
-          why: "This is usually a temporary connection issue — your details weren't lost. Try sending again.",
+          what: tf("publicBooking.sendErrorWhat", "Couldn't send your request"),
+          why: tf("publicBooking.sendErrorWhy", "This is usually a temporary connection issue — your details weren't lost. Try sending again."),
         });
         return;
       }
@@ -853,11 +989,14 @@ function PublicBookingPageInner() {
       setDone(true);
     } catch {
       setSending(false);
-      setFormError({ what: "Couldn't send your request", why: "Check your connection and try again — nothing was lost." });
+      setFormError({
+        what: tf("publicBooking.sendErrorWhat", "Couldn't send your request"),
+        why: tf("publicBooking.sendErrorNetworkWhy", "Check your connection and try again — nothing was lost."),
+      });
     }
   };
 
-  // State checks: Loading, Not Found, Error
+  // État : chargement, introuvable, erreur
   if (status === "loading") return <PageSkeleton />;
 
   if (status === "error") {
@@ -875,7 +1014,7 @@ function PublicBookingPageInner() {
     );
   }
 
-  if (status === "notfound") {
+  if (status === "notfound" || !profile) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: THEME.bg, padding: 20 }}>
         <div style={{ textAlign: "center" }}>
@@ -885,21 +1024,18 @@ function PublicBookingPageInner() {
     );
   }
 
-  // Profile data derivations
-  const certs = profile?.extra_fields?.certifications || [];
-  const isPro = profile?.plan === "pro";
+  // Données dérivées du profil
+  const certs = Array.isArray(profile.extra_fields?.certifications) ? profile.extra_fields.certifications : [];
   // TEMPORAIREMENT DÉSACTIVÉ — pas de moyen de passer Pro pour l'instant
-  // (pas de Stripe/SIRET actif), donc cette limite cacherait des
-  // certifications indéfiniment. Remettre `isPro ? certs : certs.slice(0, 2)`
-  // pour la réactiver une fois l'abonnement Pro de retour.
+  // (pas de Stripe/SIRET actif). Pour réactiver la limite :
+  // const visibleCertifications = profile.plan === "pro" ? certs : certs.slice(0, 2);
   const visibleCertifications = certs;
 
-  const vertical = getVerticalForProfession(profile.trade);
   const verticalColor = getVerticalColor(profile.trade);
   const hasServices = services.length > 0;
   const selectedService = services.find((s) => s.id === selSvc);
 
-  // Success view
+  // Vue succès
   if (done) {
     return (
       <div style={{ minHeight: "100vh", background: THEME.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
@@ -909,7 +1045,7 @@ function PublicBookingPageInner() {
             {selDate && selTime
               ? tr("publicBooking.requestSentBodySlot", {
                   name: profile.name,
-                  slot: `${selTime} ${new Date(selDate + "T00:00:00").toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { weekday: "long", day: "numeric", month: "long" })}`,
+                  slot: `${selTime} ${new Date(selDate + "T00:00:00").toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })}`,
                 })
               : tr("publicBooking.requestSentBodyGeneric", { name: profile.name })}
           </p>
@@ -933,7 +1069,7 @@ function PublicBookingPageInner() {
     );
   }
 
-  // Main multi-step booking view
+  // Vue principale en plusieurs étapes
   return (
     <div style={{ minHeight: "100vh", background: THEME.bg, fontFamily: "'Inter',sans-serif", WebkitFontSmoothing: "antialiased" }}>
       {/* Top Bar Navigation */}
@@ -944,7 +1080,7 @@ function PublicBookingPageInner() {
           </a>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ display: "flex", border: `1px solid ${THEME.border}`, borderRadius: 100, padding: 2 }}>
-              {languages.map(l => (
+              {languages.map((l) => (
                 <button
                   key={l.code}
                   type="button"
@@ -989,9 +1125,7 @@ function PublicBookingPageInner() {
               flexWrap: "wrap",
             }}
           >
-            <span>
-              {tr("publicBooking.ownerPreviewNotice")}
-            </span>
+            <span>{tr("publicBooking.ownerPreviewNotice")}</span>
             <button
               type="button"
               onClick={handleCopyLink}
@@ -1051,10 +1185,13 @@ function PublicBookingPageInner() {
                   key={svc.id}
                   service={svc}
                   selected={selSvc === svc.id}
-                  currency={profile?.currency}
+                  currency={profile.currency}
                   onClick={() => {
                     setSelSvc(svc.id);
                     setCustom(false);
+                    // La durée change les créneaux : on repart d'une sélection propre.
+                    setSelDate(null);
+                    setSelTime(null);
                   }}
                 />
               ))}
@@ -1065,6 +1202,8 @@ function PublicBookingPageInner() {
               onClick={() => {
                 setCustom(true);
                 setSelSvc(null);
+                setSelDate(null);
+                setSelTime(null);
               }}
               style={{
                 width: "100%",
@@ -1104,6 +1243,7 @@ function PublicBookingPageInner() {
                     fontSize: 14,
                     resize: "vertical",
                     marginBottom: 12,
+                    boxSizing: "border-box",
                   }}
                 />
                 <ImageUpload
@@ -1116,6 +1256,7 @@ function PublicBookingPageInner() {
             )}
 
             <button
+              type="button"
               onClick={() => setStep(2)}
               disabled={!selSvc && !custom}
               style={{
@@ -1165,6 +1306,7 @@ function PublicBookingPageInner() {
             <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
               {hasServices && (
                 <button
+                  type="button"
                   onClick={() => setStep(1)}
                   style={{
                     flex: 1,
@@ -1182,6 +1324,7 @@ function PublicBookingPageInner() {
                 </button>
               )}
               <button
+                type="button"
                 onClick={() => setStep(3)}
                 disabled={!selDate || !selTime}
                 style={{
@@ -1217,19 +1360,18 @@ function PublicBookingPageInner() {
                 )}
                 {selectedService?.deposit_enabled && (
                   <div style={{ fontSize: 12, color: THEME.brand, marginTop: 2 }}>
-                    Deposit required upon confirmation:{" "}
                     {selectedService.deposit_type === "percent"
-                      ? `${selectedService.deposit_amount}% (${fmt(selectedService.price * selectedService.deposit_amount / 100)})`
-                      : fmt(selectedService.deposit_amount)}
+                      ? tr("publicBooking.depositOnConfirmPercent", { percent: selectedService.deposit_amount, amount: fmt(selectedService.price * selectedService.deposit_amount / 100) })
+                      : tr("publicBooking.depositOnConfirmFixed", { amount: fmt(selectedService.deposit_amount) })}
                   </div>
                 )}
                 {selDate && selTime && (
                   <div style={{ fontSize: 13, color: THEME.muted }}>
-                    {new Date(selDate + "T00:00:00").toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", { weekday: "long", day: "numeric", month: "long" })} {tr("publicBooking.atTime")} {selTime}
+                    {new Date(selDate + "T00:00:00").toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })} {tr("publicBooking.atTime")} {selTime}
                   </div>
                 )}
               </div>
-              <button type="button" onClick={() => setStep(2)} style={{ fontSize: 12, color: THEME.brand, background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>
+              <button type="button" onClick={() => setStep(2)} style={{ fontSize: 12, color: THEME.brand, background: "none", border: "none", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}>
                 {tr("publicBooking.changeBtn")}
               </button>
             </div>
@@ -1240,19 +1382,19 @@ function PublicBookingPageInner() {
             <div style={{ background: THEME.surface, borderRadius: THEME.radius.xl, border: `1px solid ${THEME.border}`, padding: "24px", marginBottom: 16, boxShadow: THEME.shadow, display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.nameLabel")}</label>
-                <input type="text" placeholder={tr("publicBooking.namePlaceholder")} value={form.customer_name} onChange={updateFormField("customer_name")} style={{ ...inputStyle, ...(fieldErrors.customer_name ? { borderColor: "#DC2626" } : {}) }} />
+                <input type="text" autoComplete="name" placeholder={tr("publicBooking.namePlaceholder")} value={form.customer_name} onChange={updateFormField("customer_name")} style={{ ...inputStyle, ...(fieldErrors.customer_name ? { borderColor: "#DC2626" } : {}) }} />
                 {fieldErrors.customer_name && <div style={{ fontSize: 12, color: "#DC2626", marginTop: 5 }}>{fieldErrors.customer_name}</div>}
               </div>
 
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.emailLabel")}</label>
-                <input type="email" placeholder={tr("publicBooking.emailPlaceholder")} value={form.customer_email} onChange={updateFormField("customer_email")} style={{ ...inputStyle, ...(fieldErrors.customer_email ? { borderColor: "#DC2626" } : {}) }} />
+                <input type="email" autoComplete="email" placeholder={tr("publicBooking.emailPlaceholder")} value={form.customer_email} onChange={updateFormField("customer_email")} style={{ ...inputStyle, ...(fieldErrors.customer_email ? { borderColor: "#DC2626" } : {}) }} />
                 {fieldErrors.customer_email && <div style={{ fontSize: 12, color: "#DC2626", marginTop: 5 }}>{fieldErrors.customer_email}</div>}
               </div>
 
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: THEME.muted, marginBottom: 6 }}>{tr("publicBooking.phoneLabel")}</label>
-                <input type="tel" placeholder={tr("publicBooking.phonePlaceholder")} value={form.customer_phone} onChange={updateFormField("customer_phone")} style={inputStyle} />
+                <input type="tel" autoComplete="tel" placeholder={tr("publicBooking.phonePlaceholder")} value={form.customer_phone} onChange={updateFormField("customer_phone")} style={inputStyle} />
               </div>
 
               <div>
@@ -1282,7 +1424,7 @@ function PublicBookingPageInner() {
               <button
                 type="submit"
                 disabled={sending || isOwner || !captchaToken}
-                title={isOwner ? "You can't book with yourself" : undefined}
+                title={isOwner ? tf("publicBooking.cannotBookSelf", "You can't book with yourself") : undefined}
                 style={{
                   flex: 2,
                   padding: "13px",
