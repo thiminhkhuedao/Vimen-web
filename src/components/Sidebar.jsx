@@ -2,8 +2,7 @@
 import { T } from "../styles/tokens";
 import { getVerticalForProfession, getTerms, getProfessionLabel } from "../lib/professions.js";
 import { useTranslation } from "../i18n/index.js";
-
-const initials = n => (n||"?").split(" ").filter(Boolean).map(w=>w[0]).join("").toUpperCase().slice(0,2);
+import { Avatar } from "./UI.jsx";
 
 export default function Sidebar({ page, setPage, profile, onSignOut, pendingBookings=0, pendingQuotes=0, mobileOpen=false, onCloseMobile=()=>{} }) {
   const { t } = useTranslation();
@@ -155,9 +154,8 @@ export default function Sidebar({ page, setPage, profile, onSignOut, pendingBook
       {/* User area */}
       <div style={{ padding:"12px 14px", borderTop:`1px solid ${T.border}`, flexShrink:0 }}>
         <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-          <div style={{ width:32, height:32, borderRadius:"50%", background:T.brand, color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, flexShrink:0 }}>
-            {initials(profile?.name)}
-          </div>
+          {/* Photo de profil si elle existe, sinon les initiales (géré par Avatar) */}
+          <Avatar name={profile?.name} size={32} src={profile?.avatar_url} />
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontSize:13, fontWeight:700, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{profile?.name || "…"}</div>
           </div>

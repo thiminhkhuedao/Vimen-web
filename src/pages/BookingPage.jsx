@@ -121,7 +121,13 @@ export default function BookingPage({ profile }) {
             "send-booking-confirmation",
             { body: { bookingRequestId: id }, headers: { Authorization: `Bearer ${token}` } }
           );
-          if (confirmError) throw confirmError;
+          if (confirmError) {
+            // FunctionsHttpError : le vrai message du serveur est dans le corps de la réponse.
+            let serverMessage = "";
+            try { serverMessage = (await confirmError.context.json())?.error ?? ""; } catch { /* corps illisible */ }
+            console.error("[send-booking-confirmation] réponse serveur :", serverMessage || confirmError);
+            throw confirmError;
+          }
           if (result?.emailSent === false) {
             // Réservation acceptée mais email non parti (clé Resend absente, domaine non validé...)
             toast.error(t("booking.confirmationEmailNotSentToast") || "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client.");
@@ -134,7 +140,8 @@ export default function BookingPage({ profile }) {
           }
         } catch (err) {
           console.error("[Booking confirmation email failed]:", err);
-          toast.error(t("booking.confirmationEmailFailedToast", { error: err?.message ?? String(err) }) || `Échec de l'envoi de l'email de confirmation : ${err?.message ?? err}`);
+          // Message volontairement sans détail technique : le détail est dans la console (ci-dessus).
+          toast.error(t("booking.confirmationEmailNotSentToast") || "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client. Réessaie plus tard ou contacte-le directement.");
         }
       }
     }
