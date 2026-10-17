@@ -18,17 +18,34 @@
 //   });
 
 const ALLOWED_ORIGINS = [
+  "https://vimen.app",
+  "https://www.vimen.app",
   "https://vimen.com",
   "https://www.vimen.com",
   "http://localhost:5173", // Vite dev server, à retirer si tu veux verrouiller aussi en dev
 ];
 
-// Ajoute automatiquement les URLs de preview Vercel (*.vercel.app) si tu
-// les utilises pour tester des branches avant de merger sur main.
+// URLs de preview Vercel : uniquement celles de TON projet ET de TON équipe.
+// Les previews ont la forme  <projet>-<hash ou git-branche>-<équipe>.vercel.app.
+// Le slug d'équipe à la fin est ce qui empêche quelqu'un d'autre de créer une
+// URL qui passe (il ne peut pas utiliser ton slug d'équipe).
+// Définis ces deux secrets sur chaque projet Supabase :
+//   supabase secrets set VERCEL_PROJECT_NAME=mon-projet VERCEL_TEAM_SLUG=mon-equipe
+// S'ils manquent, AUCUNE preview n'est autorisée (fermé par défaut).
+const PREVIEW_PROJECT = (Deno.env.get("VERCEL_PROJECT_NAME") ?? "").toLowerCase();
+const PREVIEW_TEAM = (Deno.env.get("VERCEL_TEAM_SLUG") ?? "").toLowerCase();
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const PREVIEW_ORIGIN_RE =
+  PREVIEW_PROJECT && PREVIEW_TEAM
+    ? new RegExp(
+        `^https://${escapeRegex(PREVIEW_PROJECT)}-[a-z0-9-]+-${escapeRegex(PREVIEW_TEAM)}\\.vercel\\.app$`
+      )
+    : null;
+
 function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
-  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
+  if (PREVIEW_ORIGIN_RE && PREVIEW_ORIGIN_RE.test(origin)) return true;
   return false;
 }
 
@@ -37,7 +54,12 @@ export function corsHeaders(req: Request): Record<string, string> {
   const allowed = isAllowedOrigin(origin);
   return {
     "Access-Control-Allow-Origin": allowed && origin ? origin : ALLOWED_ORIGINS[0],
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    // Les versions récentes de supabase-js ajoutent des en-têtes x-supabase-client-* :
+    // s'ils ne sont pas listés ici, le navigateur bloque la requête.
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, " +
+      "x-supabase-client-platform, x-supabase-client-platform-version, " +
+      "x-supabase-client-runtime, x-supabase-client-runtime-version",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Vary": "Origin",
   };

@@ -17,7 +17,8 @@
  * que l'interface puisse le prévenir.
  *
  * Appelée avec : { bookingRequestId }
- * Renvoie :      { success: true, depositRequired, depositLinkCreated } ou { error }
+ * Renvoie :      { success: true, depositRequired, depositLinkCreated,
+ *                  stripeNotConnected, emailSent } ou { error }
  *
  * Deploy:   supabase functions deploy send-booking-confirmation
  * Secrets:  STRIPE_SECRET_KEY, RESEND_API_KEY, APP_URL, CLERK_SECRET_KEY
@@ -36,6 +37,18 @@ const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "bookings@vimen.app";
 const APP_URL = Deno.env.get("APP_URL") ?? "https://vimen.app";
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+
+// Échappe le HTML : customer_name vient du formulaire public, donc
+// n'importe qui peut y mettre du code qui finirait dans l'email.
+const esc = (s: unknown): string =>
+  String(s ?? "").replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!)
+  );
+
+// Nom d'expéditeur sûr pour l'en-tête From (pas de chevrons, guillemets
+// ni retours à la ligne qui permettraient d'injecter un autre destinataire).
+const safeFromName = (s: unknown): string =>
+  String(s ?? "").replace(/[<>"\r\n]/g, "").trim() || "Vimen";
 
 async function getVerifiedProfileId(req: Request): Promise<string> {
   const authHeader = req.headers.get("Authorization") || "";
@@ -208,33 +221,39 @@ Deno.serve(async (req: Request) => {
 <div class="wrap">
   <div class="top"><div class="logo">Vimen</div></div>
   <div class="body">
-    <p style="font-size:15px;margin-bottom:16px">Bonjour ${booking.customer_name ?? ""},</p>
+    <p style="font-size:15px;margin-bottom:16px">Bonjour ${esc(booking.customer_name)},</p>
     <p style="font-size:14px;color:#555;line-height:1.6">
-      Bonne nouvelle : ${profile?.name ?? "votre prestataire"} a confirmé votre réservation${service?.name ? ` pour <strong>${service.name}</strong>` : ""}.
+      Bonne nouvelle : ${esc(profile?.name ?? "votre prestataire")} a confirmé votre réservation${service?.name ? ` pour <strong>${esc(service.name)}</strong>` : ""}.
     </p>
     <div class="detail">
-      ${dateLabel ? `<div><b>Date :</b> ${dateLabel}</div>` : ""}
+      ${dateLabel ? `<div><b>Date :</b> ${esc(dateLabel)}</div>` : ""}
       ${depositAmount ? `<div><b>Acompte demandé :</b> ${depositAmount.toFixed(2)} €</div>` : ""}
     </div>
-    ${depositLinkUrl ? `<a class="cta-btn" href="${depositLinkUrl}">Régler l'acompte de ${depositAmount?.toFixed(2)} €</a>
+    ${depositLinkUrl ? `<a class="cta-btn" href="${esc(depositLinkUrl)}">Régler l'acompte de ${depositAmount?.toFixed(2)} €</a>
     <p style="font-size:12px;color:#999;text-align:center">Paiement sécurisé par carte via Stripe.</p>` : ""}
   </div>
   <div class="footer">Envoyé via <a href="https://vimen.app" style="color:#E8500A;text-decoration:none">Vimen</a></div>
 </div>
 </body></html>`;
 
-    if (RESEND_API_KEY) {
+    let emailSent = false;
+
+    if (!RESEND_API_KEY) {
+      console.error("send-booking-confirmation: RESEND_API_KEY non configuré, email non envoyé");
+    } else {
       const emailRes = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: `${profile?.name ?? "Vimen"} <${FROM_EMAIL}>`,
+          from: `${safeFromName(profile?.name)} <${FROM_EMAIL}>`,
           to: [booking.customer_email],
-          subject: `Réservation confirmée${service?.name ? ` — ${service.name}` : ""}`,
+          subject: `Réservation confirmée${service?.name ? ` — ${String(service.name).replace(/[\r\n]/g, " ")}` : ""}`,
           html,
         }),
       });
-      if (!emailRes.ok) {
+      if (emailRes.ok) {
+        emailSent = true;
+      } else {
         const errBody = await emailRes.json().catch(() => ({}));
         console.error("send-booking-confirmation: Resend error", errBody);
       }
@@ -245,6 +264,7 @@ Deno.serve(async (req: Request) => {
       depositRequired: depositEnabled,
       depositLinkCreated,
       stripeNotConnected,
+      emailSent,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
