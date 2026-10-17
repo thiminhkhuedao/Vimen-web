@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  sitemap.xml — soumis à Google Search Console
   Emplacement : public/sitemap.xml
   URL finale : https://vimen.app/sitemap.xml
 -->
@@ -33,20 +32,5 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-
-  <!-- Pages légales (/privacy, /terms, /mentions-legales) : à ajouter ici quand elles seront complétées et indexables. -->
-
-  <!--
-    ── Pages de réservation publiques (/b/[slug]) ──
-    Chaque page /b/[slug] est un profil public + formulaire de réservation
-    que Google peut indexer. Ajouter un bloc <url> par professionnel inscrit
-    (à générer depuis Supabase — voir seo/generate-sitemap.js).
-
-    Retiré temporairement : l'exemple "jakemorrison" n'était qu'un
-    placeholder (404 pour Google).
-
-    Pages /trades/, /beauty/ et /professional/ : retirées en attendant de
-    vérifier qu'elles existent vraiment (voir ci-dessous).
-  -->
 
 </urlset>
