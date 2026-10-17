@@ -16,6 +16,7 @@ import { useTranslation, LANGUAGES } from "../i18n/index.js";
 import { AppCtx } from "../lib/state.jsx";
 import PrivacyControls from "../components/PrivacyControls.jsx";
 import SecuritySettings from "../components/SecuritySettings.jsx";
+import { RESPONSE_TIME_OPTIONS, getResponseTimeLabel } from "../lib/responseTime.js";
 
 const INPUT_STYLE = {
   width: "100%",
@@ -91,6 +92,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
     reminder_max_count: profile?.reminder_max_count ?? 5,
     extra_fields: profile?.extra_fields ?? {},
     avatar_url: profile?.avatar_url ?? "",
+    response_time: profile?.response_time ?? "",
+    show_email_public: profile?.show_email_public ?? false,
   });
 
   useEffect(() => {
@@ -119,6 +122,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         reminder_max_count: profile.reminder_max_count ?? 5,
         extra_fields: profile.extra_fields ?? {},
         avatar_url: profile.avatar_url ?? "",
+        response_time: profile.response_time ?? "",
+        show_email_public: profile.show_email_public ?? false,
       });
     }
   }, [profile]);
@@ -146,6 +151,12 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
     }));
 
   async function save() {
+    // Sans profession, le select affiche visuellement la 1re option alors que la valeur
+    // enregistrée est "" : la page publique se retrouvait avec un badge vide.
+    if (!form.trade) {
+      toast.error(lang === "fr" ? "Choisis ta profession avant d'enregistrer." : "Choose your profession before saving.");
+      return;
+    }
     const targetId = profile?.id || profile?.clerk_id;
     setSaving(true);
 
@@ -176,6 +187,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         reminder_max_count: form.reminder_max_count,
         extra_fields: form.extra_fields,
         avatar_url: avatarUrl,
+        response_time: form.response_time || null,
+        show_email_public: Boolean(form.show_email_public),
       };
 
       let updatedProfile = { ...profile, ...form, avatar_url: avatarUrl };
@@ -431,6 +444,9 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
               </Field>
               <Field label={t("settings.profession")} htmlFor="account-trade" flex="1">
                 <select id="account-trade" style={INPUT_STYLE} value={form.trade} onChange={fld("trade")}>
+                  <option value="" disabled>
+                    {lang === "fr" ? "Choisis ta profession" : "Choose your profession"}
+                  </option>
                   {Object.values(VERTICALS)
                     .filter(v => v.id !== "other")
                     .map(v => (
@@ -456,6 +472,14 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
               </Field>
             </FieldRow>
 
+            <div style={{ marginBottom: 14 }}>
+              <SettingRow
+                label={lang === "fr" ? "Afficher mon email sur ma page publique" : "Show my email on my public page"}
+                sub={lang === "fr" ? "Les clients pourront t'écrire directement. Désactivé par défaut." : "Clients will be able to email you directly. Off by default."}
+                k="show_email_public"
+              />
+            </div>
+
             <Field label={t("settings.bio")} htmlFor="account-bio">
               <textarea
                 id="account-bio"
@@ -464,6 +488,15 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
                 onChange={fld("bio")}
                 placeholder={t("settings.bioPlaceholder")}
               />
+            </Field>
+
+            <Field label={lang === "fr" ? "Délai de réponse" : "Response time"} htmlFor="account-response-time">
+              <select id="account-response-time" style={INPUT_STYLE} value={form.response_time} onChange={fld("response_time")}>
+                <option value="">{lang === "fr" ? "Ne pas afficher" : "Don't show"}</option>
+                {RESPONSE_TIME_OPTIONS.map(k => (
+                  <option key={k} value={k}>{getResponseTimeLabel(k, lang)}</option>
+                ))}
+              </select>
             </Field>
 
             <FieldRow>
