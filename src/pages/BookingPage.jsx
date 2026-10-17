@@ -122,7 +122,10 @@ export default function BookingPage({ profile }) {
             { body: { bookingRequestId: id }, headers: { Authorization: `Bearer ${token}` } }
           );
           if (confirmError) throw confirmError;
-          if (result?.stripeNotConnected) {
+          if (result?.emailSent === false) {
+            // Réservation acceptée mais email non parti (clé Resend absente, domaine non validé...)
+            toast.error(t("booking.confirmationEmailNotSentToast") || "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client.");
+          } else if (result?.stripeNotConnected) {
             toast.error(t("booking.depositStripeNotConnected") || "Un acompte est requis pour ce service, mais aucun compte Stripe n'est connecté — connecte-le dans Paramètres pour pouvoir l'encaisser.");
           } else if (result?.depositLinkCreated) {
             toast.success(t("booking.depositLinkSentToast") || "Email de confirmation envoyé avec le lien de paiement de l'acompte");
