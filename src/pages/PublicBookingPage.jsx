@@ -7,7 +7,8 @@ import { useParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useTranslation } from "../i18n/index.js";
 import { supabase } from "../lib/supabase";
-import { getVerticalColor } from "../lib/professions.js";
+import { getVerticalColor, getProfessionLabel } from "../lib/professions.js";
+import { getResponseTimeLabel } from "../lib/responseTime.js";
 import { formatCurrency } from "../lib/currency.js";
 import Honeypot, { isBotSubmission } from "../components/Honeypot.jsx";
 import Turnstile from "../components/Turnstile.jsx";
@@ -335,7 +336,7 @@ function Steps({ current, hasServices }) {
 }
 
 // ── CALENDAR ───────────────────────────────────────────
-function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, selectedDate, selectedTime }) {
+function Calendar({ availability, blockedSlots, takenSlots, selectedService, onSelectSlot, selectedDate, selectedTime }) {
   const { t: tr, lang } = useTranslation();
   const locale = lang === "fr" ? "fr-FR" : "en-GB";
 
@@ -351,6 +352,20 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
   const duration = selectedService?.duration_min || 60;
   const availDays = useMemo(() => new Set((availability || []).map((a) => a.day_of_week)), [availability]);
   const blockedSet = useMemo(() => new Set((blockedSlots || []).map((b) => `${b.slot_date} ${b.slot_time.slice(0, 5)}`)), [blockedSlots]);
+
+  // Réservations confirmées, par date, avec leur plage horaire (début/fin en minutes).
+  const takenByDate = useMemo(() => {
+    const map = new Map();
+    for (const tk of takenSlots || []) {
+      if (!tk.slot_date || !tk.slot_time) continue;
+      const [h, m] = tk.slot_time.split(":").map(Number);
+      const start = h * 60 + m;
+      const list = map.get(tk.slot_date) || [];
+      list.push({ start, end: start + (tk.duration_min || 60) });
+      map.set(tk.slot_date, list);
+    }
+    return map;
+  }, [takenSlots]);
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysCount = new Date(year, month + 1, 0).getDate();
@@ -394,6 +409,15 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
         .flatMap((a) => generateSlots(a.start_time.slice(0, 5), a.end_time.slice(0, 5), duration))
         .filter((slot) => !blockedSet.has(`${dateStr} ${slot}`))
         .filter((slot) => {
+          // Masque tout créneau qui chevauche une réservation déjà confirmée.
+          const takenToday = takenByDate.get(dateStr);
+          if (!takenToday) return true;
+          const [h, m] = slot.split(":").map(Number);
+          const start = h * 60 + m;
+          const end = start + duration;
+          return !takenToday.some((tk) => start < tk.end && tk.start < end);
+        })
+        .filter((slot) => {
           if (!isToday) return true;
           const [h, m] = slot.split(":").map(Number);
           return h * 60 + m > nowMins;
@@ -401,7 +425,7 @@ function Calendar({ availability, blockedSlots, selectedService, onSelectSlot, s
         .filter((slot, idx, arr) => arr.indexOf(slot) === idx)
         .sort();
     },
-    [availability, duration, blockedSet]
+    [availability, duration, blockedSet, takenByDate]
   );
 
   const gridCells = useMemo(() => {
@@ -774,6 +798,7 @@ function PublicBookingPageInner() {
   const [services, setServices] = useState([]);
   const [availability, setAvailability] = useState([]);
   const [blocked, setBlocked] = useState([]);
+  const [taken, setTaken] = useState([]); // créneaux déjà confirmés par le pro
   const [status, setStatus] = useState("loading"); // loading | found | notfound | error
   const [isOwner, setIsOwner] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -819,7 +844,7 @@ function PublicBookingPageInner() {
     try {
       const { data: prof, error } = await supabase
         .from("public_profiles")
-        .select("id, name, trade, bio, hourly_rate, booking_slug, extra_fields, plan, currency, language, avatar_url")
+        .select("id, name, trade, bio, hourly_rate, booking_slug, extra_fields, plan, currency, language, avatar_url, response_time, public_email")
         .eq("booking_slug", slug)
         .single();
 
@@ -847,10 +872,13 @@ function PublicBookingPageInner() {
         }
       } catch { /* localStorage indisponible — pas bloquant */ }
 
-      const [{ data: svcs }, { data: avail }, { data: blk }] = await Promise.all([
+      const [{ data: svcs }, { data: avail }, { data: blk }, { data: tkn }] = await Promise.all([
         supabase.from("services").select("*").eq("profile_id", prof.id).eq("active", true).order("sort_order"),
         supabase.from("availability").select("*").eq("profile_id", prof.id),
         supabase.from("blocked_slots").select("*").eq("profile_id", prof.id),
+        // Créneaux déjà confirmés (sans aucune donnée client). Si la fonction SQL
+        // n'existe pas encore, data est null et on affiche simplement tout comme avant.
+        supabase.rpc("get_taken_slots", { p_profile_id: prof.id }),
       ]);
 
       if (isStale()) return;
@@ -859,6 +887,7 @@ function PublicBookingPageInner() {
       setServices(fetchedServices);
       setAvailability(avail ?? []);
       setBlocked(blk ?? []);
+      setTaken(tkn ?? []);
       setStep(fetchedServices.length > 0 ? 1 : 2);
       setStatus("found");
     } catch (err) {
@@ -965,6 +994,7 @@ function PublicBookingPageInner() {
       customer_email: form.customer_email.trim(),
       customer_phone: form.customer_phone || null,
       preferred_date: selDate,
+      preferred_time: selTime,
       notes: `${selTime} — ${combinedInstructions || ""}`.trim(),
       service_id: selSvc || null,
       client_image_url: clientImage || null,
@@ -1032,6 +1062,9 @@ function PublicBookingPageInner() {
   const visibleCertifications = certs;
 
   const verticalColor = getVerticalColor(profile.trade);
+  // Libellé lisible de la profession (et non la valeur technique), vide si non renseignée.
+  const professionLabel = profile.trade ? (getProfessionLabel(profile.trade, tr) || profile.trade) : "";
+  const responseLabel = getResponseTimeLabel(profile.response_time, lang);
   const hasServices = services.length > 0;
   const selectedService = services.find((s) => s.id === selSvc);
 
@@ -1153,11 +1186,21 @@ function PublicBookingPageInner() {
           <div>
             <h1 style={{ fontSize: 20, fontWeight: 900, letterSpacing: -0.5, margin: 0 }}>{profile.name}</h1>
             <div style={{ marginTop: 6, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-              <span style={{ background: verticalColor.bg, color: verticalColor.text, borderRadius: 100, padding: "3px 12px", fontSize: 13, fontWeight: 700 }}>
-                {profile.trade}
-              </span>
+              {professionLabel && (
+                <span style={{ background: verticalColor.bg, color: verticalColor.text, borderRadius: 100, padding: "3px 12px", fontSize: 13, fontWeight: 700 }}>
+                  {professionLabel}
+                </span>
+              )}
               {profile.bio && <span style={{ fontSize: 13, color: THEME.muted }}>{profile.bio}</span>}
             </div>
+            {(responseLabel || profile.public_email) && (
+              <div style={{ marginTop: 8, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: THEME.muted }}>
+                {responseLabel && <span>{responseLabel}</span>}
+                {profile.public_email && (
+                  <a href={`mailto:${profile.public_email}`} style={{ color: THEME.muted }}>{profile.public_email}</a>
+                )}
+              </div>
+            )}
             {visibleCertifications.length > 0 && (
               <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {visibleCertifications.map((cert, idx) => (
@@ -1296,6 +1339,7 @@ function PublicBookingPageInner() {
               <Calendar
                 availability={availability}
                 blockedSlots={blocked}
+                takenSlots={taken}
                 selectedService={selectedService}
                 onSelectSlot={handleSlotSelect}
                 selectedDate={selDate}
