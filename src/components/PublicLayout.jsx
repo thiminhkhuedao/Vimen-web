@@ -1,53 +1,37 @@
 import { useState } from "react";
-import { T } from "../styles/tokens";
-import { Link } from "react-router-dom";
+import { T } from "../styles/publicTokens.js";
+import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "../i18n/index.js";
 
-const S = {
-  wrap: {
-    maxWidth: 1160,
-    margin: "0 auto",
-    padding: "0 28px",
-  },
-  brandLogo: {
-    fontFamily: "'Archivo Black', sans-serif",
-    fontSize: 18,
-    letterSpacing: -0.5,
-    color: T.text,
-    textDecoration: "none",
-  },
-};
+const WRAP = { maxWidth: 1160, margin: "0 auto", padding: "0 28px" };
+
+function Logo({ size = 28, color = "#fff" }) {
+  return (
+    <Link to="/" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none", color }}>
+      <svg width={size} height={size} viewBox="0 0 512 512" aria-hidden="true">
+        <rect width="512" height="512" rx="113" fill="#E8500A" />
+        <polygon points="283,94 319,96 274,214 354,214 217,416 235,282 157,282" fill="#fff" />
+      </svg>
+      <span style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: 17, letterSpacing: -0.5 }}>Vimen</span>
+    </Link>
+  );
+}
 
 function LangSwitch({ lang, setLanguage, languages = [] }) {
   return (
-    <div
-      role="group"
-      aria-label="Language selector"
-      style={{
-        display: "flex",
-        gap: 2,
-        background: T.surface2 || T.border,
-        borderRadius: T.r?.full || 999,
-        padding: 2,
-      }}
-    >
+    <div role="group" aria-label="Language selector" style={{ display: "flex", gap: 2, background: "rgba(255,255,255,0.12)", borderRadius: 999, padding: 2 }}>
       {languages.map((l) => {
-        const isActive = lang === l.code;
-
+        const active = lang === l.code;
         return (
           <button
             key={l.code}
             type="button"
             onClick={() => setLanguage?.(l.code)}
             style={{
-              border: "none",
-              cursor: "pointer",
-              padding: "5px 10px",
-              borderRadius: T.r?.full || 999,
-              fontSize: 12,
-              fontWeight: 700,
-              background: isActive ? T.surface : "transparent",
-              color: isActive ? T.text : T.hint,
+              border: "none", cursor: "pointer", padding: "5px 10px", borderRadius: 999,
+              fontSize: 12, fontWeight: 700, fontFamily: "inherit",
+              background: active ? "#fff" : "transparent",
+              color: active ? "#1A0E22" : "rgba(255,255,255,0.75)",
             }}
           >
             {l.code?.toUpperCase()}
@@ -59,203 +43,78 @@ function LangSwitch({ lang, setLanguage, languages = [] }) {
 }
 
 function NavBar({ onSignIn, onSignUp, t, lang, setLanguage, languages }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
 
-  const navLinks = [
+  const links = [
     { to: "/about", label: t("home.nav.about") },
     { to: "/faq", label: t("home.nav.faq") },
     { to: "/contact", label: t("home.nav.contact") },
-    { to: "/privacy", label: t("home.nav.privacy") },
-    { to: "/terms", label: t("home.nav.terms") },
   ];
 
   return (
     <nav
       style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-        background: "rgba(255,255,255,0.92)",
-        backdropFilter: "blur(12px)",
-        borderBottom: `1px solid ${T.border}`,
+        position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 50,
+        width: "min(1100px, calc(100% - 24px))",
+        background: "rgba(20, 12, 28, 0.55)",
+        backdropFilter: "blur(16px) saturate(140%)", WebkitBackdropFilter: "blur(16px) saturate(140%)",
+        border: "1px solid rgba(255,255,255,0.16)", borderRadius: open ? 28 : 999,
+        boxShadow: "0 12px 40px rgba(0,0,0,0.25)", color: "#fff",
       }}
     >
       <style>{`
-        @media (max-width: 860px) {
-          .vimen-public-nav-links { display: none !important; }
-          .vimen-public-nav-right { display: none !important; }
-          .vimen-public-hamburger { display: flex !important; }
-        }
-        @media (min-width: 861px) {
-          .vimen-public-mobile-panel { display: none !important; }
-        }
+        .pl-link{font-size:14px;font-weight:500;color:rgba(255,255,255,.72);text-decoration:none;padding:8px 14px;border-radius:999px;transition:background .15s,color .15s}
+        .pl-link:hover{color:#fff;background:rgba(255,255,255,.1)}
+        .pl-link.on{color:#fff;background:rgba(255,255,255,.16)}
+        @media (max-width: 860px){.pl-desktop{display:none !important}.pl-burger{display:flex !important}}
+        @media (min-width: 861px){.pl-panel{display:none !important}}
       `}</style>
 
-      <div
-        style={{
-          ...S.wrap,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          height: 64,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
-          <Link to="/" style={S.brandLogo}>
-            Vimen
-          </Link>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 58, padding: "0 10px 0 20px" }}>
+        <Logo />
 
-          <div className="vimen-public-nav-links" style={{ display: "flex", gap: 24 }}>
-            {navLinks.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                style={{
-                  fontSize: 14,
-                  color: T.muted,
-                  textDecoration: "none",
-                  fontWeight: 500,
-                }}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
+        <div className="pl-desktop" style={{ display: "flex", gap: 4 }}>
+          {links.map((l) => (
+            <Link key={l.to} to={l.to} className={`pl-link${pathname === l.to ? " on" : ""}`}>{l.label}</Link>
+          ))}
         </div>
 
-        <div className="vimen-public-nav-right" style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          <LangSwitch
-            lang={lang}
-            setLanguage={setLanguage}
-            languages={languages}
-          />
-
-          <button
-            type="button"
-            onClick={onSignIn}
-            style={{
-              background: "none",
-              border: "none",
-              color: T.muted,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: "pointer",
-              padding: "8px 4px",
-            }}
-          >
+        <div className="pl-desktop" style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <LangSwitch lang={lang} setLanguage={setLanguage} languages={languages} />
+          <button type="button" onClick={onSignIn} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: "8px 8px", fontFamily: "inherit" }}>
             {t("home.nav.signIn")}
           </button>
-
-          <button
-            type="button"
-            onClick={onSignUp}
-            style={{
-              background: T.brand,
-              color: "#fff",
-              border: "none",
-              padding: "10px 20px",
-              borderRadius: T.r?.md || 6,
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: "pointer",
-            }}
-          >
+          <button type="button" onClick={onSignUp} style={{ background: T.brand, color: "#fff", border: "none", padding: "10px 20px", borderRadius: 999, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
             {t("home.nav.startFree")}
           </button>
         </div>
 
-        {/* Bouton hamburger, visible seulement sous 860px (voir media query) */}
         <button
           type="button"
-          className="vimen-public-hamburger"
-          onClick={() => setMobileOpen((o) => !o)}
-          style={{
-            display: "none",
-            alignItems: "center",
-            justifyContent: "center",
-            width: 38,
-            height: 38,
-            border: `1px solid ${T.border}`,
-            borderRadius: T.r?.md || 6,
-            background: "none",
-            color: T.text,
-            cursor: "pointer",
-            fontSize: 18,
-          }}
+          className="pl-burger"
+          onClick={() => setOpen((o) => !o)}
           aria-label="Menu"
+          aria-expanded={open}
+          style={{ display: "none", alignItems: "center", justifyContent: "center", width: 40, height: 40, border: "none", borderRadius: 999, background: "rgba(255,255,255,0.12)", color: "#fff", cursor: "pointer", fontSize: 18 }}
         >
-          {mobileOpen ? "×" : "☰"}
+          {open ? "×" : "☰"}
         </button>
       </div>
 
-      {/* Panneau mobile déroulant : liens, langue, connexion */}
-      <div
-        className="vimen-public-mobile-panel"
-        style={{
-          display: mobileOpen ? "flex" : "none",
-          flexDirection: "column",
-          gap: 4,
-          padding: "8px 20px 20px",
-          borderTop: `1px solid ${T.border}`,
-          background: T.surface,
-        }}
-      >
-        {navLinks.map((l) => (
-          <Link
-            key={l.to}
-            to={l.to}
-            onClick={() => setMobileOpen(false)}
-            style={{
-              fontSize: 15,
-              color: T.text,
-              textDecoration: "none",
-              fontWeight: 600,
-              padding: "10px 0",
-              borderBottom: `1px solid ${T.border}`,
-            }}
-          >
+      <div className="pl-panel" style={{ display: open ? "flex" : "none", flexDirection: "column", gap: 4, padding: "4px 20px 20px" }}>
+        {links.map((l) => (
+          <Link key={l.to} to={l.to} onClick={() => setOpen(false)} style={{ fontSize: 16, color: "#fff", textDecoration: "none", fontWeight: 600, padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.14)" }}>
             {l.label}
           </Link>
         ))}
-
         <div style={{ display: "flex", justifyContent: "center", margin: "14px 0" }}>
           <LangSwitch lang={lang} setLanguage={setLanguage} languages={languages} />
         </div>
-
-        <button
-          type="button"
-          onClick={() => { setMobileOpen(false); onSignIn(); }}
-          style={{
-            width: "100%",
-            padding: "12px",
-            border: `1px solid ${T.border}`,
-            borderRadius: T.r?.md || 6,
-            background: "none",
-            color: T.text,
-            fontWeight: 600,
-            fontSize: 14,
-            cursor: "pointer",
-            marginBottom: 8,
-          }}
-        >
+        <button type="button" onClick={() => { setOpen(false); onSignIn(); }} style={{ padding: 12, border: "1px solid rgba(255,255,255,0.3)", borderRadius: 999, background: "none", color: "#fff", fontWeight: 600, fontSize: 14, cursor: "pointer", marginBottom: 8, fontFamily: "inherit" }}>
           {t("home.nav.signIn")}
         </button>
-
-        <button
-          type="button"
-          onClick={() => { setMobileOpen(false); onSignUp(); }}
-          style={{
-            width: "100%",
-            padding: "12px",
-            border: "none",
-            borderRadius: T.r?.md || 6,
-            background: T.brand,
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: 14,
-            cursor: "pointer",
-          }}
-        >
+        <button type="button" onClick={() => { setOpen(false); onSignUp(); }} style={{ padding: 12, border: "none", borderRadius: 999, background: T.brand, color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "inherit" }}>
           {t("home.nav.startFree")}
         </button>
       </div>
@@ -264,143 +123,41 @@ function NavBar({ onSignIn, onSignUp, t, lang, setLanguage, languages }) {
 }
 
 function Footer({ t }) {
+  const links = [
+    ["/about", t("home.nav.about")],
+    ["/faq", t("home.nav.faq")],
+    ["/contact", t("home.nav.contact")],
+    ["/privacy", t("home.nav.privacy") || "Privacy"],
+    ["/terms", t("home.nav.terms") || "Terms"],
+    ["/mentions-legales", t("home.nav.legal") || "Mentions Légales"],
+  ];
+
   return (
-    <footer
-      style={{
-        borderTop: `1px solid ${T.border}`,
-        padding: "40px 0",
-      }}
-    >
-      <div
-        style={{
-          ...S.wrap,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 20,
-        }}
-      >
-        <Link to="/" style={{ ...S.brandLogo, fontSize: 15 }}>
-          Vimen
-        </Link>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 24,
-            flexWrap: "wrap",
-          }}
-        >
-          <Link
-            to="/about"
-            style={{
-              fontSize: 13,
-              color: T.hint,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {t("home.nav.about")}
-          </Link>
-
-          <Link
-            to="/faq"
-            style={{
-              fontSize: 13,
-              color: T.hint,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {t("home.nav.faq")}
-          </Link>
-
-          <Link
-            to="/contact"
-            style={{
-              fontSize: 13,
-              color: T.hint,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {t("home.nav.contact")}
-          </Link>
-
-          <Link
-            to="/privacy"
-            style={{
-              fontSize: 13,
-              color: T.hint,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {t("home.nav.privacy") || "Privacy"}
-          </Link>
-
-          <Link
-            to="/terms"
-            style={{
-              fontSize: 13,
-              color: T.hint,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {t("home.nav.terms") || "Terms"}
-          </Link>
-
-          <Link
-            to="/mentions-legales"
-            style={{
-              fontSize: 13,
-              color: T.hint,
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
-            {t("home.nav.legal") || "Mentions Légales"}
-          </Link>
+    <footer style={{ background: "#120A1A", borderTop: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: "48px 0" }}>
+      <div style={{ ...WRAP, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 24 }}>
+        <Logo size={30} />
+        <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
+          {links.map(([to, label]) => (
+            <Link key={to} to={to} style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 500, textDecoration: "none" }}>
+              {label}
+            </Link>
+          ))}
         </div>
-
-        <p style={{ color: T.hint, fontSize: 13, margin: 0 }}>
-          {t("home.footer.copyright")}
-        </p>
+        <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, margin: 0 }}>{t("home.footer.copyright")}</p>
       </div>
     </footer>
   );
 }
 
-export default function PublicLayout({
-  children,
-  onSignIn,
-  onSignUp,
-}) {
+// `hero` : passe-le à true sur une page qui commence par un grand hero plein écran
+// (HomePage). Sinon on laisse de la place sous la barre flottante.
+export default function PublicLayout({ children, onSignIn, onSignUp, hero = false }) {
   const { t, lang, setLanguage, languages } = useTranslation();
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: T.surface,
-        color: T.text,
-        fontFamily: "'Inter', sans-serif",
-        WebkitFontSmoothing: "antialiased",
-      }}
-    >
-      <NavBar
-        onSignIn={onSignIn}
-        onSignUp={onSignUp}
-        t={t}
-        lang={lang}
-        setLanguage={setLanguage}
-        languages={languages}
-      />
-
-      {children}
-
+    <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "'Inter', sans-serif", WebkitFontSmoothing: "antialiased" }}>
+      <NavBar onSignIn={onSignIn} onSignUp={onSignUp} t={t} lang={lang} setLanguage={setLanguage} languages={languages} />
+      <div style={{ paddingTop: hero ? 0 : 56 }}>{children}</div>
       <Footer t={t} />
     </div>
   );

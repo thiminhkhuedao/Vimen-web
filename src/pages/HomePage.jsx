@@ -1,9 +1,11 @@
 // src/pages/HomePage.jsx
 
 import { useState } from "react";
-import { T } from "../styles/tokens";
+import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import PublicLayout from "../components/PublicLayout";
+import HeroScene from "../components/HeroScene.jsx";
+import { CtaBand } from "../components/PageHero.jsx";
 import { Link } from "react-router-dom";
 
 const S = {
@@ -764,122 +766,10 @@ export default function HomePage({ onSignIn, onSignUp }) {
       <PublicLayout
         onSignIn={onSignIn}
         onSignUp={onSignUp}
+        hero
       >
         {/* Hero */}
-        <header
-          style={{
-            padding: "90px 0 70px",
-            textAlign: "center",
-          }}
-        >
-          <div style={S.wrap}>
-            <h1
-              style={{
-                fontFamily: "'Archivo Black', sans-serif",
-                fontSize: "clamp(38px, 5.5vw, 64px)",
-                lineHeight: 1.05,
-                letterSpacing: -2,
-                margin: "0 0 24px",
-              }}
-            >
-              {t("home.hero.titleLine1")}
-              <br />
-              {t("home.hero.titleLine2")}
-            </h1>
-
-            <p
-              style={{
-                fontSize: 18,
-                color: T.muted,
-                maxWidth: 540,
-                margin: "0 auto 40px",
-                lineHeight: 1.65,
-              }}
-            >
-              {t("home.hero.sub")}
-            </p>
-
-            <div
-              style={{
-                display: "flex",
-                gap: 14,
-                justifyContent: "center",
-                flexWrap: "wrap",
-                marginBottom: 64,
-              }}
-            >
-              <button
-                type="button"
-                onClick={onSignUp}
-                style={{
-                  background: T.brand,
-                  color: "#fff",
-                  border: "none",
-                  padding: "14px 28px",
-                  borderRadius: T.r?.md || 6,
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: "pointer",
-                }}
-              >
-                {t("home.hero.ctaPrimary")}
-              </button>
-
-              <Link
-                to="/#features"
-                style={{
-                  border: `1px solid ${T.border}`,
-                  color: T.text,
-                  padding: "14px 28px",
-                  borderRadius: T.r?.md || 6,
-                  fontWeight: 600,
-                  fontSize: 15,
-                  textDecoration: "none",
-                }}
-              >
-                {t("home.hero.ctaSecondary")}
-              </Link>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 56,
-                flexWrap: "wrap",
-              }}
-            >
-              {stats.map(([n, l]) => (
-                <div
-                  key={l}
-                  style={{
-                    textAlign: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontFamily: "'Archivo Black', sans-serif",
-                      fontSize: 26,
-                      letterSpacing: -0.5,
-                    }}
-                  >
-                    {n}
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: T.hint,
-                      marginTop: 4,
-                    }}
-                  >
-                    {l}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </header>
+        <HeroScene onSignUp={onSignUp} />
 
         {/* Features */}
         <FeatureTabs t={t} />
@@ -888,55 +778,7 @@ export default function HomePage({ onSignIn, onSignUp }) {
         <PricingTeaser t={t} />
 
         {/* Final CTA */}
-        <section
-          style={{
-            padding: "90px 0",
-            textAlign: "center",
-            borderTop: `1px solid ${T.border}`,
-          }}
-        >
-          <div style={S.wrap}>
-            <h2
-              style={{
-                fontFamily: "'Archivo Black', sans-serif",
-                fontSize: "clamp(28px, 4vw, 44px)",
-                letterSpacing: -1,
-                margin: "0 0 20px",
-              }}
-            >
-              {t("home.finalCta.title")}
-            </h2>
-
-            <p
-              style={{
-                fontSize: 16,
-                color: T.muted,
-                maxWidth: 420,
-                margin: "0 auto 32px",
-                lineHeight: 1.65,
-              }}
-            >
-              {t("home.finalCta.sub")}
-            </p>
-
-            <button
-              type="button"
-              onClick={onSignUp}
-              style={{
-                background: T.brand,
-                color: "#fff",
-                border: "none",
-                padding: "14px 32px",
-                borderRadius: T.r?.md || 6,
-                fontWeight: 700,
-                fontSize: 15,
-                cursor: "pointer",
-              }}
-            >
-              {t("home.finalCta.cta")}
-            </button>
-          </div>
-        </section>
+        <CtaBand title={t("home.finalCta.title")} sub={t("home.finalCta.sub")} cta={t("home.finalCta.cta")} onClick={onSignUp} />
       </PublicLayout>
     </div>
   );

@@ -4,9 +4,10 @@
 // placeholders [À COMPLÉTER] / [TO COMPLETE] DOIVENT être remplis avant
 // mise en ligne (raison sociale, SIRET, adresse, email RGPD, etc.)
 
-import { T } from "../styles/tokens.js";
+import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import PublicLayout from "../components/PublicLayout.jsx";
+import PageHero, { CtaBand } from "../components/PageHero.jsx";
 
 const S = {
   wrap: {
@@ -162,19 +163,9 @@ export default function PrivacyPolicyPage({ onSignIn, onSignUp }) {
   const c = CONTENT[lang] || CONTENT.fr;
 
   return (
-    <PublicLayout onSignIn={onSignIn} onSignUp={onSignUp}>
+    <PublicLayout onSignIn={onSignIn} onSignUp={onSignUp} hero>
+      <PageHero title={c.title} sub={c.updated} />
       <div style={{ ...S.wrap, maxWidth: 760, padding: "60px 28px 100px" }}>
-        <h1
-          style={{
-            fontFamily: "'Archivo Black', sans-serif",
-            fontSize: "clamp(28px, 4vw, 40px)",
-            letterSpacing: -1,
-            marginBottom: 8,
-          }}
-        >
-          {c.title}
-        </h1>
-        <p style={{ fontSize: 13, color: T.hint, marginBottom: 32 }}>{c.updated}</p>
 
         <p style={{ fontSize: 15, color: T.muted, lineHeight: 1.7, whiteSpace: "pre-line", marginBottom: 40 }}>
           {c.intro}

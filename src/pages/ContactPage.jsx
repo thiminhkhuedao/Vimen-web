@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { T } from "../styles/tokens.js";
+import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import { supabase } from "../lib/supabase.js";
 import PublicLayout from "../components/PublicLayout.jsx";
+import PageHero, { CtaBand } from "../components/PageHero.jsx";
 import Honeypot, { isBotSubmission } from "../components/Honeypot.jsx";
 import Turnstile from "../components/Turnstile.jsx";
 import { checkRateLimit } from "../lib/security.js";
@@ -91,38 +92,10 @@ export default function ContactPage({ onSignIn, onSignUp }) {
   <PublicLayout
     onSignIn={onSignIn}
     onSignUp={onSignUp}
+    hero
   >
 
-      <header style={{ padding: "80px 0 40px", textAlign: "center" }}>
-        <div style={S.wrap}>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: T.hint,
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              marginBottom: 14,
-            }}
-          >
-            {t("contactPage.eyebrow")}
-          </div>
-          <h1
-            style={{
-              fontFamily: "'Archivo Black', sans-serif",
-              fontSize: "clamp(32px, 5vw, 52px)",
-              letterSpacing: -1.5,
-              marginBottom: 20,
-              marginTop: 0,
-            }}
-          >
-            {t("contactPage.title")}
-          </h1>
-          <p style={{ fontSize: 17, color: T.muted, maxWidth: 480, margin: "0 auto", lineHeight: 1.65 }}>
-            {t("contactPage.sub")}
-          </p>
-        </div>
-      </header>
+      <PageHero title={t("contactPage.title")} sub={t("contactPage.sub")} />
 
       <section style={{ padding: "20px 0 100px" }}>
         <div style={{ ...S.wrap, maxWidth: 520 }}>

@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
-import { T } from "../styles/tokens.js";
+import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import PublicLayout from "../components/PublicLayout.jsx";
+import PageHero, { CtaBand } from "../components/PageHero.jsx";
 
 
 const S = {
@@ -97,45 +98,10 @@ export default function FAQPage({ onSignIn, onSignUp }) {
   <PublicLayout
     onSignIn={onSignIn}
     onSignUp={onSignUp}
+    hero
   >
 
-      <header style={{ padding: "80px 0 40px", textAlign: "center" }}>
-        <div style={S.wrap}>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: T.hint,
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              marginBottom: 14,
-            }}
-          >
-            {t("faqPage.eyebrow")}
-          </div>
-          <h1
-            style={{
-              fontFamily: "'Archivo Black', sans-serif",
-              fontSize: "clamp(32px, 5vw, 52px)",
-              letterSpacing: -1.5,
-              marginBottom: 20,
-            }}
-          >
-            {t("faqPage.title")}
-          </h1>
-          <p
-            style={{
-              fontSize: 17,
-              color: T.muted,
-              maxWidth: 480,
-              margin: "0 auto",
-              lineHeight: 1.65,
-            }}
-          >
-            {t("faqPage.sub")}
-          </p>
-        </div>
-      </header>
+      <PageHero title={t("faqPage.title")} sub={t("faqPage.sub")} />
 
       <section style={{ padding: "40px 0 100px" }}>
         <div style={{ ...S.wrap, maxWidth: 720 }}>
@@ -152,42 +118,7 @@ export default function FAQPage({ onSignIn, onSignUp }) {
         </div>
       </section>
 
-      <section
-        style={{
-          padding: "60px 0",
-          textAlign: "center",
-          borderTop: `1px solid ${T.border}`,
-          background: T.surface2,
-        }}
-      >
-        <div style={S.wrap}>
-          <h2
-            style={{
-              fontFamily: "'Archivo Black', sans-serif",
-              fontSize: "clamp(22px, 3vw, 32px)",
-              letterSpacing: -1,
-              marginBottom: 16,
-            }}
-          >
-            {t("faqPage.finalCta.title")}
-          </h2>
-          <a
-            href="/contact"
-            style={{
-              display: "inline-block",
-              background: T.brand,
-              color: "#fff",
-              padding: "13px 28px",
-              borderRadius: 6,
-              fontWeight: 700,
-              fontSize: 14,
-              textDecoration: "none",
-            }}
-          >
-            {t("faqPage.finalCta.cta")}
-          </a>
-        </div>
-      </section>
+      <CtaBand title={t("faqPage.finalCta.title")} cta={t("faqPage.finalCta.cta")} href="/contact" />
 
           </PublicLayout>
   );
