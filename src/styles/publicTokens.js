@@ -6,7 +6,7 @@
 
 import { T as base } from "./tokens.js";
 
-export const PAGE_BG = "#1A0E22"; // même couleur que le bas de l'image du hero
+export const PAGE_BG = "#1B0E09"; // brun très foncé : même couleur que le bas de l'image du hero
 
 export const T = {
   ...base,
@@ -14,9 +14,9 @@ export const T = {
   surface: "rgba(255,255,255,0.06)",
   surface2: "rgba(255,255,255,0.07)",
   surface3: "rgba(255,255,255,0.12)",
-  text: "#F7F1EC",
-  muted: "rgba(247,241,236,0.74)",
-  hint: "rgba(247,241,236,0.52)",
+  text: "#FBF1E6",
+  muted: "rgba(251,241,230,0.76)",
+  hint: "rgba(251,241,230,0.55)",
   border: "rgba(255,255,255,0.14)",
   borderMed: "rgba(255,255,255,0.26)",
   brandLight: "rgba(232,80,10,0.2)",

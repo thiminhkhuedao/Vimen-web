@@ -31,7 +31,7 @@ function LangSwitch({ lang, setLanguage, languages = [] }) {
               border: "none", cursor: "pointer", padding: "5px 10px", borderRadius: 999,
               fontSize: 12, fontWeight: 700, fontFamily: "inherit",
               background: active ? "#fff" : "transparent",
-              color: active ? "#1A0E22" : "rgba(255,255,255,0.75)",
+              color: active ? "#2A1208" : "rgba(255,255,255,0.75)",
             }}
           >
             {l.code?.toUpperCase()}
@@ -57,7 +57,7 @@ function NavBar({ onSignIn, onSignUp, t, lang, setLanguage, languages }) {
       style={{
         position: "fixed", top: 14, left: "50%", transform: "translateX(-50%)", zIndex: 50,
         width: "min(1100px, calc(100% - 24px))",
-        background: "rgba(20, 12, 28, 0.55)",
+        background: "rgba(30, 14, 8, 0.55)",
         backdropFilter: "blur(16px) saturate(140%)", WebkitBackdropFilter: "blur(16px) saturate(140%)",
         border: "1px solid rgba(255,255,255,0.16)", borderRadius: open ? 28 : 999,
         boxShadow: "0 12px 40px rgba(0,0,0,0.25)", color: "#fff",
@@ -133,7 +133,7 @@ function Footer({ t }) {
   ];
 
   return (
-    <footer style={{ background: "#120A1A", borderTop: "1px solid rgba(255,255,255,0.1)", color: "#fff", padding: "48px 0" }}>
+    <footer style={{ background: "#140A06", color: "#fff", padding: "48px 0" }}>
       <div style={{ ...WRAP, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 24 }}>
         <Logo size={30} />
         <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>

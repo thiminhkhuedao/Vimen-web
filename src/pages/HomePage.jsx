@@ -703,8 +703,7 @@ function PricingTeaser({ t }) {
     <section
       style={{
         padding: "80px 0",
-        borderTop: `1px solid ${T.border}`,
-        background: T.surface2,
+        background: "transparent",
       }}
     >
       <div

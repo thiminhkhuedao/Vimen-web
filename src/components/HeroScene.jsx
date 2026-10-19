@@ -1,7 +1,7 @@
 // src/components/HeroScene.jsx
 //
 // Hero plein écran : décor de coucher de soleil en couches (parallaxe à la souris)
-// + carrousel 3D de cartes produit qui tourne seul (pause au survol).
+// + une bande de cartes produit pleine largeur qui défile d'un bord à l'autre (pause au survol).
 // Sans bibliothèque : CSS 3D uniquement. Les animations s'arrêtent si l'utilisateur
 // a demandé « réduire les animations » dans son système.
 
@@ -38,7 +38,8 @@ const COPY = {
 };
 
 const CSS = `
-.vh{position:relative;margin:0;border-radius:0;overflow:hidden;min-height:max(100vh,780px);background:#1B1030;color:#fff;isolation:isolate}
+.vh{position:relative;margin:0;border-radius:0;overflow:hidden;min-height:max(100vh,780px);background:#2A0F08;color:#fff;isolation:isolate}
+.vh::after{content:"";position:absolute;left:0;right:0;bottom:0;height:min(42vh,340px);z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(27,14,9,0) 0%,rgba(27,14,9,.55) 45%,rgba(27,14,9,.92) 82%,#1B0E09 100%)}
 .vh-bg{position:absolute;inset:0;z-index:-1}
 .vh-layer{position:absolute;inset:-4%;width:108%;height:108%;transition:transform .25s ease-out;will-change:transform}
 .vh-l0{transform:translate3d(calc(var(--mx,0)*-4px),calc(var(--my,0)*-3px),0)}
@@ -46,34 +47,33 @@ const CSS = `
 .vh-l2{transform:translate3d(calc(var(--mx,0)*-26px),calc(var(--my,0)*-10px),0)}
 .vh-l3{transform:translate3d(calc(var(--mx,0)*-44px),calc(var(--my,0)*-16px),0)}
 .vh-photo{position:absolute;inset:-3%;background:url(/images/hero-bg.jpg) center bottom/cover no-repeat;transition:transform .25s ease-out;transform:translate3d(calc(var(--mx,0)*-16px),calc(var(--my,0)*-7px),0)}
-.vh-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,6,20,.55) 0%,rgba(10,6,20,0) 38%,rgba(10,6,20,.45) 100%)}
-.vh-inner{max-width:1160px;margin:0 auto;padding:150px 28px 40px}
+.vh-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(24,10,4,.55) 0%,rgba(24,10,4,0) 38%,rgba(24,10,4,.45) 100%)}
+.vh-inner{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:150px 28px 40px}
 .vh h1{font-family:'Archivo Black',sans-serif;font-size:clamp(40px,7.2vw,96px);line-height:1.02;letter-spacing:-0.03em;max-width:11em;margin:0 0 22px;text-shadow:0 6px 40px rgba(0,0,0,.35)}
 .vh-sub{font-size:clamp(16px,1.7vw,20px);color:rgba(255,255,255,.86);max-width:32em;line-height:1.6;margin:0 0 32px}
 .vh-ctas{display:flex;gap:12px;flex-wrap:wrap}
 .vh-btn{font:inherit;font-weight:700;font-size:15px;padding:15px 28px;border-radius:999px;cursor:pointer;text-decoration:none;display:inline-block}
-.vh-btn-solid{background:#fff;color:#1A0E22;border:none}
+.vh-btn-solid{background:#fff;color:#1B0E09;border:none}
 .vh-btn-glass{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(10px)}
-.vh-stage{position:relative;height:400px;margin-top:36px;perspective:1700px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
-.vh-tilt{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(-7deg)}
-.vh-ring{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;animation:vh-spin 60s linear infinite}
-.vh-stage:hover .vh-ring{animation-play-state:paused}
-@keyframes vh-spin{to{transform:rotateY(-360deg)}}
-.vh-card{position:absolute;width:230px;height:290px;left:-115px;top:-145px;padding:22px;border-radius:24px;display:flex;flex-direction:column;gap:6px;
+.vh-stage{position:absolute;left:0;right:0;bottom:36px;z-index:1;overflow:hidden;padding:8px 0}
+.vh-row{display:flex;gap:16px;width:max-content;animation:vh-slide 80s linear infinite}
+.vh-stage:hover .vh-row{animation-play-state:paused}
+@keyframes vh-slide{to{transform:translateX(-50%)}}
+.vh-card{flex:0 0 auto;width:250px;height:152px;padding:16px 20px;border-radius:22px;display:flex;flex-direction:column;gap:2px;
   background:linear-gradient(160deg,rgba(255,255,255,.26),rgba(255,255,255,.07));border:1px solid rgba(255,255,255,.3);backdrop-filter:blur(12px);
-  box-shadow:0 34px 70px rgba(0,0,0,.4);transform:rotateY(calc(var(--i)*72deg)) translateZ(360px)}
+  box-shadow:0 26px 50px rgba(0,0,0,.35)}
 .vh-card small{font-size:14px;color:rgba(255,255,255,.75)}
-.vh-card strong{font-family:'Archivo Black',sans-serif;font-size:26px;line-height:1.15;letter-spacing:-0.02em;margin-top:6px}
-.vh-card span{font-size:15px;color:rgba(255,255,255,.85)}
-.vh-card em{margin-top:auto;align-self:flex-start;font-style:normal;font-weight:700;font-size:13px;color:#1A0E22;background:#FFD2B5;padding:5px 14px;border-radius:999px}
+.vh-card strong{font-family:'Archivo Black',sans-serif;font-size:24px;line-height:1.15;letter-spacing:-0.02em;margin-top:4px}
+.vh-card span{font-size:14px;color:rgba(255,255,255,.85)}
+.vh-card em{margin-top:auto;align-self:flex-start;font-style:normal;font-weight:700;font-size:13px;color:#2A1208;background:#FFD2B5;padding:4px 14px;border-radius:999px}
 @media(max-width:700px){
   .vh-inner{padding-top:120px}
-  .vh-stage{height:300px}
-  .vh-card{width:170px;height:220px;left:-85px;top:-110px;padding:16px;transform:rotateY(calc(var(--i)*72deg)) translateZ(250px)}
-  .vh-card strong{font-size:20px}
+  .vh-stage{bottom:20px}
+  .vh-card{width:204px;height:130px;padding:12px 16px}
+  .vh-card strong{font-size:19px}
 }
 @media(prefers-reduced-motion:reduce){
-  .vh-ring{animation:none;transform:rotateY(-12deg)}
+  .vh-row{animation:none}
   .vh-layer{transition:none}
 }
 `;
@@ -91,6 +91,18 @@ export default function HeroScene({ onSignUp }) {
     ref.current.style.setProperty("--my", (((e.clientY - r.top) / r.height - 0.5) * 2).toFixed(3));
   };
 
+  const loop = (cards) =>
+    [0, 1, 2, 3, 4, 5].flatMap((r) =>
+      cards.map((card) => (
+        <div className="vh-card" key={`${r}-${card.k}`}>
+          <small>{card.k}</small>
+          <strong>{card.a}</strong>
+          <span>{card.b}</span>
+          <em>{card.s}</em>
+        </div>
+      ))
+    );
+
   return (
     <section className="vh" ref={ref} onMouseMove={onMove}>
       <style>{CSS}</style>
@@ -100,8 +112,8 @@ export default function HeroScene({ onSignUp }) {
         <svg className="vh-layer vh-l0" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
           <defs>
             <linearGradient id="vhSky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#140A2A" />
-              <stop offset=".38" stopColor="#6B2A52" />
+              <stop offset="0" stopColor="#2A0F08" />
+              <stop offset=".38" stopColor="#8A3412" />
               <stop offset=".66" stopColor="#E8500A" />
               <stop offset=".86" stopColor="#FFB45E" />
               <stop offset="1" stopColor="#FFD9A0" />
@@ -125,13 +137,13 @@ export default function HeroScene({ onSignUp }) {
         </svg>
         {/* Trois lignes de crêtes, de la plus lointaine à la plus proche */}
         <svg className="vh-layer vh-l1" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
-          <path d="M0,560 C200,500 320,540 480,480 C640,420 760,500 900,470 C1060,430 1200,520 1340,480 C1460,450 1540,500 1600,490 L1600,900 L0,900 Z" fill="#7A2D4E" opacity=".92" />
+          <path d="M0,560 C200,500 320,540 480,480 C640,420 760,500 900,470 C1060,430 1200,520 1340,480 C1460,450 1540,500 1600,490 L1600,900 L0,900 Z" fill="#7A3418" opacity=".92" />
         </svg>
         <svg className="vh-layer vh-l2" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
-          <path d="M0,650 C180,590 300,640 520,600 C700,560 820,660 1000,620 C1180,580 1360,650 1600,610 L1600,900 L0,900 Z" fill="#46183F" />
+          <path d="M0,650 C180,590 300,640 520,600 C700,560 820,660 1000,620 C1180,580 1360,650 1600,610 L1600,900 L0,900 Z" fill="#4A1D0E" />
         </svg>
         <svg className="vh-layer vh-l3" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
-          <path d="M0,770 C220,710 380,790 620,740 C820,700 960,790 1180,750 C1360,720 1500,780 1600,750 L1600,900 L0,900 Z" fill="#1A0E22" />
+          <path d="M0,770 C220,710 380,790 620,740 C820,700 960,790 1180,750 C1360,720 1500,780 1600,750 L1600,900 L0,900 Z" fill="#1B0E09" />
         </svg>
         {/* Photo de fond : si /images/hero-bg.jpg existe elle recouvre le décor dessiné */}
         <div className="vh-photo" />
@@ -146,20 +158,11 @@ export default function HeroScene({ onSignUp }) {
           <a className="vh-btn vh-btn-glass" href="#features">{c.more}</a>
         </div>
 
-        <div className="vh-stage" aria-hidden="true">
-          <div className="vh-tilt">
-            <div className="vh-ring">
-              {c.cards.map((card, i) => (
-                <div className="vh-card" key={card.k} style={{ "--i": i }}>
-                  <small>{card.k}</small>
-                  <strong>{card.a}</strong>
-                  <span>{card.b}</span>
-                  <em>{card.s}</em>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      </div>
+
+      {/* Bande de cartes pleine largeur : défile d'un bord à l'autre de l'écran */}
+      <div className="vh-stage" aria-hidden="true">
+        <div className="vh-row">{loop(c.cards)}</div>
       </div>
     </section>
   );
