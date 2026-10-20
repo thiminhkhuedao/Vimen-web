@@ -101,7 +101,7 @@ export default function FAQPage({ onSignIn, onSignUp }) {
     hero
   >
 
-      <PageHero title={t("faqPage.title")} sub={t("faqPage.sub")} />
+      <PageHero title={t("faqPage.title")} sub={t("faqPage.sub")} image="/images/page-faq.jpg" imagePosition="center 62%" />
 
       <section style={{ padding: "40px 0 100px" }}>
         <div style={{ ...S.wrap, maxWidth: 720 }}>

@@ -5,6 +5,7 @@ import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import PublicLayout from "../components/PublicLayout";
 import HeroScene from "../components/HeroScene.jsx";
+import TradesMosaic from "../components/TradesMosaic.jsx";
 import { CtaBand } from "../components/PageHero.jsx";
 import { Link } from "react-router-dom";
 
@@ -769,6 +770,8 @@ export default function HomePage({ onSignIn, onSignUp }) {
       >
         {/* Hero */}
         <HeroScene onSignUp={onSignUp} />
+
+        <TradesMosaic />
 
         {/* Features */}
         <FeatureTabs t={t} />

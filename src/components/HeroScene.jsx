@@ -7,6 +7,7 @@
 
 import { useRef } from "react";
 import { useTranslation } from "../i18n/index.js";
+import { APP_STORE_URL } from "../lib/links.js";
 
 const COPY = {
   en: {
@@ -14,6 +15,7 @@ const COPY = {
     sub: "One link for bookings, quotes and invoices. Clients pick a time, and Vimen chases the unpaid invoices for you.",
     cta: "Start free",
     more: "See how it works",
+    store: "Download on the App Store",
     cards: [
       { k: "Booking", a: "Saturday, 14:30", b: "Balayage + cut", s: "Confirmed" },
       { k: "Quote Q-0231", a: "€1,480", b: "Rewire, 2-bed flat", s: "Accepted" },
@@ -27,6 +29,7 @@ const COPY = {
     sub: "Un seul lien pour les réservations, les devis et les factures. Vos clients choisissent un créneau, Vimen relance les impayés.",
     cta: "Commencer gratuitement",
     more: "Voir comment ça marche",
+    store: "Télécharger sur l'App Store",
     cards: [
       { k: "Réservation", a: "Samedi, 14:30", b: "Balayage + coupe", s: "Confirmée" },
       { k: "Devis D-0231", a: "1 480 €", b: "Réfection électrique, T2", s: "Accepté" },
@@ -38,7 +41,7 @@ const COPY = {
 };
 
 const CSS = `
-.vh{position:relative;margin:0;border-radius:0;overflow:hidden;min-height:max(100vh,780px);background:#2A0F08;color:#fff;isolation:isolate}
+.vh{position:relative;margin:0;border-radius:0;overflow:hidden;min-height:max(100vh,780px);display:flex;flex-direction:column;background:#2A0F08;color:#fff;isolation:isolate}
 .vh::after{content:"";position:absolute;left:0;right:0;bottom:0;height:min(42vh,340px);z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(27,14,9,0) 0%,rgba(27,14,9,.55) 45%,rgba(27,14,9,.92) 82%,#1B0E09 100%)}
 .vh-bg{position:absolute;inset:0;z-index:-1}
 .vh-layer{position:absolute;inset:-4%;width:108%;height:108%;transition:transform .25s ease-out;will-change:transform}
@@ -48,14 +51,15 @@ const CSS = `
 .vh-l3{transform:translate3d(calc(var(--mx,0)*-44px),calc(var(--my,0)*-16px),0)}
 .vh-photo{position:absolute;inset:-3%;background:url(/images/hero-bg.jpg) center bottom/cover no-repeat;transition:transform .25s ease-out;transform:translate3d(calc(var(--mx,0)*-16px),calc(var(--my,0)*-7px),0)}
 .vh-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(24,10,4,.55) 0%,rgba(24,10,4,0) 38%,rgba(24,10,4,.45) 100%)}
-.vh-inner{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:150px 28px 40px}
-.vh h1{font-family:'Archivo Black',sans-serif;font-size:clamp(40px,7.2vw,96px);line-height:1.02;letter-spacing:-0.03em;max-width:11em;margin:0 0 22px;text-shadow:0 6px 40px rgba(0,0,0,.35)}
+.vh-inner{position:relative;z-index:1;flex:1;width:100%;box-sizing:border-box;max-width:1160px;margin:0 auto;padding:150px 28px 40px}
+.vh h1{font-family:'Archivo Black',sans-serif;font-size:clamp(36px,6.2vw,84px);line-height:1.04;letter-spacing:-0.03em;max-width:13em;margin:0 0 22px;text-shadow:0 6px 40px rgba(0,0,0,.35)}
 .vh-sub{font-size:clamp(16px,1.7vw,20px);color:rgba(255,255,255,.86);max-width:32em;line-height:1.6;margin:0 0 32px}
 .vh-ctas{display:flex;gap:12px;flex-wrap:wrap}
 .vh-btn{font:inherit;font-weight:700;font-size:15px;padding:15px 28px;border-radius:999px;cursor:pointer;text-decoration:none;display:inline-block}
 .vh-btn-solid{background:#fff;color:#1B0E09;border:none}
+.vh-store{display:inline-flex;align-items:center;gap:9px}
 .vh-btn-glass{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);backdrop-filter:blur(10px)}
-.vh-stage{position:absolute;left:0;right:0;bottom:36px;z-index:1;overflow:hidden;padding:8px 0}
+.vh-stage{position:relative;flex:none;z-index:1;overflow:hidden;padding:8px 0;margin:0 0 36px}
 .vh-row{display:flex;gap:16px;width:max-content;animation:vh-slide 80s linear infinite}
 .vh-stage:hover .vh-row{animation-play-state:paused}
 @keyframes vh-slide{to{transform:translateX(-50%)}}
@@ -68,7 +72,7 @@ const CSS = `
 .vh-card em{margin-top:auto;align-self:flex-start;font-style:normal;font-weight:700;font-size:13px;color:#2A1208;background:#FFD2B5;padding:4px 14px;border-radius:999px}
 @media(max-width:700px){
   .vh-inner{padding-top:120px}
-  .vh-stage{bottom:20px}
+  .vh-stage{margin-bottom:20px}
   .vh-card{width:204px;height:130px;padding:12px 16px}
   .vh-card strong{font-size:19px}
 }
@@ -156,6 +160,10 @@ export default function HeroScene({ onSignUp }) {
         <div className="vh-ctas">
           <button type="button" className="vh-btn vh-btn-solid" onClick={onSignUp}>{c.cta}</button>
           <a className="vh-btn vh-btn-glass" href="#features">{c.more}</a>
+          <a className="vh-btn vh-btn-glass vh-store" href={APP_STORE_URL || "#"} target="_blank" rel="noopener noreferrer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" /><path d="M12 18h.01" /></svg>
+            {c.store}
+          </a>
         </div>
 
       </div>

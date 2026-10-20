@@ -2,6 +2,7 @@ import { useState } from "react";
 import { T } from "../styles/publicTokens.js";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "../i18n/index.js";
+import { SOCIALS, CONTACT_EMAIL } from "../lib/links.js";
 
 const WRAP = { maxWidth: 1160, margin: "0 auto", padding: "0 28px" };
 
@@ -122,7 +123,21 @@ function NavBar({ onSignIn, onSignUp, t, lang, setLanguage, languages }) {
   );
 }
 
-function Footer({ t }) {
+const ICONS = {
+  instagram: <><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r=".7" fill="currentColor" /></>,
+  tiktok: <><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5" /><path d="M14 3c.3 2.6 2 4.4 5 4.6" /></>,
+  x: <path d="M4 4l16 16M20 4L4 20" />,
+  facebook: <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />,
+  linkedin: <><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" /><rect x="2" y="9" width="4" height="12" /><circle cx="4" cy="4" r="2" /></>,
+};
+
+const FOOTER_COPY = {
+  en: { tagline: "Bookings, quotes and invoices for service professionals.", pages: "Pages", contactTitle: "Contact us", contactText: "A question or some feedback? Write to us.", contactBtn: "Contact us", follow: "Follow us" },
+  fr: { tagline: "Réservations, devis et factures pour les professionnels de services.", pages: "Pages", contactTitle: "Nous contacter", contactText: "Une question ou un retour ? Écris-nous.", contactBtn: "Nous contacter", follow: "Suivez-nous" },
+};
+
+function Footer({ t, lang }) {
+  const c = FOOTER_COPY[lang] || FOOTER_COPY.fr;
   const links = [
     ["/about", t("home.nav.about")],
     ["/faq", t("home.nav.faq")],
@@ -131,19 +146,50 @@ function Footer({ t }) {
     ["/terms", t("home.nav.terms") || "Terms"],
     ["/mentions-legales", t("home.nav.legal") || "Mentions Légales"],
   ];
+  const heading = { fontSize: 14, fontWeight: 700, color: "#fff", margin: "0 0 14px" };
 
   return (
-    <footer style={{ background: "#140A06", color: "#fff", padding: "48px 0" }}>
-      <div style={{ ...WRAP, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 24 }}>
-        <Logo size={30} />
-        <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
-          {links.map(([to, label]) => (
-            <Link key={to} to={to} style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", fontWeight: 500, textDecoration: "none" }}>
-              {label}
-            </Link>
-          ))}
+    <footer style={{ background: "#140A06", color: "#fff", padding: "64px 0 32px" }}>
+      <style>{`
+        .pl-soc{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;color:#fff;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);transition:background .15s,border-color .15s}
+        .pl-soc:hover{background:#E8500A;border-color:#E8500A}
+        .pl-flink{font-size:14px;color:rgba(255,255,255,.7);text-decoration:none}
+        .pl-flink:hover{color:#fff;text-decoration:underline}
+      `}</style>
+      <div style={{ ...WRAP, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 40 }}>
+        <div>
+          <Logo size={32} />
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, margin: "16px 0 20px", maxWidth: 280 }}>{c.tagline}</p>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }} aria-label={c.follow}>
+            {SOCIALS.map((s) => (
+              <a key={s.id} className="pl-soc" href={s.href || "#"} target="_blank" rel="noopener noreferrer" aria-label={s.label} title={s.label}>
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ICONS[s.id]}</svg>
+              </a>
+            ))}
+          </div>
         </div>
-        <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 13, margin: 0 }}>{t("home.footer.copyright")}</p>
+
+        <div>
+          <h3 style={heading}>{c.pages}</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {links.map(([to, label]) => (
+              <Link key={to} to={to} className="pl-flink">{label}</Link>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h3 style={heading}>{c.contactTitle}</h3>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", lineHeight: 1.6, margin: "0 0 14px" }}>{c.contactText}</p>
+          <a href={`mailto:${CONTACT_EMAIL}`} className="pl-flink" style={{ display: "block", marginBottom: 16 }}>{CONTACT_EMAIL}</a>
+          <Link to="/contact" style={{ display: "inline-block", background: "#E8500A", color: "#fff", textDecoration: "none", fontWeight: 700, fontSize: 14, padding: "12px 24px", borderRadius: 999 }}>
+            {c.contactBtn}
+          </Link>
+        </div>
+      </div>
+
+      <div style={{ ...WRAP, marginTop: 48, paddingTop: 24, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 }}>{t("home.footer.copyright")}</p>
       </div>
     </footer>
   );
@@ -158,7 +204,7 @@ export default function PublicLayout({ children, onSignIn, onSignUp, hero = fals
     <div style={{ minHeight: "100vh", background: T.bg, color: T.text, fontFamily: "'Inter', sans-serif", WebkitFontSmoothing: "antialiased" }}>
       <NavBar onSignIn={onSignIn} onSignUp={onSignUp} t={t} lang={lang} setLanguage={setLanguage} languages={languages} />
       <div style={{ paddingTop: hero ? 0 : 56 }}>{children}</div>
-      <Footer t={t} />
+      <Footer t={t} lang={lang} />
     </div>
   );
 }

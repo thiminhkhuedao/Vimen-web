@@ -52,7 +52,7 @@ export default function AboutPage({ onSignIn, onSignUp }) {
     hero
   >
 
-      <PageHero title={t("aboutPage.title")} sub={t("aboutPage.sub")} />
+      <PageHero title={t("aboutPage.title")} sub={t("aboutPage.sub")} image="/images/page-about.jpg" imagePosition="center 55%" />
 
       <section style={{ padding: "0 0 80px" }}>
         <div style={{ ...S.wrap, maxWidth: 680 }}>

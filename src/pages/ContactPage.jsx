@@ -95,7 +95,7 @@ export default function ContactPage({ onSignIn, onSignUp }) {
     hero
   >
 
-      <PageHero title={t("contactPage.title")} sub={t("contactPage.sub")} />
+      <PageHero title={t("contactPage.title")} sub={t("contactPage.sub")} image="/images/page-contact.jpg" imagePosition="center 72%" />
 
       <section style={{ padding: "20px 0 100px" }}>
         <div style={{ ...S.wrap, maxWidth: 520 }}>

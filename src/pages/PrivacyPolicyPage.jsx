@@ -7,7 +7,7 @@
 import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import PublicLayout from "../components/PublicLayout.jsx";
-import PageHero, { CtaBand } from "../components/PageHero.jsx";
+import PageHero, { GlowBand } from "../components/PageHero.jsx";
 
 const S = {
   wrap: {
@@ -178,6 +178,7 @@ export default function PrivacyPolicyPage({ onSignIn, onSignUp }) {
           </div>
         ))}
       </div>
+      <GlowBand />
     </PublicLayout>
   );
 }
