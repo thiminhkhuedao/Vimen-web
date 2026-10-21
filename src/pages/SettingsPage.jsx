@@ -328,10 +328,18 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         <TabBtn id="privacy" label={t("settings.privacy") || "Confidentialité & Sécurité"} />
       </div>
 
-      <div style={{ maxWidth: 540 }}>
+      <div style={{ width: "100%" }}>
+        <style>{`
+          /* Les cartes de Paramètres occupent toute la largeur ; leur contenu se répartit en colonnes sur grand écran */
+          .sx-cols{column-width:430px;column-gap:56px}
+          .sx-cols > *{break-inside:avoid}
+          .sx-cols > .sx-span{column-span:all}
+          .sx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:24px;align-items:start}
+        `}</style>
         {tab === "account" && (
           <Card>
-            <div
+            <div className="sx-cols">
+            <div className="sx-span"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -552,14 +560,18 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
               </>
             )}
 
-            <Btn onClick={save} disabled={saving}>
+            <div className="sx-span">
+              <Btn onClick={save} disabled={saving}>
               {saving ? t("common.saving") : t("settings.saveAccount")}
             </Btn>
+            </div>
+            </div>
           </Card>
         )}
 
         {tab === "payment" && (
           <Card>
+            <div className="sx-cols">
             {/* Déplacé depuis l'ancien onglet "plan" lors du retrait
                 temporaire de l'abonnement Pro — Stripe Connect reste actif */}
             <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{t("settings.stripeConnectTitle")}</div>
@@ -652,14 +664,18 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
             </Btn>
 
             <Divider />
-            <Btn onClick={save} disabled={saving}>
+            <div className="sx-span">
+              <Btn onClick={save} disabled={saving}>
               {saving ? t("common.saving") : t("settings.savePayment")}
             </Btn>
+            </div>
+            </div>
           </Card>
         )}
 
         {tab === "notifs" && (
           <Card>
+            <div className="sx-cols">
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>{t("settings.notifTitle")}</div>
             <SettingRow label={t("settings.notifEmail")} sub={t("settings.notifEmailSub")} k="notif_email_booking" />
             <SettingRow label={t("settings.notifDigest")} sub={t("settings.notifDigestSub")} k="notif_weekly_digest" />
@@ -693,10 +709,11 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
                 </Field>
               </div>
             )}
-            <div style={{ marginTop: 16 }}>
+            <div className="sx-span" style={{ marginTop: 16 }}>
               <Btn onClick={save} disabled={saving}>
                 {saving ? t("common.saving") : t("settings.savePreferences")}
               </Btn>
+            </div>
             </div>
           </Card>
         )}
@@ -749,8 +766,8 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
         )}
 
         {tab === "privacy" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-            <Card>
+          <div className="sx-grid">
+            <Card style={{ gridColumn: "1 / -1" }}>
               <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
                 {t("settings.securityTitle") || "Sécurité du compte"}
               </div>
@@ -760,7 +777,7 @@ export default function SettingsPage({ profile, setProfile, dispatch }) {
               <SecuritySettings />
             </Card>
 
-            <Card>
+            <Card style={{ gridColumn: "1 / -1" }}>
               <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 6 }}>
                 {t("settings.privacyTitle") || "Tes données personnelles"}
               </div>

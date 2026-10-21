@@ -28,8 +28,12 @@ export default function SecuritySettings() {
         routing="hash"
         appearance={{
           elements: {
-            rootBox: { width: "100%" },
-            card: { boxShadow: "none", border: "1px solid #E5E5E0", borderRadius: 12 },
+            rootBox: { width: "100%", maxWidth: "100%" },
+            // cardBox est le conteneur extérieur de Clerk : par défaut il est limité en largeur,
+            // c'est ce qui laissait le bloc de sécurité tout petit dans la page Paramètres.
+            // La bordure et l'ombre sont retirées car la carte de Paramètres qui l'entoure a déjà les siennes.
+            cardBox: { width: "100%", maxWidth: "100%", boxShadow: "none", border: "none", borderRadius: 12 },
+            card: { width: "100%", maxWidth: "100%", boxShadow: "none", border: "none" },
             headerTitle: { fontSize: 16, fontWeight: 700 },
             formButtonPrimary: { backgroundColor: "#E9622F", fontSize: 14 },
             badge: { backgroundColor: "#FEF2E8", color: "#E9622F" },
