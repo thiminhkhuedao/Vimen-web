@@ -1,7 +1,4 @@
 // src/components/TradesMosaic.jsx
-//
-// Mosaïque de 4 photos de métiers (accueil). Les images sont lues dans /images/ ;
-// tant qu'un fichier n'existe pas, la tuile affiche un dégradé chaud (rien ne casse).
 
 import { useTranslation } from "../i18n/index.js";
 
@@ -9,11 +6,11 @@ const COPY = {
   en: {
     title: "Made for people who sell their time and work with their hands.",
     // Pour ajouter un métier : mets sa photo dans public/images/ et ajoute une ligne [nom, nom-du-fichier-sans-.jpg]
-    tiles: [["Electricians", "trade-electrician"], ["Hairdressers", "trade-hair"]],
+    tiles: [["Electricians", "trade-electrician"], ["Hairdressers", "trade-hair"], ["Architects", "trade-architect"], ["Photographers", "trade-photographer"]],
   },
   fr: {
     title: "Conçu pour celles et ceux qui vendent leur temps et travaillent de leurs mains.",
-    tiles: [["Électriciens", "trade-electrician"], ["Coiffeurs et coiffeuses", "trade-hair"]],
+    tiles: [["Électriciens", "trade-electrician"], ["Coiffeurs et coiffeuses", "trade-hair"], ["Architectes", "trade-architect"], ["Photographes", "trade-photographer"]],
   },
 };
 
