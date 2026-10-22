@@ -1346,7 +1346,7 @@ export default {
       confirmLabel:     "Tape {{word}} pour confirmer :",
       deleting:         "Suppression...",
       deleteConfirmBtn: "Supprimer définitivement",
-      deleteError:      "Impossible de supprimer ton compte pour le moment. Contacte contact.vimen@gmail.com pour qu'on le fasse manuellement.",
+      deleteError:      "Impossible de supprimer ton compte pour le moment. Contacte contact@vimen.app pour qu'on le fasse manuellement.",
     },
     account:          "Compte",
     payment:          "Paiement",

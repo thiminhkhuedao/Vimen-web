@@ -2,12 +2,13 @@
 //
 // Contenu basé sur terms-of-service-fr.md / terms-of-service-en.md — les
 // placeholders [À COMPLÉTER] / [TO COMPLETE] DOIVENT être remplis avant
-// mise en ligne (raison sociale, SIRET, prix des plans, commission, etc.)
+// mise en ligne (nom de l'éditeur, adresse, etc. — voir src/lib/legal.js)
 
 import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import PublicLayout from "../components/PublicLayout.jsx";
 import PageHero, { GlowBand } from "../components/PageHero.jsx";
+import { L } from "../lib/legal.js";
 
 const S = {
   wrap: {
@@ -20,8 +21,8 @@ const S = {
 const CONTENT = {
   fr: {
     title: "Conditions Générales d'Utilisation",
-    updated: "Dernière mise à jour : [À COMPLÉTER — date de publication]",
-    intro: `Les présentes CGU régissent l'accès et l'utilisation de l'application web et mobile Vimen (« le Service »), éditée par [À COMPLÉTER — raison sociale, forme juridique, SIRET, adresse].
+    updated: `Dernière mise à jour : ${L.fr.updated}`,
+    intro: `Les présentes CGU régissent l'accès et l'utilisation de l'application web et mobile Vimen (« le Service »), éditée par ${L.fr.editorFull}.
 
 En créant un compte ou en utilisant le Service, tu acceptes d'être lié par ces CGU. Si tu n'es pas d'accord, n'utilise pas le Service.`,
     sections: [
@@ -59,7 +60,7 @@ En créant un compte ou en utilisant le Service, tu acceptes d'être lié par ce
       },
       {
         h: "9. Programme de parrainage",
-        b: `[À COMPLÉTER — conditions exactes : récompense, délai, éligibilité, droit de Vimen de modifier ou mettre fin au programme.]`,
+        b: `${L.fr.referral}`,
       },
       {
         h: "10. Utilisation acceptable",
@@ -75,11 +76,11 @@ En créant un compte ou en utilisant le Service, tu acceptes d'être lié par ce
       },
       {
         h: "13. Limitation de responsabilité",
-        b: `Le Service est fourni « en l'état ». Vimen n'est pas responsable des litiges entre un Pro et ses propres Clients finaux. La responsabilité de Vimen, si engagée, est limitée [À COMPLÉTER]. Cette limitation ne s'applique pas en cas de faute lourde ou intentionnelle, ni où la loi l'interdit.`,
+        b: `Le Service est fourni « en l'état ». Vimen n'est pas responsable des litiges entre un Pro et ses propres Clients finaux. La responsabilité de Vimen, si engagée, est limitée aux seuls dommages directs et prévisibles. Cette limitation ne s'applique pas en cas de faute lourde ou intentionnelle, ni où la loi l'interdit.`,
       },
       {
         h: "14. Résiliation",
-        b: `Tu peux supprimer ton compte à tout moment. Nous pouvons suspendre ou résilier ton accès en cas de violation de ces CGU ou d'inactivité prolongée [À COMPLÉTER — durée], avec notification préalable sauf urgence (fraude, sécurité). Les dispositions sur la propriété intellectuelle, la responsabilité et le droit applicable survivent à la résiliation.`,
+        b: `Tu peux supprimer ton compte à tout moment. Nous pouvons suspendre ou résilier ton accès en cas de violation de ces CGU ou d'inactivité prolongée (${L.fr.inactivity}), avec notification préalable sauf urgence (fraude, sécurité). Les dispositions sur la propriété intellectuelle, la responsabilité et le droit applicable survivent à la résiliation.`,
       },
       {
         h: "15. Modifications des CGU",
@@ -87,18 +88,18 @@ En créant un compte ou en utilisant le Service, tu acceptes d'être lié par ce
       },
       {
         h: "16. Droit applicable et juridiction",
-        b: `Ces CGU sont soumises au droit français. Tout litige relève de la compétence des tribunaux de [À COMPLÉTER — ville du siège social], sous réserve des règles impératives de protection des consommateurs.`,
+        b: `Ces CGU sont soumises au droit français. Tout litige relève de la compétence des tribunaux de ${L.fr.court}, sous réserve des règles impératives de protection des consommateurs.`,
       },
       {
         h: "17. Contact",
-        b: `[À COMPLÉTER — raison sociale, adresse postale, email de contact]`,
+        b: `${L.fr.editorFull} — ${L.fr.email}`,
       },
     ],
   },
   en: {
     title: "Terms of Service",
-    updated: "Last updated: [TO COMPLETE — publication date]",
-    intro: `These Terms govern access to and use of the Vimen web and mobile application ("the Service"), operated by [TO COMPLETE — company name, legal form, SIRET, address].
+    updated: `Last updated: ${L.en.updated}`,
+    intro: `These Terms govern access to and use of the Vimen web and mobile application ("the Service"), operated by ${L.en.editorFull}.
 
 By creating an account or using the Service, you agree to be bound by these Terms. If you do not agree, do not use the Service.`,
     sections: [
@@ -136,7 +137,7 @@ By creating an account or using the Service, you agree to be bound by these Term
       },
       {
         h: "9. Referral program",
-        b: `[TO COMPLETE — exact terms: reward, timeframe, eligibility, Vimen's right to modify or end the program.]`,
+        b: `${L.en.referral}`,
       },
       {
         h: "10. Acceptable use",
@@ -152,11 +153,11 @@ By creating an account or using the Service, you agree to be bound by these Term
       },
       {
         h: "13. Limitation of liability",
-        b: `The Service is provided "as is." Vimen is not liable for disputes between a Pro and their own End Clients. Vimen's liability, where established, is limited to [TO COMPLETE]. This does not apply to gross or intentional misconduct, or where prohibited by law.`,
+        b: `The Service is provided "as is." Vimen is not liable for disputes between a Pro and their own End Clients. Vimen's liability, where established, is limited to direct and foreseeable damages only. This does not apply to gross or intentional misconduct, or where prohibited by law.`,
       },
       {
         h: "14. Termination",
-        b: `You may delete your account anytime. We may suspend or terminate access for violating these Terms or prolonged inactivity [TO COMPLETE — duration], with prior notice except in urgent cases (fraud, security). Provisions on IP, liability, and governing law survive termination.`,
+        b: `You may delete your account anytime. We may suspend or terminate access for violating these Terms or prolonged inactivity (${L.en.inactivity}), with prior notice except in urgent cases (fraud, security). Provisions on IP, liability, and governing law survive termination.`,
       },
       {
         h: "15. Changes to these Terms",
@@ -164,11 +165,11 @@ By creating an account or using the Service, you agree to be bound by these Term
       },
       {
         h: "16. Governing law and jurisdiction",
-        b: `These Terms are governed by French law. Disputes fall under the jurisdiction of the courts of [TO COMPLETE — city of registered office], subject to mandatory consumer protection rules.`,
+        b: `These Terms are governed by French law. Disputes fall under the jurisdiction of the courts of ${L.en.court}, subject to mandatory consumer protection rules.`,
       },
       {
         h: "17. Contact",
-        b: `[TO COMPLETE — company name, postal address, contact email]`,
+        b: `${L.en.editorFull} — ${L.en.email}`,
       },
     ],
   },

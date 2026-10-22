@@ -1,14 +1,14 @@
 // src/pages/MentionsLegalesPage.jsx
 //
 // ⚠️ Contenu placeholder pour la phase de développement — [À COMPLÉTER] /
-// [TO COMPLETE] DOIVENT être remplis dès l'immatriculation (raison
-// sociale, SIRET, forme juridique, adresse) avant mise en ligne réelle.
+// [TO COMPLETE] DOIVENT être remplis (dans src/lib/legal.js) avant mise en ligne réelle.
 // Même convention de placeholders que PrivacyPolicyPage / TermsOfServicePage.
 
 import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import PublicLayout from "../components/PublicLayout.jsx";
 import PageHero, { GlowBand } from "../components/PageHero.jsx";
+import { L } from "../lib/legal.js";
 
 const S = {
   wrap: {
@@ -21,20 +21,19 @@ const S = {
 const CONTENT = {
   fr: {
     title: "Mentions Légales",
-    updated: "Dernière mise à jour : [À COMPLÉTER — date de publication]",
+    updated: `Dernière mise à jour : ${L.fr.updated}`,
     intro: `Les présentes mentions légales s'appliquent au site et à l'application Vimen (« le Service »), accessible à l'adresse vimen.app.`,
     sections: [
       {
         h: "1. Éditeur du site",
-        b: `Le Service est édité par [À COMPLÉTER — raison sociale, forme juridique (auto-entrepreneur, SASU...), SIRET, adresse du siège].
+        b: `Le Service est édité par ${L.fr.editorLine}.
 
-Mai Anh [Nom de famille] — Rouen, France
-Email : contact.vimen@gmail.com
-Numéro SIRET : [À COMPLÉTER dès immatriculation]`,
+Adresse : ${L.fr.address}
+Email : ${L.fr.email}`,
       },
       {
         h: "2. Directrice de la publication",
-        b: `Mai Anh [Nom de famille]`,
+        b: `${L.fr.publisher}`,
       },
       {
         h: "3. Hébergement",
@@ -44,7 +43,7 @@ Hébergement de la base de données : Supabase Inc. — 970 Toa Payoh North #07-
       },
       {
         h: "4. Contact",
-        b: `Pour toute question relative au site ou à tes données personnelles : contact.vimen@gmail.com`,
+        b: `Pour toute question relative au site ou à tes données personnelles : ${L.fr.email}`,
       },
       {
         h: "5. Propriété intellectuelle",
@@ -66,20 +65,19 @@ Hébergement de la base de données : Supabase Inc. — 970 Toa Payoh North #07-
   },
   en: {
     title: "Legal Notice",
-    updated: "Last updated: [TO COMPLETE — publication date]",
+    updated: `Last updated: ${L.en.updated}`,
     intro: `This legal notice applies to the Vimen website and application ("the Service"), accessible at vimen.app.`,
     sections: [
       {
         h: "1. Site publisher",
-        b: `The Service is published by [TO COMPLETE — company name, legal form (sole trader, limited company...), registration number, registered address].
+        b: `The Service is published by ${L.en.editorLine}.
 
-Mai Anh [Last name] — Rouen, France
-Email: contact.vimen@gmail.com
-Registration number: [TO COMPLETE upon registration]`,
+Address: ${L.en.address}
+Email: ${L.en.email}`,
       },
       {
         h: "2. Publication director",
-        b: `Mai Anh [Last name]`,
+        b: `${L.en.publisher}`,
       },
       {
         h: "3. Hosting",
@@ -89,7 +87,7 @@ Database hosting: Supabase Inc. — 970 Toa Payoh North #07-04, Singapore (infra
       },
       {
         h: "4. Contact",
-        b: `For any question regarding the site or your personal data: contact.vimen@gmail.com`,
+        b: `For any question regarding the site or your personal data: ${L.en.email}`,
       },
       {
         h: "5. Intellectual property",

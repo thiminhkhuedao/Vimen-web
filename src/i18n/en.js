@@ -1339,7 +1339,7 @@ export default {
       confirmLabel:     "Type {{word}} to confirm:",
       deleting:         "Deleting...",
       deleteConfirmBtn: "Permanently delete",
-      deleteError:      "Couldn't delete your account right now. Contact contact.vimen@gmail.com so we can do it manually.",
+      deleteError:      "Couldn't delete your account right now. Contact contact@vimen.app so we can do it manually.",
     },
     account:          "Account",
     payment:          "Payment",

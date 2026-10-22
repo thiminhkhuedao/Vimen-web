@@ -241,8 +241,8 @@ export default function ContactPage({ onSignIn, onSignUp }) {
 
           <p style={{ fontSize: 13, color: T.hint, textAlign: "center", marginTop: 24, marginBottom: 0 }}>
             {t("contactPage.emailAlternative")}{" "}
-            <a href="mailto:contact.vimen@gmail.com" style={{ color: T.text, textDecoration: "underline" }}>
-              contact.vimen@gmail.com
+            <a href="mailto:contact@vimen.app" style={{ color: T.text, textDecoration: "underline" }}>
+              contact@vimen.app
             </a>
           </p>
         </div>

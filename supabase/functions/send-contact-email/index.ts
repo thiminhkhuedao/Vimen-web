@@ -14,7 +14,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const TO_EMAIL = "contact.vimen@gmail.com";
+const TO_EMAIL = "contact@vimen.app";
 const FROM_EMAIL = "Vimen Contact <onboarding@resend.dev>"; // à remplacer par un domaine vérifié sur Resend une fois configuré
 
 serve(async (req) => {

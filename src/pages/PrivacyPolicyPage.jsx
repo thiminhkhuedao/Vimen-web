@@ -2,12 +2,13 @@
 //
 // Contenu basé sur privacy-policy-fr.md / privacy-policy-en.md — les
 // placeholders [À COMPLÉTER] / [TO COMPLETE] DOIVENT être remplis avant
-// mise en ligne (raison sociale, SIRET, adresse, email RGPD, etc.)
+// mise en ligne (nom de l'éditeur, adresse, email RGPD, etc. — voir src/lib/legal.js)
 
 import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
 import PublicLayout from "../components/PublicLayout.jsx";
 import PageHero, { GlowBand } from "../components/PageHero.jsx";
+import { L } from "../lib/legal.js";
 
 const S = {
   wrap: {
@@ -20,10 +21,10 @@ const S = {
 const CONTENT = {
   fr: {
     title: "Politique de confidentialité",
-    updated: "Dernière mise à jour : [À COMPLÉTER — date de publication]",
+    updated: `Dernière mise à jour : ${L.fr.updated}`,
     intro: `Cette politique s'applique à l'application web Vimen et à l'application mobile Vimen (iOS/Android), ci-après « le Service ». Elle décrit quelles données nous collectons, pourquoi, avec qui elles sont partagées, et quels droits tu as sur elles.
 
-Le responsable de traitement est [À COMPLÉTER — raison sociale, forme juridique, SIRET, adresse]. Pour toute question, contacte-nous à [À COMPLÉTER — email dédié].`,
+Le responsable de traitement est ${L.fr.editorFull}. Pour toute question, contacte-nous à ${L.fr.privacyEmail}.`,
     sections: [
       {
         h: "1. À qui s'applique cette politique",
@@ -49,9 +50,9 @@ Données techniques : adresse IP (limitation de requêtes), navigation standard.
       },
       {
         h: "4. Avec qui nous partageons ces données",
-        b: `Clerk (authentification), Supabase (hébergement base de données), Stripe (paiements et versements), Resend (envoi d'emails), Google (connexion, si utilisée). Nous ne vendons aucune donnée.
+        b: `Clerk (authentification), Supabase (hébergement de la base de données), Vercel (hébergement du site), Stripe (paiements et versements), Resend (envoi d'emails), Cloudflare (protection anti-robots des formulaires), Google (connexion, si utilisée). Nous ne vendons aucune donnée.
 
-Certains de ces prestataires sont basés aux États-Unis ; ces transferts sont encadrés par [À COMPLÉTER — clauses contractuelles types ou équivalent].`,
+Certains de ces prestataires sont basés aux États-Unis ; ces transferts sont encadrés par ${L.fr.transfers}.`,
       },
       {
         h: "5. Durée de conservation",
@@ -63,15 +64,15 @@ Certains de ces prestataires sont basés aux États-Unis ; ces transferts sont e
       },
       {
         h: "7. Tes droits",
-        b: `Accès, rectification, effacement, portabilité, opposition, retrait du consentement. Contacte [À COMPLÉTER — email] pour les exercer. Tu peux aussi saisir la CNIL (www.cnil.fr).`,
+        b: `Accès, rectification, effacement, portabilité, opposition, retrait du consentement. Contacte ${L.fr.privacyEmail} pour les exercer. Tu peux aussi saisir la CNIL (www.cnil.fr).`,
       },
       {
         h: "8. Cookies",
-        b: `Le Service utilise des cookies strictement nécessaires à son fonctionnement (session d'authentification). [À COMPLÉTER si outil d'analytics utilisé.]`,
+        b: `Le Service utilise uniquement des cookies et stockages locaux strictement nécessaires à son fonctionnement (session d'authentification, protection anti-robots, mémorisation de la langue choisie). Aucun cookie publicitaire n'est utilisé.`,
       },
       {
         h: "9. Application mobile",
-        b: `L'app demande l'autorisation d'envoyer des notifications push, modifiable à tout moment dans les réglages de ton appareil. [À COMPLÉTER si d'autres permissions sont demandées.]`,
+        b: `L'app demande l'autorisation d'envoyer des notifications push. Elle peut aussi demander l'accès à l'appareil photo et à ta photothèque, uniquement si tu choisis d'ajouter une photo (par exemple ta photo de profil ou l'image d'un service). Tu peux refuser ou modifier ces autorisations à tout moment dans les réglages de ton appareil ; les fonctions concernées restent facultatives.`,
       },
       {
         h: "10. Mineurs",
@@ -83,16 +84,16 @@ Certains de ces prestataires sont basés aux États-Unis ; ces transferts sont e
       },
       {
         h: "12. Contact",
-        b: `[À COMPLÉTER — raison sociale, adresse postale, email dédié à la confidentialité]`,
+        b: `${L.fr.editorFull} — ${L.fr.privacyEmail}`,
       },
     ],
   },
   en: {
     title: "Privacy Policy",
-    updated: "Last updated: [TO COMPLETE — publication date]",
+    updated: `Last updated: ${L.en.updated}`,
     intro: `This policy applies to the Vimen web app and the Vimen mobile app (iOS/Android), referred to as "the Service." It describes what data we collect, why, who we share it with, and what rights you have over it.
 
-The data controller is [TO COMPLETE — company name, legal form, SIRET, address]. For any question, contact us at [TO COMPLETE — dedicated email].`,
+The data controller is ${L.en.editorFull}. For any question, contact us at ${L.en.privacyEmail}.`,
     sections: [
       {
         h: "1. Who this policy applies to",
@@ -118,9 +119,9 @@ Technical data: IP address (rate limiting), standard browsing data.`,
       },
       {
         h: "4. Who we share this data with",
-        b: `Clerk (authentication), Supabase (database hosting), Stripe (payments and payouts), Resend (email delivery), Google (sign-in, if used). We do not sell any data.
+        b: `Clerk (authentication), Supabase (database hosting), Vercel (website hosting), Stripe (payments and payouts), Resend (email delivery), Cloudflare (bot protection on forms), Google (sign-in, if used). We do not sell any data.
 
-Some of these providers are based in the United States; these transfers are governed by [TO COMPLETE — Standard Contractual Clauses or equivalent].`,
+Some of these providers are based in the United States; these transfers are governed by ${L.en.transfers}.`,
       },
       {
         h: "5. Data retention",
@@ -132,15 +133,15 @@ Some of these providers are based in the United States; these transfers are gove
       },
       {
         h: "7. Your rights",
-        b: `Access, rectification, erasure, portability, objection, withdrawal of consent. Contact [TO COMPLETE — email] to exercise these. You may also file a complaint with your local data protection authority (in France, the CNIL — www.cnil.fr).`,
+        b: `Access, rectification, erasure, portability, objection, withdrawal of consent. Contact ${L.en.privacyEmail} to exercise these. You may also file a complaint with your local data protection authority (in France, the CNIL — www.cnil.fr).`,
       },
       {
         h: "8. Cookies",
-        b: `The Service uses cookies strictly necessary for its operation (authentication session). [TO COMPLETE if an analytics tool is used.]`,
+        b: `The Service only uses cookies and local storage that are strictly necessary for its operation (authentication session, bot protection, remembering your chosen language). No advertising cookies are used.`,
       },
       {
         h: "9. Mobile app",
-        b: `The app requests permission to send push notifications, which you can change anytime in your device settings. [TO COMPLETE if other permissions are requested.]`,
+        b: `The app requests permission to send push notifications. It may also ask for access to your camera and photo library, only if you choose to add a photo (for example your profile picture or a service image). You can refuse or change these permissions at any time in your device settings; the related features are optional.`,
       },
       {
         h: "10. Children",
@@ -152,7 +153,7 @@ Some of these providers are based in the United States; these transfers are gove
       },
       {
         h: "12. Contact",
-        b: `[TO COMPLETE — company name, postal address, dedicated privacy email]`,
+        b: `${L.en.editorFull} — ${L.en.privacyEmail}`,
       },
     ],
   },

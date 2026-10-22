@@ -3,7 +3,7 @@
 // Liens externes du site. REMPLIS les adresses ci-dessous : tant qu'une adresse est vide,
 // l'icône ou le bouton s'affiche mais ne mène nulle part (lien « # »).
 
-export const CONTACT_EMAIL = "contact.vimen@gmail.com";
+export const CONTACT_EMAIL = "contact@vimen.app";
 
 // Page de l'app sur l'App Store (ex. https://apps.apple.com/fr/app/vimen/id1234567890)
 export const APP_STORE_URL = "";
