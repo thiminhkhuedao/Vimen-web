@@ -14,8 +14,10 @@ const handle = async (query) => {
    PROFILES
 ══════════════════════════════════════════════════ */
 
+// Lecture via la vue « profiles_decrypted » : mêmes colonnes que profiles, mais les coordonnées
+// bancaires (chiffrées dans la table) sont déchiffrées pour la personne connectée.
 export const getProfile = (clerkId) =>
-  handle(supabase.from("profiles").select("*").eq("clerk_id", clerkId).single());
+  handle(supabase.from("profiles_decrypted").select("*").eq("clerk_id", clerkId).single());
 
 export const createProfile = (clerkId, { name, email, trade = "" }) => {
   const slug = name.toLowerCase().replace(/\s+/g, "").replace(/[^a-z0-9]/g, "") +
@@ -462,13 +464,17 @@ export const createReferral = (referrerId, email, name) => {
 export const updateProfile = async (identifier, data) => {
   // Détermine si on cherche par id interne ou par clerk_id
   const column = identifier.includes("-") ? "id" : "clerk_id";
-  
-  const { data: updatedData, error } = await supabase
-    .from("profiles")
-    .update(data)
-    .eq(column, identifier) // Utilise la variable "column" au lieu d'une valeur en dur
-    .select()
+
+  // 1) Écriture dans la table (les coordonnées bancaires sont chiffrées par la base)
+  const { error } = await supabase.from("profiles").update(data).eq(column, identifier);
+  if (error) return { data: null, error };
+
+  // 2) Relecture via la vue pour renvoyer le profil avec les valeurs déchiffrées
+  const { data: updatedData, error: readError } = await supabase
+    .from("profiles_decrypted")
+    .select("*")
+    .eq(column, identifier)
     .single();
 
-  return { data: updatedData, error };
+  return { data: updatedData, error: readError };
 };
