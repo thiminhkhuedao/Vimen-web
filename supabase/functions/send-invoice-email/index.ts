@@ -24,20 +24,31 @@
  * Renvoie :      { success: true, id } ou { error }
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { corsHeaders, handleCors } from "../_shared/cors.ts";
 
-const CORS = {
-  "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Content-Type": "application/json",
-};
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const ANON_KEY          = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const CRON_SECRET       = Deno.env.get("CRON_SECRET") ?? "";
 
+// Échappe le HTML : nom du client, notes, coordonnées... sont saisis par des utilisateurs
+// et finissent dans un email envoyé depuis le domaine de Vimen.
+const esc = (v: unknown): string =>
+  String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+
+const safeName = (v: unknown): string => String(v ?? "").replace(/[<>"\r\n]/g, "").trim() || "Vimen";
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 interface InvoiceRow {
   id: string;
+  profile_id: string;
   invoice_number: string;
   amount: number;
   due_date: string | null;
@@ -57,16 +68,19 @@ interface InvoiceRow {
     bic: string | null;
     bank_account_holder: string | null;
     invoice_notes: string | null;
+    show_iban_on_documents: boolean | null;
+    show_stripe_link_on_documents: boolean | null;
   } | null;
 }
 
 const INVOICE_SELECT = `
-  id, invoice_number, amount, due_date, stripe_payment_link_url,
+  id, profile_id, invoice_number, amount, due_date, stripe_payment_link_url,
   client:clients ( name, email ),
   job:jobs ( title ),
   profile:profiles (
     name, email, phone, currency, language, bank_name, sort_code, account_number,
-    iban, bic, bank_account_holder, invoice_notes
+    iban, bic, bank_account_holder, invoice_notes,
+    show_iban_on_documents, show_stripe_link_on_documents
   )
 `;
 
@@ -137,7 +151,9 @@ function resolveLang(raw: string | null | undefined): Lang {
 
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  const preflight = handleCors(req);
+  if (preflight) return preflight;
+  const CORS = { ...corsHeaders(req), "Content-Type": "application/json" };
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -149,7 +165,7 @@ Deno.serve(async (req) => {
 
     let invoice: InvoiceRow | null = null;
 
-    if (CRON_SECRET && authHeader === `Bearer ${CRON_SECRET}`) {
+    if (CRON_SECRET && authHeader && safeEqual(authHeader, `Bearer ${CRON_SECRET}`)) {
       // Appel interne depuis le cron de rappels — service_role car il
       // doit pouvoir lire les factures de tous les comptes.
       const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
@@ -202,21 +218,40 @@ Deno.serve(async (req) => {
       ? new Date(invoice.due_date).toLocaleDateString(s.locale, { day: "numeric", month: "long", year: "numeric" })
       : null;
 
-    const tradeName  = profile?.name ?? "";
-    const tradeEmail = profile?.email ?? "";
-    const tradePhone = profile?.phone ?? "";
-    const clientName = invoice.client.name;
-    const jobTitle   = invoice.job?.title ?? null;
-    const paymentUrl = invoice.stripe_payment_link_url ?? null;
-    const bankName          = profile?.bank_name ?? null;
-    const sortCode          = profile?.sort_code ?? null;
-    const accountNumber     = profile?.account_number ?? null;
-    const iban              = profile?.iban ?? null;
-    const bic                = profile?.bic ?? null;
-    const bankAccountHolder = profile?.bank_account_holder ?? null;
-    const invoiceNotes      = profile?.invoice_notes ?? null;
+    // Coordonnées bancaires : stockées chiffrées en base, déchiffrées ici par une fonction réservée
+    // au service. La facture a déjà été vérifiée comme appartenant à l'appelant (RLS) plus haut.
+    const clean = (v: unknown) => (v && !String(v).startsWith("enc:v1:") ? String(v) : null);
+    let bank: Record<string, string | null> = {};
+    try {
+      const adminBank = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+      const { data: bankData } = await adminBank.rpc("get_bank_details", { p_profile_id: invoice.profile_id });
+      bank = (bankData ?? {}) as Record<string, string | null>;
+    } catch (e) {
+      console.error("get_bank_details:", e instanceof Error ? e.message : e);
+    }
+    const pickBank = (key: string) => clean(bank[key]) ?? clean((profile as unknown as Record<string, unknown> | null)?.[key]);
+
+    // Réglages du pro : on n'affiche les coordonnées bancaires / le lien de paiement que s'il l'a choisi.
+    const showBank = profile?.show_iban_on_documents !== false;
+    const showLink = profile?.show_stripe_link_on_documents !== false;
+
+    const tradeNameRaw = profile?.name ?? "";
+    const tradeName  = esc(tradeNameRaw);
+    const tradeEmail = esc(profile?.email ?? "");
+    const tradePhone = esc(profile?.phone ?? "");
+    const clientName = esc(invoice.client.name);
+    const jobTitle   = invoice.job?.title ? esc(invoice.job.title) : null;
+    const rawUrl     = showLink ? (invoice.stripe_payment_link_url ?? "") : "";
+    const paymentUrl = /^https:\/\//i.test(rawUrl) ? esc(rawUrl) : null; // uniquement des liens https
+    const bankName          = showBank && pickBank("bank_name") ? esc(pickBank("bank_name")!) : null;
+    const sortCode          = showBank && pickBank("sort_code") ? esc(pickBank("sort_code")!) : null;
+    const accountNumber     = showBank && pickBank("account_number") ? esc(pickBank("account_number")!) : null;
+    const iban              = showBank && pickBank("iban") ? esc(pickBank("iban")!.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim()) : null;
+    const bic               = showBank && pickBank("bic") ? esc(pickBank("bic")!) : null;
+    const bankAccountHolder = showBank && pickBank("bank_account_holder") ? esc(pickBank("bank_account_holder")!) : null;
+    const invoiceNotes      = profile?.invoice_notes ? esc(profile.invoice_notes).replace(/\n/g, "<br/>") : null;
     const amount            = invoice.amount;
-    const invoiceNumber     = invoice.invoice_number;
+    const invoiceNumber     = esc(invoice.invoice_number);
 
     const html = `<!DOCTYPE html>
 <html lang="${s.htmlLang}">
@@ -304,7 +339,7 @@ Deno.serve(async (req) => {
     <div class="bank-box">
       <div style="font-weight:700;margin-bottom:10px">${s.bankTransferDetails}</div>
       ${bankAccountHolder ? `<div><b>${s.accountHolder}</b> ${bankAccountHolder}</div>` : ""}
-      ${iban          ? `<div><b>${s.iban}</b> ${iban.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim()}</div>` : ""}
+      ${iban          ? `<div><b>${s.iban}</b> ${iban}</div>` : ""}
       ${bic           ? `<div><b>${s.bic}</b> ${bic}</div>` : ""}
       ${bankName      ? `<div><b>${s.bank}</b> ${bankName}</div>` : ""}
       ${sortCode      ? `<div><b>${s.sortCode}</b> ${sortCode}</div>` : ""}
@@ -332,9 +367,10 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from:    `${tradeName} via ${FROM_NAME} <${FROM_EMAIL}>`,
+        from:    `${safeName(tradeNameRaw)} via ${safeName(FROM_NAME)} <${FROM_EMAIL}>`,
+        ...(profile?.email ? { reply_to: profile.email } : {}),
         to:      [invoice.client.email],
-        subject: `${reminder ? s.subjectReminder : ""}${s.subject(invoiceNumber, fmtMoney(amount), dueDate)}`,
+        subject: `${reminder ? s.subjectReminder : ""}${s.subject(String(invoice.invoice_number).replace(/[\r\n]/g, " "), fmtMoney(amount), dueDate)}`,
         html,
       }),
     });
