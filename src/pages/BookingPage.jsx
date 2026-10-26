@@ -10,7 +10,7 @@ import { useTranslation } from "../i18n/index.js";
 import {
   PageShell, Card, Btn, Badge,
   Field, SectionTitle, Avatar, Empty,
-  Skeleton, Spinner, ErrorBox
+  Skeleton, Spinner, ErrorBox, Modal, Textarea
 } from "../components/UI";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import ServiceEditor from "../components/ServiceEditor";
@@ -54,6 +54,9 @@ export default function BookingPage({ profile }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [declineFor, setDeclineFor] = useState(null); // demande en cours de refus
+  const [declineMsg, setDeclineMsg] = useState("");   // message facultatif pour le client
+  const [declining, setDeclining] = useState(false);
   const [view, setView] = useState("requests");
   const [certs, setCerts] = useState([]);
   const [previewForm, setPreviewForm] = useState({ customer_name: "", customer_email: "", customer_phone: "", preferred_date: "", notes: "" });
@@ -95,7 +98,7 @@ export default function BookingPage({ profile }) {
     if (error) {
       console.error("[BookingPage] update status error:", error);
       toast.error(t("booking.updateFailed"));
-      return;
+      return false;
     }
     setBookings(prev => prev.map(b => b.id === id ? data : b));
     toast.success(status === "accepted" ? t("booking.acceptedToast") : t("booking.declinedToast"));
@@ -145,6 +148,46 @@ export default function BookingPage({ profile }) {
         }
       }
     }
+    return true;
+  }
+
+  // Prévient le client par email que sa demande est refusée (message facultatif du pro).
+  // Non bloquant : le refus est déjà enregistré, un échec d'envoi n'annule rien.
+  async function sendDeclineEmail(id, message) {
+    try {
+      const token = await getToken();
+      const { data: result, error: declineError } = await supabase.functions.invoke(
+        "send-booking-declined",
+        { body: { bookingRequestId: id, message }, headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (declineError) {
+        let serverMessage = "";
+        try { serverMessage = (await declineError.context.json())?.error ?? ""; } catch { /* corps illisible */ }
+        console.error("[send-booking-declined] réponse serveur :", serverMessage || declineError);
+        throw declineError;
+      }
+      if (result?.emailSent === false) {
+        toast.error(t("booking.declineEmailNotSentToast", "Demande refusée, mais l'email n'a pas pu être envoyé au client."));
+      } else {
+        toast.success(t("booking.declineEmailSentToast", "Le client a été prévenu par email."));
+      }
+    } catch (err) {
+      console.error("[Booking decline email failed]:", err);
+      toast.error(t("booking.declineEmailNotSentToast", "Demande refusée, mais l'email n'a pas pu être envoyé au client."));
+    }
+  }
+
+  async function confirmDecline(notifyClient) {
+    const target = declineFor;
+    if (!target || declining) return;
+    setDeclining(true);
+    const ok = await respond(target.id, "declined");
+    if (ok && notifyClient && target.customer_email) {
+      await sendDeclineEmail(target.id, declineMsg.trim());
+    }
+    setDeclining(false);
+    setDeclineFor(null);
+    setDeclineMsg("");
   }
 
   // Retrouve un client existant par email/téléphone, ou en crée un nouveau,
@@ -288,7 +331,7 @@ export default function BookingPage({ profile }) {
                   <div style={{ marginBottom: 24 }}>
                     <div style={{ ...titleStyle, color: T.amber }}>{t("booking.newRequests", { count: pending.length })}</div>
                     {pending.map(b => (
-                      <BookingCard key={b.id} b={b} t={t} onAccept={() => respond(b.id, "accepted")} onDecline={() => respond(b.id, "declined")} />
+                      <BookingCard key={b.id} b={b} t={t} onAccept={() => respond(b.id, "accepted")} onDecline={() => { setDeclineMsg(""); setDeclineFor(b); }} />
                     ))}
                   </div>
                 )}
@@ -415,6 +458,53 @@ export default function BookingPage({ profile }) {
           </div>
         )}
       </ErrorBoundary>
+
+      {declineFor && (
+        <Modal
+          title={t("booking.declineModalTitle", "Refuser cette demande")}
+          onClose={() => { if (!declining) setDeclineFor(null); }}
+          width={470}
+        >
+          <p style={{ fontSize: 14, color: T.muted, margin: "0 0 14px", lineHeight: 1.5 }}>
+            {declineFor.customer_name}{declineFor.customer_email ? ` (${declineFor.customer_email})` : ""}
+          </p>
+
+          {declineFor.customer_email ? (
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.muted, marginBottom: 6 }}>
+                {t("booking.declineMessageLabel", "Message pour le client (facultatif)")}
+              </label>
+              <Textarea
+                value={declineMsg}
+                maxLength={500}
+                onChange={(e) => setDeclineMsg(e.target.value)}
+                placeholder={t("booking.declineMessagePlaceholder", "Ex. Je suis complet ce jour-là, n'hésitez pas à choisir un autre créneau.")}
+              />
+              <div style={{ fontSize: 12, color: T.hint, marginTop: 6 }}>
+                {t("booking.declineMessageHint", "Le client reçoit un email avec ce message et un lien vers ta page de réservation.")}
+              </div>
+            </div>
+          ) : (
+            <p style={{ fontSize: 13, color: T.hint, margin: "0 0 16px" }}>
+              {t("booking.declineNoEmail", "Ce client n'a pas laissé d'adresse email : il ne peut pas être prévenu.")}
+            </p>
+          )}
+
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
+            <Btn variant="ghost" disabled={declining} onClick={() => setDeclineFor(null)}>
+              {t("common.cancel", "Annuler")}
+            </Btn>
+            <Btn variant="ghost" disabled={declining} onClick={() => confirmDecline(false)}>
+              {t("booking.declineSilently", "Refuser sans prévenir")}
+            </Btn>
+            {declineFor.customer_email && (
+              <Btn variant="danger" disabled={declining} onClick={() => confirmDecline(true)}>
+                {declining ? t("common.processing", "Envoi...") : t("booking.declineAndNotify", "Refuser et prévenir le client")}
+              </Btn>
+            )}
+          </div>
+        </Modal>
+      )}
     </PageShell>
   );
 }
