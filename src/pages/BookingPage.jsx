@@ -45,6 +45,9 @@ function copyToClipboard(text) {
 
 export default function BookingPage({ profile }) {
   const { t } = useTranslation();
+  // Quand une clé de traduction n'existe pas encore, t() renvoie la clé elle-même (ex. « booking.declineModalTitle »)
+  // et ignore le texte de secours : tf() détecte ce cas et affiche le texte de secours à la place.
+  const tf = (key, fallback) => { const v = t(key); return v && v !== key ? v : fallback; };
   const { getToken } = useAuth();
   const fmt = n => formatCurrency(n, profile?.currency);
   const terms = getTerms(profile?.trade, t);
@@ -108,10 +111,10 @@ export default function BookingPage({ profile }) {
     if (status === "accepted") {
       try {
         await createJobFromBooking(data, profile.id);
-        toast.success(t("booking.jobCreatedToast") || "Job created automatically");
+        toast.success(tf("booking.jobCreatedToast", "Job created automatically"));
       } catch (err) {
         console.error("[Auto job creation failed]:", err);
-        toast.error(t("booking.jobCreateFailedToast") || "Booking accepted, but the job could not be created automatically — add it manually.");
+        toast.error(tf("booking.jobCreateFailedToast", "Booking accepted, but the job could not be created automatically — add it manually."));
       }
 
       // Envoie la confirmation au client (+ lien de paiement d'acompte si le
@@ -133,18 +136,18 @@ export default function BookingPage({ profile }) {
           }
           if (result?.emailSent === false) {
             // Réservation acceptée mais email non parti (clé Resend absente, domaine non validé...)
-            toast.error(t("booking.confirmationEmailNotSentToast") || "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client.");
+            toast.error(tf("booking.confirmationEmailNotSentToast", "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client."));
           } else if (result?.stripeNotConnected) {
-            toast.error(t("booking.depositStripeNotConnected") || "Un acompte est requis pour ce service, mais aucun compte Stripe n'est connecté — connecte-le dans Paramètres pour pouvoir l'encaisser.");
+            toast.error(tf("booking.depositStripeNotConnected", "Un acompte est requis pour ce service, mais aucun compte Stripe n'est connecté — connecte-le dans Paramètres pour pouvoir l'encaisser."));
           } else if (result?.depositLinkCreated) {
-            toast.success(t("booking.depositLinkSentToast") || "Email de confirmation envoyé avec le lien de paiement de l'acompte");
+            toast.success(tf("booking.depositLinkSentToast", "Email de confirmation envoyé avec le lien de paiement de l'acompte"));
           } else {
-            toast.success(t("booking.confirmationEmailSentToast") || "Email de confirmation envoyé au client");
+            toast.success(tf("booking.confirmationEmailSentToast", "Email de confirmation envoyé au client"));
           }
         } catch (err) {
           console.error("[Booking confirmation email failed]:", err);
           // Message volontairement sans détail technique : le détail est dans la console (ci-dessus).
-          toast.error(t("booking.confirmationEmailNotSentToast") || "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client. Réessaie plus tard ou contacte-le directement.");
+          toast.error(tf("booking.confirmationEmailNotSentToast", "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client. Réessaie plus tard ou contacte-le directement."));
         }
       }
     }
@@ -167,13 +170,13 @@ export default function BookingPage({ profile }) {
         throw declineError;
       }
       if (result?.emailSent === false) {
-        toast.error(t("booking.declineEmailNotSentToast", "Demande refusée, mais l'email n'a pas pu être envoyé au client."));
+        toast.error(tf("booking.declineEmailNotSentToast", "Demande refusée, mais l'email n'a pas pu être envoyé au client."));
       } else {
-        toast.success(t("booking.declineEmailSentToast", "Le client a été prévenu par email."));
+        toast.success(tf("booking.declineEmailSentToast", "Le client a été prévenu par email."));
       }
     } catch (err) {
       console.error("[Booking decline email failed]:", err);
-      toast.error(t("booking.declineEmailNotSentToast", "Demande refusée, mais l'email n'a pas pu être envoyé au client."));
+      toast.error(tf("booking.declineEmailNotSentToast", "Demande refusée, mais l'email n'a pas pu être envoyé au client."));
     }
   }
 
@@ -229,7 +232,7 @@ export default function BookingPage({ profile }) {
 
     const { data: job, error: jobErr } = await createJob(profileId, {
       client_id: clientId,
-      title: booking.notes?.slice(0, 80) || t("booking.autoJobTitle") || "New booking",
+      title: booking.notes?.slice(0, 80) || tf("booking.autoJobTitle", "New booking"),
       date: booking.preferred_date || new Date().toISOString().slice(0, 10),
       time: "09:00",
       duration: 1,
@@ -343,7 +346,7 @@ export default function BookingPage({ profile }) {
                 )}
                 {declined.length > 0 && (
                   <div>
-                    <div style={{ ...titleStyle, color: T.hint }}>{t("booking.declined", { count: declined.length })}</div>
+                    <div style={{ ...titleStyle, color: T.hint }}>{tf("booking.declined", { count: declined.length })}</div>
                     {declined.map(b => <BookingCard key={b.id} b={b} t={t} />)}
                   </div>
                 )}
@@ -448,7 +451,7 @@ export default function BookingPage({ profile }) {
                   const url = `https://Vimen.app/b/${profile?.booking_slug}`;
                   copyToClipboard(url)
                     .then(() => toast.success(t("booking.linkCopied")))
-                    .catch(() => toast.error(t("booking.copyError") || "Impossible de copier le lien"));
+                    .catch(() => toast.error(tf("booking.copyError", "Impossible de copier le lien")));
                 }}>{t("booking.copyLink")}</Btn>
               </div>
               <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.6 }}>
@@ -461,7 +464,7 @@ export default function BookingPage({ profile }) {
 
       {declineFor && (
         <Modal
-          title={t("booking.declineModalTitle", "Refuser cette demande")}
+          title={tf("booking.declineModalTitle", "Refuser cette demande")}
           onClose={() => { if (!declining) setDeclineFor(null); }}
           width={470}
         >
@@ -472,34 +475,34 @@ export default function BookingPage({ profile }) {
           {declineFor.customer_email ? (
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: T.muted, marginBottom: 6 }}>
-                {t("booking.declineMessageLabel", "Message pour le client (facultatif)")}
+                {tf("booking.declineMessageLabel", "Message pour le client (facultatif)")}
               </label>
               <Textarea
                 value={declineMsg}
                 maxLength={500}
                 onChange={(e) => setDeclineMsg(e.target.value)}
-                placeholder={t("booking.declineMessagePlaceholder", "Ex. Je suis complet ce jour-là, n'hésitez pas à choisir un autre créneau.")}
+                placeholder={tf("booking.declineMessagePlaceholder", "Ex. Je suis complet ce jour-là, n'hésitez pas à choisir un autre créneau.")}
               />
               <div style={{ fontSize: 12, color: T.hint, marginTop: 6 }}>
-                {t("booking.declineMessageHint", "Le client reçoit un email avec ce message et un lien vers ta page de réservation.")}
+                {tf("booking.declineMessageHint", "Le client reçoit un email avec ce message et un lien vers ta page de réservation.")}
               </div>
             </div>
           ) : (
             <p style={{ fontSize: 13, color: T.hint, margin: "0 0 16px" }}>
-              {t("booking.declineNoEmail", "Ce client n'a pas laissé d'adresse email : il ne peut pas être prévenu.")}
+              {tf("booking.declineNoEmail", "Ce client n'a pas laissé d'adresse email : il ne peut pas être prévenu.")}
             </p>
           )}
 
           <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap" }}>
             <Btn variant="ghost" disabled={declining} onClick={() => setDeclineFor(null)}>
-              {t("common.cancel", "Annuler")}
+              {t("common.cancel")}
             </Btn>
             <Btn variant="ghost" disabled={declining} onClick={() => confirmDecline(false)}>
-              {t("booking.declineSilently", "Refuser sans prévenir")}
+              {tf("booking.declineSilently", "Refuser sans prévenir")}
             </Btn>
             {declineFor.customer_email && (
               <Btn variant="danger" disabled={declining} onClick={() => confirmDecline(true)}>
-                {declining ? t("common.processing", "Envoi...") : t("booking.declineAndNotify", "Refuser et prévenir le client")}
+                {declining ? t("common.processing") : tf("booking.declineAndNotify", "Refuser et prévenir le client")}
               </Btn>
             )}
           </div>
@@ -592,7 +595,7 @@ function AvailabilityEditor({ profile }) {
 
     if (delErr) {
       console.error("[BookingPage] availability delete error:", delErr);
-      toast.error(t("booking.availabilitySaveFailed") || "Could not save availability, please try again");
+      toast.error(tf("booking.availabilitySaveFailed", "Could not save availability, please try again"));
       setSaving(false);
       return;
     }
@@ -610,14 +613,14 @@ function AvailabilityEditor({ profile }) {
       const { error: insErr } = await supabase.from("availability").insert(rows);
       if (insErr) {
         console.error("[BookingPage] availability insert error:", insErr);
-        toast.error(t("booking.availabilitySaveFailed") || "Could not save availability, please try again");
+        toast.error(tf("booking.availabilitySaveFailed", "Could not save availability, please try again"));
         setSaving(false);
         return;
       }
     }
 
     setSaving(false);
-    toast.success(t("booking.availabilitySaved") || "Availability saved");
+    toast.success(tf("booking.availabilitySaved", "Availability saved"));
   }
 
   if (!avail) return <Skeleton height={150} />;
