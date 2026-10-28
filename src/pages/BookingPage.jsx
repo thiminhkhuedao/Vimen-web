@@ -43,11 +43,43 @@ function copyToClipboard(text) {
   }
 }
 
+// Textes affichés tant que les clés n'existent pas dans les fichiers de langue (src/i18n/fr.js et en.js).
+const FALLBACK_TEXT = {
+  fr: {
+    "booking.declineModalTitle": "Refuser cette demande",
+    "booking.declineMessageLabel": "Message pour le client (facultatif)",
+    "booking.declineMessagePlaceholder": "Ex. Je suis complet ce jour-là, n'hésitez pas à choisir un autre créneau.",
+    "booking.declineMessageHint": "Le client reçoit un email avec ce message et un lien vers ta page de réservation.",
+    "booking.declineNoEmail": "Ce client n'a pas laissé d'adresse email : il ne peut pas être prévenu.",
+    "booking.declineSilently": "Refuser sans prévenir",
+    "booking.declineAndNotify": "Refuser et prévenir le client",
+    "booking.declineEmailSentToast": "Le client a été prévenu par email.",
+    "booking.declineEmailNotSentToast": "Demande refusée, mais l'email n'a pas pu être envoyé au client.",
+    "booking.confirmationEmailNotSentToast": "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client.",
+  },
+  en: {
+    "booking.declineModalTitle": "Decline this request",
+    "booking.declineMessageLabel": "Message for the client (optional)",
+    "booking.declineMessagePlaceholder": "E.g. I'm fully booked that day, feel free to pick another time.",
+    "booking.declineMessageHint": "The client receives an email with this message and a link to your booking page.",
+    "booking.declineNoEmail": "This client didn't leave an email address, so they can't be notified.",
+    "booking.declineSilently": "Decline without notifying",
+    "booking.declineAndNotify": "Decline and notify the client",
+    "booking.declineEmailSentToast": "The client has been notified by email.",
+    "booking.declineEmailNotSentToast": "Request declined, but the email couldn't be sent to the client.",
+    "booking.confirmationEmailNotSentToast": "Booking accepted, but the confirmation email couldn't be sent to the client.",
+  },
+};
+
 export default function BookingPage({ profile }) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   // Quand une clé de traduction n'existe pas encore, t() renvoie la clé elle-même (ex. « booking.declineModalTitle »)
   // et ignore le texte de secours : tf() détecte ce cas et affiche le texte de secours à la place.
-  const tf = (key, fallback) => { const v = t(key); return v && v !== key ? v : fallback; };
+  const tf = (key, fallback) => {
+    const v = t(key);
+    if (v && v !== key) return v;
+    return FALLBACK_TEXT[lang === "fr" ? "fr" : "en"][key] ?? fallback;
+  };
   const { getToken } = useAuth();
   const fmt = n => formatCurrency(n, profile?.currency);
   const terms = getTerms(profile?.trade, t);
@@ -346,7 +378,7 @@ export default function BookingPage({ profile }) {
                 )}
                 {declined.length > 0 && (
                   <div>
-                    <div style={{ ...titleStyle, color: T.hint }}>{tf("booking.declined", { count: declined.length })}</div>
+                    <div style={{ ...titleStyle, color: T.hint }}>{t("booking.declined", { count: declined.length })}</div>
                     {declined.map(b => <BookingCard key={b.id} b={b} t={t} />)}
                   </div>
                 )}
@@ -595,7 +627,7 @@ function AvailabilityEditor({ profile }) {
 
     if (delErr) {
       console.error("[BookingPage] availability delete error:", delErr);
-      toast.error(tf("booking.availabilitySaveFailed", "Could not save availability, please try again"));
+      toast.error((t("booking.availabilitySaveFailed") || "Could not save availability, please try again"));
       setSaving(false);
       return;
     }
@@ -613,14 +645,14 @@ function AvailabilityEditor({ profile }) {
       const { error: insErr } = await supabase.from("availability").insert(rows);
       if (insErr) {
         console.error("[BookingPage] availability insert error:", insErr);
-        toast.error(tf("booking.availabilitySaveFailed", "Could not save availability, please try again"));
+        toast.error((t("booking.availabilitySaveFailed") || "Could not save availability, please try again"));
         setSaving(false);
         return;
       }
     }
 
     setSaving(false);
-    toast.success(tf("booking.availabilitySaved", "Availability saved"));
+    toast.success((t("booking.availabilitySaved") || "Availability saved"));
   }
 
   if (!avail) return <Skeleton height={150} />;
