@@ -1972,6 +1972,16 @@ settings: {
 },
 
 booking: {
+  declineModalTitle: "Decline this request",
+  declineMessageLabel: "Message for the client (optional)",
+  declineMessagePlaceholder: "E.g. I'm fully booked that day, feel free to pick another time.",
+  declineMessageHint: "The client receives an email with this message and a link to your booking page.",
+  declineNoEmail: "This client didn't leave an email address, so they can't be notified.",
+  declineSilently: "Decline without notifying",
+  declineAndNotify: "Decline and notify the client",
+  declineEmailSentToast: "The client has been notified by email.",
+  declineEmailNotSentToast: "Request declined, but the email couldn't be sent to the client.",
+  confirmationEmailNotSentToast: "Booking accepted, but the confirmation email couldn't be sent to the client.",
   // Navigation & Tabs
   requests: "Requests",
   preview: "Public Preview",
@@ -3545,6 +3555,16 @@ publicQuote: {
   },
 
   publicBooking: {
+    uploadErrorWhat: "Couldn't upload your photo",
+    uploadErrorWhy: "This can happen with a slow connection or a file that's too large. Try a smaller image, or continue without one.",
+    uploadNotImageWhat: "This file isn't an image",
+    uploadNotImageWhy: "Choose a JPG, PNG or WebP photo.",
+    uploadTooLargeWhat: "This photo is too large",
+    uploadTooLargeWhy: "Choose a photo under 8 MB.",
+    sendErrorWhat: "Couldn't send your request",
+    sendErrorWhy: "This is usually a temporary connection issue — your details weren't lost. Try sending again.",
+    sendErrorNetworkWhy: "Check your connection and try again — nothing was lost.",
+    cannotBookSelf: "You can't book with yourself",
     ownerPreviewNotice: "This is a preview of the booking page your clients see. You can't submit a request to yourself — share the link below with clients instead.",
     copiedLabel: "Copied!",
     copyLinkBtn: "Copy link",
@@ -3594,6 +3614,7 @@ publicQuote: {
     depositOnConfirmPercent: "A deposit of {{percent}}% ({{amount}}) will be requested once your booking is confirmed.",
     confirmationSentTo: "Confirmation sent to",
     errors: {
+      captchaRequired: "Please complete the verification challenge.",
       nameRequired: "Please enter your name",
       emailRequired: "Please enter your email",
       emailInvalid: "That email address doesn't look right",
