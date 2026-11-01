@@ -1978,6 +1978,16 @@ settings: {
 },
 
 booking: {
+  declineModalTitle: "Refuser cette demande",
+  declineMessageLabel: "Message pour le client (facultatif)",
+  declineMessagePlaceholder: "Ex. Je suis complet ce jour-là, n'hésitez pas à choisir un autre créneau.",
+  declineMessageHint: "Le client reçoit un email avec ce message et un lien vers ta page de réservation.",
+  declineNoEmail: "Ce client n'a pas laissé d'adresse email : il ne peut pas être prévenu.",
+  declineSilently: "Refuser sans prévenir",
+  declineAndNotify: "Refuser et prévenir le client",
+  declineEmailSentToast: "Le client a été prévenu par email.",
+  declineEmailNotSentToast: "Demande refusée, mais l'email n'a pas pu être envoyé au client.",
+  confirmationEmailNotSentToast: "Réservation acceptée, mais l'email de confirmation n'a pas pu être envoyé au client.",
   // Navigation & Tabs
   requests: "Demandes",
   preview: "Aperçu public",
@@ -3651,6 +3661,16 @@ publicQuote: {
   },
 
   publicBooking: {
+    uploadErrorWhat: "Impossible d'envoyer ta photo",
+    uploadErrorWhy: "Cela peut arriver avec une connexion lente ou un fichier trop lourd. Essaie une image plus petite, ou continue sans photo.",
+    uploadNotImageWhat: "Ce fichier n'est pas une image",
+    uploadNotImageWhy: "Choisis une photo au format JPG, PNG ou WebP.",
+    uploadTooLargeWhat: "Cette photo est trop lourde",
+    uploadTooLargeWhy: "Choisis une photo de moins de 8 Mo.",
+    sendErrorWhat: "Impossible d'envoyer ta demande",
+    sendErrorWhy: "C'est généralement un problème de connexion temporaire : tes informations ne sont pas perdues. Réessaie d'envoyer.",
+    sendErrorNetworkWhy: "Vérifie ta connexion et réessaie : rien n'a été perdu.",
+    cannotBookSelf: "Tu ne peux pas réserver avec toi-même",
     ownerPreviewNotice: "Ceci est un aperçu de la page de réservation que voient vos clients. Vous ne pouvez pas vous envoyer une demande à vous-même — partagez plutôt le lien ci-dessous à vos clients.",
     copiedLabel: "Copié !",
     copyLinkBtn: "Copier le lien",
@@ -3700,6 +3720,7 @@ publicQuote: {
     depositOnConfirmPercent: "Un acompte de {{percent}}% ({{amount}}) vous sera demandé une fois votre réservation confirmée.",
     confirmationSentTo: "Confirmation envoyée à",
     errors: {
+      captchaRequired: "Merci de valider la vérification anti-robot.",
       nameRequired: "Merci d'indiquer votre nom",
       emailRequired: "Merci d'indiquer votre email",
       emailInvalid: "Cette adresse email ne semble pas valide",
