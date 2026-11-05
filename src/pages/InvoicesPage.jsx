@@ -22,6 +22,13 @@ import { getPaymentTermsLabel } from "../lib/paymentTerms.js";
 
 const fmtDate = d => { try { return new Date(d).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}); } catch { return d||""; } };
 
+// ── Limite du plan Free ────────────────────────────────
+// TEMPORAIREMENT DÉSACTIVÉE — pas de moyen de passer Pro pour l'instant
+// (pas de Stripe/SIRET actif). Passer à `true` pour réactiver à la fois
+// le blocage ET le compteur "x/10 factures".
+const INVOICE_LIMIT_ENABLED = false;
+const FREE_INVOICE_LIMIT = 10;
+
 // ── Skeleton loader ────────────────────────────────────
 function InvoiceSkeleton() {
   return (
@@ -86,14 +93,23 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
 
   const fld = k => e => { setForm(p=>({...p,[k]:e.target.value})); setFormErrors(p=>({...p,[k]:""})); };
 
-  // Gestion des limites du plan Free pour les factures (max 10)
-  // TEMPORAIREMENT DÉSACTIVÉ — pas de moyen de passer Pro pour l'instant
-  // (pas de Stripe/SIRET actif), donc cette limite bloquerait tout le
-  // monde indéfiniment. Remettre `!isPro && totalInvoicesCount >= 10`
-  // pour la réactiver une fois l'abonnement Pro de retour.
+  // Gestion des limites du plan Free pour les factures
   const isPro = profile?.plan === "pro";
   const totalInvoicesCount = invoices.length;
-  const isInvoiceLimitReached = false;
+  const isInvoiceLimitReached =
+    INVOICE_LIMIT_ENABLED && !isPro && totalInvoicesCount >= FREE_INVOICE_LIMIT;
+  // Le compteur n'apparaît que si la limite est réellement active
+  const showInvoiceCounter = INVOICE_LIMIT_ENABLED && !isPro;
+
+  // Fusionne une ligne renvoyée par Supabase dans l'état local SANS perdre
+  // les relations (client, job) : un simple .update()/.insert() + .select()
+  // ne renvoie pas les jointures, donc on garde celles déjà en mémoire.
+  const mergeInvoice = (local, fresh, fallback = {}) => ({
+    ...local,
+    ...fresh,
+    client: fresh?.client ?? local?.client ?? fallback.client ?? null,
+    job:    fresh?.job    ?? local?.job    ?? fallback.job    ?? null,
+  });
 
   // ── Load invoices ──────────────────────────────────
   const load = useCallback(async () => {
@@ -127,8 +143,10 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
   }, [profile?.id]);
 
   // ── Computed ───────────────────────────────────────
-  const filtered    = (filter === "all" ? invoices : invoices.filter(i => i.status === filter))
-                        .sort((a,b) => b.created_at?.localeCompare(a.created_at ?? "") ?? 0);
+  // Copie avant tri : .sort() modifie le tableau en place, et avec le filtre
+  // "all" on mutait directement le state React.
+  const filtered    = [...(filter === "all" ? invoices : invoices.filter(i => i.status === filter))]
+                        .sort((a,b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
   const paid        = invoices.filter(i=>i.status==="paid").reduce((s,i)=>s+Number(i.amount),0);
   const outstanding = invoices.filter(i=>i.status==="unpaid").reduce((s,i)=>s+Number(i.amount),0);
   const isOverdue   = inv => inv.status==="unpaid" && inv.due_date && new Date(inv.due_date) < new Date();
@@ -160,8 +178,16 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
     if (!validateForm()) return;
     setBusy(true);
 
+    const client = clients.find(c => c.id === form.client_id) ?? null;
+    const job    = jobs.find(j => j.id === form.job_id) ?? null;
+
     const tempId = `temp-${Date.now()}`;
-    const optimistic = { id:tempId, invoice_number:"...", client_id:form.client_id, amount:parseFloat(form.amount), status:"unpaid", due_date:form.due_date||null, created_at:new Date().toISOString() };
+    const optimistic = {
+      id:tempId, invoice_number:"...", client_id:form.client_id, job_id:form.job_id || null,
+      amount:parseFloat(form.amount), status:"unpaid", due_date:form.due_date||null,
+      created_at:new Date().toISOString(),
+      client, job,
+    };
     setInvoices(prev => [optimistic, ...prev]);
     setModal(null);
     try {
@@ -173,14 +199,13 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
         status:    "unpaid",
       });
       if (error) throw error;
-      setInvoices(prev => prev.map(i => i.id===tempId ? data : i));
+      // On garde client / job (non renvoyés par l'insert)
+      setInvoices(prev => prev.map(i => i.id===tempId ? mergeInvoice(i, data, { client, job }) : i));
       toast.success(t("invoices.createdToast"));
 
       // Envoi automatique dès la création, si le client a un email —
       // plus besoin de cliquer "Envoyer" séparément.
-      const client = clients.find(c => c.id === form.client_id);
       if (client?.email && data) {
-        const job = jobs.find(j => j.id === form.job_id);
         const result = await sendInvoiceEmail(data.id);
         if (result.success) {
           const { data: updated } = await supabase
@@ -189,7 +214,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
             .eq("id", data.id)
             .select()
             .single();
-          if (updated) setInvoices(prev => prev.map(i => i.id === data.id ? { ...updated, client, job } : i));
+          if (updated) setInvoices(prev => prev.map(i => i.id === data.id ? mergeInvoice(i, updated, { client, job }) : i));
           toast.success(t("invoices.emailedToast", { email: client.email }));
         }
       }
@@ -325,7 +350,9 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
     try {
       const { data, error } = await markInvoicePaid(id);
       if (error) throw error;
-      setInvoices(prev => prev.map(i => i.id===id ? data : i));
+      // FIX : on fusionne au lieu de remplacer. `data` ne contient pas les
+      // jointures (client, job), donc l'ancien code effaçait le nom du client.
+      setInvoices(prev => prev.map(i => i.id===id ? mergeInvoice(i, data) : i));
       toast.success(t("invoices.markedPaidToast"));
     } catch (err) {
       console.error("[InvoicesPage] mark paid error:", err);
@@ -404,6 +431,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
   // ── Delete ─────────────────────────────────────────
   async function handleDelete() {
     const prev = invoices.find(i => i.id===delId);
+    if (!prev) { setDelId(null); setModal(null); return; }
     setInvoices(p => p.filter(i => i.id!==delId));
     setDelId(null);
     setModal(null);
@@ -430,10 +458,10 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
       title={t("nav.invoices")} 
       action={
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {/* ✅ Affichage de la jauge pour les utilisateurs Free */}
-          {!isPro && (
+          {/* Compteur visible uniquement si la limite Free est active */}
+          {showInvoiceCounter && (
             <span style={{ fontSize: 13, color: isInvoiceLimitReached ? T.amber : T.muted, fontWeight: 600 }}>
-              {totalInvoicesCount}/10 factures
+              {totalInvoicesCount}/{FREE_INVOICE_LIMIT} factures
             </span>
           )}
           <Btn size="sm" onClick={handleOpenCreateInvoice}>+ {t("invoices.newInvoice")}</Btn>
