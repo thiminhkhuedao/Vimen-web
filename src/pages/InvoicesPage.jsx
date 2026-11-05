@@ -101,6 +101,50 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
   // Le compteur n'apparaît que si la limite est réellement active
   const showInvoiceCounter = INVOICE_LIMIT_ENABLED && !isPro;
 
+  // ── Coordonnées bancaires ──────────────────────────
+  // Elles sont chiffrées dans `profiles` : on lit la vue déchiffrée
+  // (comme la Edge Function) et on retombe sur `profile` en secours.
+  const [bankDetails, setBankDetails] = useState(null);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("profiles_decrypted")
+        .select("bank_name, sort_code, account_number, iban, bic, bank_account_holder")
+        .eq("id", profile.id)
+        .maybeSingle();
+      if (error) console.error("[InvoicesPage] bank details load error:", error.message);
+      if (!cancelled) setBankDetails(data ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [profile?.id]);
+
+  // On n'affiche JAMAIS une valeur encore chiffrée ou vide
+  const cleanBank = v => (typeof v === "string" && v.trim() !== "" && !v.startsWith("enc:v1:")) ? v : null;
+  const bank = {
+    bank_name:           cleanBank(bankDetails?.bank_name)           ?? cleanBank(profile?.bank_name),
+    sort_code:           cleanBank(bankDetails?.sort_code)           ?? cleanBank(profile?.sort_code),
+    account_number:      cleanBank(bankDetails?.account_number)      ?? cleanBank(profile?.account_number),
+    iban:                cleanBank(bankDetails?.iban)                ?? cleanBank(profile?.iban),
+    bic:                 cleanBank(bankDetails?.bic)                 ?? cleanBank(profile?.bic),
+    bank_account_holder: cleanBank(bankDetails?.bank_account_holder) ?? cleanBank(profile?.bank_account_holder),
+  };
+  const hasBank = Object.values(bank).some(Boolean);
+  const fmtIban = s => s.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim();
+  const holderLabel = profile?.language === "fr" ? "Titulaire :" : "Account holder:";
+
+  // Lignes de coordonnées bancaires (PDF, aperçu, copier)
+  const bankTextLines = () => [
+    bank.bank_account_holder && `${holderLabel} ${bank.bank_account_holder}`,
+    bank.iban                && `IBAN: ${fmtIban(bank.iban)}`,
+    bank.bic                 && `BIC/SWIFT: ${bank.bic}`,
+    bank.bank_name           && `${t("invoices.bankLabel")} ${bank.bank_name}`,
+    bank.sort_code           && `${t("invoices.sortCodeLabel")} ${bank.sort_code}`,
+    bank.account_number      && `${t("invoices.accountLabel")} ${bank.account_number}`,
+  ].filter(Boolean);
+
   // Fusionne une ligne renvoyée par Supabase dans l'état local SANS perdre
   // les relations (client, job) : un simple .update()/.insert() + .select()
   // ne renvoie pas les jointures, donc on garde celles déjà en mémoire.
@@ -317,16 +361,14 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
     doc.setTextColor(inv.status === "paid" ? 34 : 230, inv.status === "paid" ? 140 : 90, inv.status === "paid" ? 60 : 30);
     doc.text(fmt(inv.amount), 547, y, { align: "right" });
 
-    if (profile?.bank_name || profile?.account_number) {
+    if (hasBank) {
       y += 34;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
       doc.setTextColor(20, 130, 60);
       doc.text(t("invoices.bankTransferTitle"), marginX, y);
       doc.setFont("helvetica", "normal");
-      if (profile.bank_name) { y += 14; doc.text(`${t("invoices.bankLabel")} ${profile.bank_name}`, marginX, y); }
-      if (profile.sort_code) { y += 14; doc.text(`${t("invoices.sortCodeLabel")} ${profile.sort_code}`, marginX, y); }
-      if (profile.account_number) { y += 14; doc.text(`${t("invoices.accountLabel")} ${profile.account_number}`, marginX, y); }
+      bankTextLines().forEach(line => { y += 14; doc.text(line, marginX, y); });
       y += 14;
       doc.text(`${t("invoices.referenceLabel")} ${inv.invoice_number}`, marginX, y);
     }
@@ -418,9 +460,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
   // ── Copy bank details ──────────────────────────────
   async function handleCopyBankDetails(inv) {
     const lines = [
-      profile.bank_name     && `${t("invoices.bankLabel")} ${profile.bank_name}`,
-      profile.sort_code     && `${t("invoices.sortCodeLabel")} ${profile.sort_code}`,
-      profile.account_number && `${t("invoices.accountLabel")} ${profile.account_number}`,
+      ...bankTextLines(),
       `${t("invoices.referenceLabel")} ${inv.invoice_number}`,
     ].filter(Boolean).join("\n");
     const ok = await copyToClipboard(lines);
@@ -535,7 +575,7 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
               <Btn size="sm" variant="success" onClick={() => handleMarkPaid(previewInv.id)}>
                 {t("invoices.markAsPaid")}
               </Btn>
-              {(profile.bank_name || profile.account_number) && (
+              {hasBank && (
                 <Btn size="sm" variant="ghost" onClick={() => handleCopyBankDetails(previewInv)}>
                   {t("invoices.copyBankDetails")}
                 </Btn>
@@ -600,12 +640,10 @@ export default function InvoicesPage({ profile, onUpgradeClick }) {
               </div>
             )}
 
-            {(profile.bank_name || profile.account_number) && (
+            {hasBank && (
               <div style={{marginTop:14,padding:"12px 14px",background:T.greenBg,borderRadius:T.r.md,fontSize:13,color:T.green}}>
                 <div style={{fontWeight:700,marginBottom:4}}>{t("invoices.bankTransferTitle")}</div>
-                {profile.bank_name     && <div>{t("invoices.bankLabel")} {profile.bank_name}</div>}
-                {profile.sort_code     && <div>{t("invoices.sortCodeLabel")} {profile.sort_code}</div>}
-                {profile.account_number && <div>{t("invoices.accountLabel")} {profile.account_number}</div>}
+                {bankTextLines().map(line => <div key={line}>{line}</div>)}
                 <div style={{marginTop:2}}>{t("invoices.referenceLabel")} {previewInv.invoice_number}</div>
               </div>
             )}
