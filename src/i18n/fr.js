@@ -3373,9 +3373,9 @@ contactPage: {
   emailAlternative: "Vous préférez l'email. Écrivez nous à",
   invalid: "Merci de remplir tous les champs.",
   captchaMissing: "Merci de valider le test de vérification.",
+  emailOnlyText: "Contactez-nous à l'adresse",
+  emailOnlyReply: "Nous faisons de notre mieux pour répondre rapidement.",
 },
-
-// À ajouter / remplacer dans ton fichier src/i18n/fr.js
 
 invoices: {
   loadErrorTitle: "Impossible de charger les factures",

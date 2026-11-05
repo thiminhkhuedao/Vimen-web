@@ -28,6 +28,9 @@ const INPUT_STYLE = {
   fontFamily: "inherit",
 };
 
+// Mettre à true pour réactiver le formulaire (une fois check-rate-limit
+// et send-contact-email réparés). En attendant, seul l'email est affiché.
+const CONTACT_FORM_ENABLED = false;
 
 export default function ContactPage({ onSignIn, onSignUp }) {
   const { t, lang, setLanguage, languages } = useTranslation();
@@ -99,7 +102,15 @@ export default function ContactPage({ onSignIn, onSignUp }) {
 
       <section style={{ padding: "20px 0 100px" }}>
         <div style={{ ...S.wrap, maxWidth: 520 }}>
-          {status === "sent" ? (
+          {!CONTACT_FORM_ENABLED ? (
+            <p style={{ fontSize: 15, color: T.muted, textAlign: "center", margin: 0, lineHeight: 1.6 }}>
+              {t("contactPage.emailOnlyText", "Contact us at")}{" "}
+              <a href="mailto:contact@vimen.app" style={{ color: T.text, fontWeight: 600, textDecoration: "underline" }}>
+                contact@vimen.app
+              </a>
+              . {t("contactPage.emailOnlyReply", "We do our best to respond as quickly as possible.")}
+            </p>
+          ) : status === "sent" ? (
             <div
               role="status"
               aria-live="polite"
@@ -239,12 +250,14 @@ export default function ContactPage({ onSignIn, onSignUp }) {
             </form>
           )}
 
-          <p style={{ fontSize: 13, color: T.hint, textAlign: "center", marginTop: 24, marginBottom: 0 }}>
-            {t("contactPage.emailAlternative")}{" "}
-            <a href="mailto:contact@vimen.app" style={{ color: T.text, textDecoration: "underline" }}>
-              contact@vimen.app
-            </a>
-          </p>
+          {CONTACT_FORM_ENABLED && (
+            <p style={{ fontSize: 13, color: T.hint, textAlign: "center", marginTop: 24, marginBottom: 0 }}>
+              {t("contactPage.emailAlternative")}{" "}
+              <a href="mailto:contact@vimen.app" style={{ color: T.text, textDecoration: "underline" }}>
+                contact@vimen.app
+              </a>
+            </p>
+          )}
         </div>
       </section>
 

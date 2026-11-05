@@ -3363,6 +3363,8 @@ contactPage: {
   emailAlternative: "Prefer email. Write to us at",
   invalid: "Please fill in all fields.",
   captchaMissing: "Please complete the verification challenge.",
+  emailOnlyText: "Contact us at",
+  emailOnlyReply: "We do our best to respond as quickly as possible.",
 },
 
 reviews: {
