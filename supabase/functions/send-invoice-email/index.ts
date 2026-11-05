@@ -1,54 +1,24 @@
 /**
  * Supabase Edge Function: send-invoice-email
- *
- * SÉCURITÉ — corrigé (voir audit "Broken Access Control") :
- * L'ancienne version faisait confiance à TOUT ce que le client envoyait
- * (montant, IBAN, nom du pro, coordonnées bancaires...) sans jamais
- * vérifier que ces infos correspondaient à une vraie facture en base.
- * N'importe quel utilisateur connecté pouvait donc :
- *   - envoyer un email "facture Vimen" à n'importe qui, avec n'importe
- *     quel montant, en usurpant le nom de n'importe quel pro ;
- *   - y faire figurer un IBAN différent du vrai, pour détourner un
- *     virement client vers son propre compte (fraude à la facture).
- *
- * Fix : on ne reçoit plus qu'un invoiceId. Tout le contenu de l'email
- * (client, montant, coordonnées bancaires...) est relu depuis la base,
- * jamais fourni par l'appelant. Deux modes d'appel :
- *   - utilisateur normal (JWT) : client scopé au JWT, RLS garantit qu'on
- *     ne peut lire QUE ses propres factures.
- *   - cron interne (send-invoice-reminders) : authentifié par
- *     CRON_SECRET, lecture via service_role (doit pouvoir lire les
- *     factures de tous les comptes pour les rappels automatiques).
- *
- * Appelée avec : { invoiceId, reminder? }
+ * Appelée avec : { invoiceId, reminder?, includeIban?, includeStripeLink? }
  * Renvoie :      { success: true, id } ou { error }
  */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders, handleCors } from "../_shared/cors.ts";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const CORS = {
+  "Access-Control-Allow-Origin":  "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Content-Type": "application/json",
+};
 
 const SUPABASE_URL     = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const ANON_KEY          = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-const CRON_SECRET       = Deno.env.get("CRON_SECRET") ?? "";
-
-// Échappe le HTML : nom du client, notes, coordonnées... sont saisis par des utilisateurs
-// et finissent dans un email envoyé depuis le domaine de Vimen.
-const esc = (v: unknown): string =>
-  String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-
-const safeName = (v: unknown): string => String(v ?? "").replace(/[<>"\r\n]/g, "").trim() || "Vimen";
-
-function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-}
+const ANON_KEY         = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+const CRON_SECRET      = Deno.env.get("CRON_SECRET") ?? "";
 
 interface InvoiceRow {
-  id: string;
   profile_id: string;
+  id: string;
   invoice_number: string;
   amount: number;
   due_date: string | null;
@@ -68,9 +38,16 @@ interface InvoiceRow {
     bic: string | null;
     bank_account_holder: string | null;
     invoice_notes: string | null;
-    show_iban_on_documents: boolean | null;
-    show_stripe_link_on_documents: boolean | null;
   } | null;
+}
+
+interface BankRow {
+  bank_name: string | null;
+  sort_code: string | null;
+  account_number: string | null;
+  iban: string | null;
+  bic: string | null;
+  bank_account_holder: string | null;
 }
 
 const INVOICE_SELECT = `
@@ -79,14 +56,53 @@ const INVOICE_SELECT = `
   job:jobs ( title ),
   profile:profiles (
     name, email, phone, currency, language, bank_name, sort_code, account_number,
-    iban, bic, bank_account_holder, invoice_notes,
-    show_iban_on_documents, show_stripe_link_on_documents
+    iban, bic, bank_account_holder, invoice_notes
   )
 `;
 
-// Textes de l'email — une entrée par langue supportée. Ajoute une
-// nouvelle clé ici (ex: "es") pour supporter une langue de plus, sans
-// toucher au reste de la fonction.
+// ─── Helpers de sécurité ──────────────────────────────────────────────────
+
+/** Échappe les caractères HTML pour toute valeur saisie par un utilisateur. */
+function esc(v: unknown): string {
+  return String(v ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** N'autorise que des URLs http(s) pour les liens (évite javascript:, data:, etc.). */
+function safeUrl(u: string | null | undefined): string | null {
+  if (!u) return null;
+  try {
+    const parsed = new URL(u);
+    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Nettoie un nom destiné à l'en-tête From (pas de retours ligne, <, >, "). */
+function headerSafe(v: string): string {
+  return v.replace(/[\r\n<>"]/g, "").trim();
+}
+
+/** Comparaison de chaînes à temps constant. */
+function safeEqual(a: string, b: string): boolean {
+  const ea = new TextEncoder().encode(a);
+  const eb = new TextEncoder().encode(b);
+  let diff = ea.length ^ eb.length;
+  const len = Math.max(ea.length, eb.length);
+  for (let i = 0; i < len; i++) {
+    diff |= (ea[i] ?? 0) ^ (eb[i] ?? 0);
+  }
+  return diff === 0;
+}
+
+// ─── Textes de l'email ────────────────────────────────────────────────────
+// NB : les fonctions greeting / intro / paymentDue reçoivent des valeurs
+// DÉJÀ échappées (voir plus bas).
 const STRINGS = {
   en: {
     htmlLang: "en",
@@ -120,7 +136,7 @@ const STRINGS = {
     locale: "fr-FR",
     greeting: (name: string) => `Bonjour ${name},`,
     reminderBanner: "Petit rappel — cette facture est toujours en attente de paiement.",
-    intro: (tradeName: string) => `Voici ta facture de la part de <strong>${tradeName}</strong>.`,
+    intro: (tradeName: string) => `Voici votre facture de la part de <strong>${tradeName}</strong>.`,
     paymentDue: (date: string) => `Le paiement est dû avant le <strong>${date}</strong>.`,
     due: "Échéance :",
     billTo: "Facturé à",
@@ -149,26 +165,27 @@ function resolveLang(raw: string | null | undefined): Lang {
   return raw === "fr" ? "fr" : "en";
 }
 
-
 Deno.serve(async (req) => {
-  const preflight = handleCors(req);
-  if (preflight) return preflight;
-  const CORS = { ...corsHeaders(req), "Content-Type": "application/json" };
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
     const authHeader = req.headers.get("Authorization");
-    const { invoiceId, reminder = false } = await req.json();
+    const { invoiceId, reminder = false, includeIban = true, includeStripeLink = true } = await req.json();
 
     if (!invoiceId) {
       return new Response(JSON.stringify({ error: "invoiceId requis" }), { status: 400, headers: CORS });
     }
 
     let invoice: InvoiceRow | null = null;
+    // Client utilisé pour lire la facture ET les coordonnées bancaires :
+    // - cron interne  → client admin (service role)
+    // - appel normal  → client avec le JWT de l'utilisateur (RLS appliquée)
+    let dbClient: SupabaseClient | null = null;
 
     if (CRON_SECRET && authHeader && safeEqual(authHeader, `Bearer ${CRON_SECRET}`)) {
-      // Appel interne depuis le cron de rappels — service_role car il
-      // doit pouvoir lire les factures de tous les comptes.
+      // Appel interne depuis le cron de rappels
       const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+      dbClient = admin;
       const { data, error } = await admin
         .from("invoices")
         .select(INVOICE_SELECT)
@@ -179,16 +196,14 @@ Deno.serve(async (req) => {
       }
       invoice = data;
     } else {
-      // Appel utilisateur normal — client scopé au JWT de l'appelant.
-      // La policy RLS "invoices_select_own" garantit que cette requête
-      // ne peut renvoyer une ligne QUE si la facture appartient à
-      // l'appelant, peu importe l'invoiceId demandé.
+      // Appel utilisateur normal
       if (!authHeader) {
         return new Response(JSON.stringify({ error: "Non authentifié" }), { status: 401, headers: CORS });
       }
       const userClient = createClient(SUPABASE_URL, ANON_KEY, {
         global: { headers: { Authorization: authHeader } },
       });
+      dbClient = userClient;
       const { data, error } = await userClient
         .from("invoices")
         .select(INVOICE_SELECT)
@@ -204,7 +219,36 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Ce client n'a pas d'adresse email" }), { status: 400, headers: CORS });
     }
 
-    const profile = invoice.profile;
+    if (!dbClient) {
+      return new Response(JSON.stringify({ error: "Client base de données indisponible" }), { status: 500, headers: CORS });
+    }
+
+    // Les coordonnées bancaires sont CHIFFRÉES dans la table profiles
+    const { data: bank, error: bankErr } = await dbClient
+      .from("profiles_decrypted")
+      .select("bank_name, sort_code, account_number, iban, bic, bank_account_holder")
+      .eq("id", invoice.profile_id)
+      .maybeSingle<BankRow>();
+    if (bankErr) {
+      console.error("send-invoice-email: lecture des coordonnées bancaires impossible:", bankErr.message);
+    }
+
+    // On ne garde JAMAIS une valeur encore chiffrée
+    const dec = (v: unknown): string | null =>
+      typeof v === "string" && v !== "" && !v.startsWith("enc:v1:") ? v : null;
+
+    const profile = invoice.profile
+      ? {
+          ...invoice.profile,
+          bank_name: dec(bank?.bank_name),
+          sort_code: dec(bank?.sort_code),
+          account_number: dec(bank?.account_number),
+          iban: dec(bank?.iban),
+          bic: dec(bank?.bic),
+          bank_account_holder: dec(bank?.bank_account_holder),
+        }
+      : null;
+
     const lang = resolveLang(profile?.language);
     const s = STRINGS[lang];
     const currencyCode = profile?.currency ?? "EUR";
@@ -218,40 +262,30 @@ Deno.serve(async (req) => {
       ? new Date(invoice.due_date).toLocaleDateString(s.locale, { day: "numeric", month: "long", year: "numeric" })
       : null;
 
-    // Coordonnées bancaires : stockées chiffrées en base, déchiffrées ici par une fonction réservée
-    // au service. La facture a déjà été vérifiée comme appartenant à l'appelant (RLS) plus haut.
-    const clean = (v: unknown) => (v && !String(v).startsWith("enc:v1:") ? String(v) : null);
-    let bank: Record<string, string | null> = {};
-    try {
-      const adminBank = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-      const { data: bankData } = await adminBank.rpc("get_bank_details", { p_profile_id: invoice.profile_id });
-      bank = (bankData ?? {}) as Record<string, string | null>;
-    } catch (e) {
-      console.error("get_bank_details:", e instanceof Error ? e.message : e);
-    }
-    const pickBank = (key: string) => clean(bank[key]) ?? clean((profile as unknown as Record<string, unknown> | null)?.[key]);
+    // Valeurs brutes (pour les en-têtes / sujet d'email, qui ne sont pas du HTML)
+    const rawTradeName = profile?.name ?? "";
+    const rawInvoiceNumber = invoice.invoice_number;
 
-    // Réglages du pro : on n'affiche les coordonnées bancaires / le lien de paiement que s'il l'a choisi.
-    const showBank = profile?.show_iban_on_documents !== false;
-    const showLink = profile?.show_stripe_link_on_documents !== false;
+    // Valeurs ÉCHAPPÉES (pour injection dans le HTML)
+    const tradeName         = esc(rawTradeName);
+    const tradeEmail        = esc(profile?.email ?? "");
+    const tradePhone        = esc(profile?.phone ?? "");
+    const clientName        = esc(invoice.client.name);
+    const jobTitle          = invoice.job?.title ? esc(invoice.job.title) : null;
+    const invoiceNumber     = esc(rawInvoiceNumber);
+    const invoiceNotes      = profile?.invoice_notes ? esc(profile.invoice_notes) : null;
+    const paymentUrl        = includeStripeLink ? safeUrl(invoice.stripe_payment_link_url) : null;
 
-    const tradeNameRaw = profile?.name ?? "";
-    const tradeName  = esc(tradeNameRaw);
-    const tradeEmail = esc(profile?.email ?? "");
-    const tradePhone = esc(profile?.phone ?? "");
-    const clientName = esc(invoice.client.name);
-    const jobTitle   = invoice.job?.title ? esc(invoice.job.title) : null;
-    const rawUrl     = showLink ? (invoice.stripe_payment_link_url ?? "") : "";
-    const paymentUrl = /^https:\/\//i.test(rawUrl) ? esc(rawUrl) : null; // uniquement des liens https
-    const bankName          = showBank && pickBank("bank_name") ? esc(pickBank("bank_name")!) : null;
-    const sortCode          = showBank && pickBank("sort_code") ? esc(pickBank("sort_code")!) : null;
-    const accountNumber     = showBank && pickBank("account_number") ? esc(pickBank("account_number")!) : null;
-    const iban              = showBank && pickBank("iban") ? esc(pickBank("iban")!.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim()) : null;
-    const bic               = showBank && pickBank("bic") ? esc(pickBank("bic")!) : null;
-    const bankAccountHolder = showBank && pickBank("bank_account_holder") ? esc(pickBank("bank_account_holder")!) : null;
-    const invoiceNotes      = profile?.invoice_notes ? esc(profile.invoice_notes).replace(/\n/g, "<br/>") : null;
-    const amount            = invoice.amount;
-    const invoiceNumber     = esc(invoice.invoice_number);
+    const bankName          = includeIban && profile?.bank_name ? esc(profile.bank_name) : null;
+    const sortCode          = includeIban && profile?.sort_code ? esc(profile.sort_code) : null;
+    const accountNumber     = includeIban && profile?.account_number ? esc(profile.account_number) : null;
+    const iban              = includeIban && profile?.iban
+      ? esc(profile.iban.replace(/\s+/g, "").replace(/(.{4})/g, "$1 ").trim())
+      : null;
+    const bic               = includeIban && profile?.bic ? esc(profile.bic) : null;
+    const bankAccountHolder = includeIban && profile?.bank_account_holder ? esc(profile.bank_account_holder) : null;
+
+    const amount = invoice.amount;
 
     const html = `<!DOCTYPE html>
 <html lang="${s.htmlLang}">
@@ -298,13 +332,13 @@ Deno.serve(async (req) => {
     </div>` : ""}
     <p style="font-size:14px;color:#555;margin-bottom:28px;line-height:1.6">
       ${s.intro(tradeName)}
-      ${dueDate ? s.paymentDue(dueDate) : ""}
+      ${dueDate ? s.paymentDue(esc(dueDate)) : ""}
     </p>
 
     <div class="meta-row">
       <div>
         <div class="inv-num">${invoiceNumber}</div>
-        ${dueDate ? `<div class="inv-sub">${s.due} ${dueDate}</div>` : ""}
+        ${dueDate ? `<div class="inv-sub">${s.due} ${esc(dueDate)}</div>` : ""}
       </div>
       <div style="text-align:right;font-size:13px;color:#888">
         <div style="font-weight:700;color:#131211">${tradeName}</div>
@@ -323,27 +357,27 @@ Deno.serve(async (req) => {
       <tbody>
         <tr>
           <td>${jobTitle || s.servicesRendered}</td>
-          <td style="text-align:right;font-weight:700">${fmtMoney(amount)}</td>
+          <td style="text-align:right;font-weight:700">${esc(fmtMoney(amount))}</td>
         </tr>
       </tbody>
     </table>
 
     <div class="total-row">
       <span class="total-lbl">${s.totalDue}</span>
-      <span class="total-amt">${fmtMoney(amount)}</span>
+      <span class="total-amt">${esc(fmtMoney(amount))}</span>
     </div>
 
-    ${paymentUrl ? `<a class="pay-btn" href="${paymentUrl}">${s.payNow(fmtMoney(amount))}</a>` : ""}
+    ${paymentUrl ? `<a class="pay-btn" href="${esc(paymentUrl)}">${esc(s.payNow(fmtMoney(amount)))}</a>` : ""}
 
     ${(bankName || sortCode || accountNumber || iban || bic) ? `
     <div class="bank-box">
       <div style="font-weight:700;margin-bottom:10px">${s.bankTransferDetails}</div>
       ${bankAccountHolder ? `<div><b>${s.accountHolder}</b> ${bankAccountHolder}</div>` : ""}
-      ${iban          ? `<div><b>${s.iban}</b> ${iban}</div>` : ""}
-      ${bic           ? `<div><b>${s.bic}</b> ${bic}</div>` : ""}
-      ${bankName      ? `<div><b>${s.bank}</b> ${bankName}</div>` : ""}
-      ${sortCode      ? `<div><b>${s.sortCode}</b> ${sortCode}</div>` : ""}
-      ${accountNumber ? `<div><b>${s.account}</b> ${accountNumber}</div>` : ""}
+      ${iban              ? `<div><b>${s.iban}</b> ${iban}</div>` : ""}
+      ${bic               ? `<div><b>${s.bic}</b> ${bic}</div>` : ""}
+      ${bankName          ? `<div><b>${s.bank}</b> ${bankName}</div>` : ""}
+      ${sortCode          ? `<div><b>${s.sortCode}</b> ${sortCode}</div>` : ""}
+      ${accountNumber     ? `<div><b>${s.account}</b> ${accountNumber}</div>` : ""}
       <div style="margin-top:8px"><b>${s.reference}</b> ${invoiceNumber}</div>
     </div>` : ""}
 
@@ -360,6 +394,8 @@ Deno.serve(async (req) => {
     const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "invoices@Vimen.app";
     const FROM_NAME  = Deno.env.get("FROM_NAME")  ?? "Vimen";
 
+    const fromDisplay = headerSafe(`${rawTradeName} via ${FROM_NAME}`);
+
     const res = await fetch("https://api.resend.com/emails", {
       method:  "POST",
       headers: {
@@ -367,10 +403,9 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from:    `${safeName(tradeNameRaw)} via ${safeName(FROM_NAME)} <${FROM_EMAIL}>`,
-        ...(profile?.email ? { reply_to: profile.email } : {}),
+        from:    `${fromDisplay} <${FROM_EMAIL}>`,
         to:      [invoice.client.email],
-        subject: `${reminder ? s.subjectReminder : ""}${s.subject(String(invoice.invoice_number).replace(/[\r\n]/g, " "), fmtMoney(amount), dueDate)}`,
+        subject: `${reminder ? s.subjectReminder : ""}${s.subject(rawInvoiceNumber, fmtMoney(amount), dueDate)}`,
         html,
       }),
     });
