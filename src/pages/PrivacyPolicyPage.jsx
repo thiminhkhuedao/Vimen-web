@@ -1,8 +1,4 @@
 // src/pages/PrivacyPolicyPage.jsx
-//
-// Contenu basé sur privacy-policy-fr.md / privacy-policy-en.md — les
-// placeholders [À COMPLÉTER] / [TO COMPLETE] DOIVENT être remplis avant
-// mise en ligne (nom de l'éditeur, adresse, email RGPD, etc. — voir src/lib/legal.js)
 
 import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";

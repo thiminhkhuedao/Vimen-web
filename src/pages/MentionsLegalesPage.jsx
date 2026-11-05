@@ -1,8 +1,4 @@
 // src/pages/MentionsLegalesPage.jsx
-//
-// ⚠️ Contenu placeholder pour la phase de développement — [À COMPLÉTER] /
-// [TO COMPLETE] DOIVENT être remplis (dans src/lib/legal.js) avant mise en ligne réelle.
-// Même convention de placeholders que PrivacyPolicyPage / TermsOfServicePage.
 
 import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";
