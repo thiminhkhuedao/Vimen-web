@@ -1,8 +1,5 @@
 // src/pages/TermsOfServicePage.jsx
-//
-// Contenu basé sur terms-of-service-fr.md / terms-of-service-en.md — les
-// placeholders [À COMPLÉTER] / [TO COMPLETE] DOIVENT être remplis avant
-// mise en ligne (nom de l'éditeur, adresse, etc. — voir src/lib/legal.js)
+
 
 import { T } from "../styles/publicTokens.js";
 import { useTranslation } from "../i18n/index.js";

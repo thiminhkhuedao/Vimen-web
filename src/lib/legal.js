@@ -9,8 +9,9 @@ export const LEGAL = {
   email: "contact@vimen.app",
   privacyEmail: "contact@vimen.app", 
   updatedFr: "22 octobre 2026",            
-  updatedEn: "October 22, 2026",
+  updatedEn: "November 5, 2026",
   inactivityMonths: 12, 
+  address : "43 Rue Pierre Renaudel, 76100 Rouen",
 };
 
 const ph = (lang, label) => (lang === "en" ? `[TO COMPLETE — ${label}]` : `[À COMPLÉTER — ${label}]`);
