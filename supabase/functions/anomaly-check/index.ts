@@ -60,7 +60,7 @@ async function sendAlert(subject: string, bodyLines: string[]): Promise<void> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Vimen Monitoring <alerts@vimen.com>", // adapte à ton domaine vérifié Resend
+      from: "Vimen Monitoring <alerts@vimen.app>", // adapte à ton domaine vérifié Resend
       to: ALERT_EMAIL,
       subject,
       text: bodyLines.join("\n"),

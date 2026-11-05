@@ -20,8 +20,8 @@
 const ALLOWED_ORIGINS = [
   "https://vimen.app",
   "https://www.vimen.app",
-  "https://vimen.com",
-  "https://www.vimen.com",
+  "https://vimen.app",
+  "https://www.vimen.app",
   "http://localhost:5173", // Vite dev server, à retirer si tu veux verrouiller aussi en dev
 ];
 
