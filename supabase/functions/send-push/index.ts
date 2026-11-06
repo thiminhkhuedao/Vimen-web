@@ -1,4 +1,3 @@
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS = {
@@ -8,6 +7,15 @@ const CORS = {
 };
 
 Deno.serve(async (req) => {
+
+  const cronSecret = Deno.env.get("CRON_SECRET") ?? "";
+  if (!cronSecret || req.headers.get("Authorization") !== `Bearer ${cronSecret}`) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
@@ -51,9 +59,6 @@ Deno.serve(async (req) => {
 
     const json = await res.json();
 
-    // Expo's API returns 200 even for some per-token errors (e.g. a
-    // stale/uninstalled-app token) — surface those in the response
-    // rather than treating the whole call as a hard failure.
     const ticket = json?.data;
     if (ticket?.status === "error") {
       console.error("send-push: Expo ticket error:", ticket.message, ticket.details);
@@ -62,7 +67,8 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true, ticket }), { headers: CORS });
   } catch (err) {
-    console.error("send-push error:", err.message);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: CORS });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("send-push error:", message);
+    return new Response(JSON.stringify({ error: message }), { status: 500, headers: CORS });
   }
 });
