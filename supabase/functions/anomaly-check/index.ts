@@ -1,11 +1,5 @@
 // supabase/functions/anomaly-check/index.ts
 //
-// À exécuter automatiquement toutes les heures via pg_cron (voir le SQL
-// plus bas). Regarde les événements des dernières 24h dans
-// rate_limit_events et compare à la moyenne des 7 jours précédents.
-// Si un chiffre sort largement de la norme, envoie un email d'alerte via
-// Resend à l'adresse que tu configures.
-//
 // Déploiement :
 //   supabase functions deploy anomaly-check
 //   supabase secrets set RESEND_API_KEY=xxxx
@@ -20,11 +14,8 @@ const ALERT_EMAIL = Deno.env.get("ALERT_EMAIL") ?? "";
 
 const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-// Seuils simples : au-delà de X fois la moyenne des 7 derniers jours,
-// c'est considéré comme anormal. Ajuste selon ton volume réel une fois
-// que tu as un peu de recul sur tes chiffres normaux.
 const ANOMALY_MULTIPLIER = 3;
-const MIN_ABSOLUTE_THRESHOLD = 10; // évite les faux positifs sur petit volume
+const MIN_ABSOLUTE_THRESHOLD = 10; 
 
 async function countLast24h(action: string): Promise<number> {
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -60,7 +51,7 @@ async function sendAlert(subject: string, bodyLines: string[]): Promise<void> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Vimen Monitoring <alerts@vimen.app>", // adapte à ton domaine vérifié Resend
+      from: "Vimen Monitoring <alerts@vimen.app>",
       to: ALERT_EMAIL,
       subject,
       text: bodyLines.join("\n"),
@@ -68,7 +59,16 @@ async function sendAlert(subject: string, bodyLines: string[]): Promise<void> {
   });
 }
 
-Deno.serve(async (_req: Request) => {
+Deno.serve(async (req: Request) => {
+
+  const cronSecret = Deno.env.get("CRON_SECRET") ?? "";
+  if (!cronSecret || req.headers.get("Authorization") !== `Bearer ${cronSecret}`) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const actionsToWatch = ["signup", "login", "contact_form", "booking_request"];
   const anomalies: string[] = [];
 
@@ -78,7 +78,7 @@ Deno.serve(async (_req: Request) => {
     const threshold = Math.max(avg * ANOMALY_MULTIPLIER, MIN_ABSOLUTE_THRESHOLD);
     if (today > threshold) {
       anomalies.push(
-        `⚠️ ${action} : ${today} aujourd'hui vs ${avg.toFixed(1)} en moyenne/jour (seuil: ${threshold.toFixed(0)})`
+        `${action} : ${today} aujourd'hui vs ${avg.toFixed(1)} en moyenne/jour (seuil: ${threshold.toFixed(0)})`
       );
     }
   }
@@ -92,12 +92,12 @@ Deno.serve(async (_req: Request) => {
     .gte("created_at", since);
 
   if (loginAttempts && loginAttempts > 200) {
-    anomalies.push(`⚠️ ${loginAttempts} tentatives de login en 24h — possible attaque credential stuffing`);
+    anomalies.push(`${loginAttempts} tentatives de login en 24h — possible attaque credential stuffing`);
   }
 
   if (anomalies.length > 0) {
     await sendAlert(
-      `🚨 Vimen — ${anomalies.length} anomalie(s) détectée(s)`,
+      `Vimen — ${anomalies.length} anomalie(s) détectée(s)`,
       [
         "Comportement anormal détecté sur les dernières 24h :",
         "",
