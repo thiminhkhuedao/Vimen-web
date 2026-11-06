@@ -1,4 +1,3 @@
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const CORS = {
@@ -29,15 +28,20 @@ async function sendSMS(to: string, body: string): Promise<{ sid: string }> {
 }
 
 Deno.serve(async (req) => {
+
+  const cronSecret = Deno.env.get("CRON_SECRET") ?? "";
+  if (!cronSecret || req.headers.get("Authorization") !== `Bearer ${cronSecret}`) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {
     const { type, to, profileId, data } = await req.json();
 
-    // Resolve the actual recipient number. If the caller passed
-    // `profileId` instead of `to`, look it up ourselves — see the
-    // note above on why (anon callers must never be trusted with
-    // another user's phone number directly).
     let recipient = to;
     if (!recipient && profileId) {
       const supabaseAdmin = createClient(
@@ -52,8 +56,6 @@ Deno.serve(async (req) => {
 
       if (profileErr) throw new Error(profileErr.message);
       if (!profile?.phone) {
-        // Not an error — this professional just hasn't added a phone
-        // number yet, so there's simply no SMS to send.
         return new Response(JSON.stringify({ success: true, skipped: "no_phone_on_file" }), { headers: CORS });
       }
       recipient = profile.phone;
@@ -65,7 +67,6 @@ Deno.serve(async (req) => {
 
     switch (type) {
       case "job_reminder":
-        // to = client phone
         message =
           `Hi ${data.clientName}, just a reminder that ${data.tradeName} will be with you tomorrow ` +
           `(${data.date}) at ${data.time} for: ${data.jobTitle}. ` +
@@ -73,29 +74,25 @@ Deno.serve(async (req) => {
         break;
 
       case "invoice_paid":
-        // to = tradesperson phone
         message =
-          `💷 Vimen: Invoice ${data.invoiceNumber} for €${data.amount} ` +
+          `Vimen: Invoice ${data.invoiceNumber} for €${data.amount} ` +
           `has been paid by ${data.clientName}. Nice one!`;
         break;
 
       case "new_booking":
-        // to = tradesperson phone
         message =
-          `🔔 Vimen: New booking request from ${data.customerName}` +
+          `Vimen: New booking request from ${data.customerName}` +
           `${data.preferredDate ? ` for ${data.preferredDate}` : ""}. ` +
           `Log in to accept or decline.`;
         break;
 
       case "overdue_invoice":
-        // to = tradesperson phone
         message =
-          `⚠️ Vimen: Invoice ${data.invoiceNumber} (€${data.amount}) ` +
+          `Vimen: Invoice ${data.invoiceNumber} (€${data.amount}) ` +
           `for ${data.clientName} is now overdue. Consider following up.`;
         break;
 
       case "review_request":
-        // to = client phone
         message =
           `Hi ${data.clientName}, hope you're happy with ${data.jobTitle}. ` +
           `Could you spare 60 seconds to leave us a Google review? It really helps: ${data.googleUrl} — ${data.tradeName}`;
@@ -108,7 +105,8 @@ Deno.serve(async (req) => {
     const result = await sendSMS(recipient, message);
     return new Response(JSON.stringify({ success: true, sid: result.sid }), { headers: CORS });
   } catch (err) {
-    console.error("send-sms error:", err.message);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: CORS });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("send-sms error:", message);
+    return new Response(JSON.stringify({ error: message }), { status: 500, headers: CORS });
   }
 });
