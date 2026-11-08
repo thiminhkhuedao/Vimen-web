@@ -1,157 +1,278 @@
-// supabase/functions/send-quote-email/index.ts
-//
-
+/**
+ * Supabase Edge Function: send-quote-email
+ *
+ * Deploy:
+ *   supabase functions deploy send-quote-email --project-ref 
+ */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { verifyToken } from "https://esm.sh/@clerk/backend@1";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-const CLERK_SECRET_KEY = Deno.env.get("CLERK_SECRET_KEY");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
+const APP_URL = (Deno.env.get("APP_URL") ?? "https://vimen.app").replace(/\/+$/, "");
 const FROM_EMAIL = Deno.env.get("FROM_EMAIL") ?? "quotes@vimen.app";
 const FROM_NAME = Deno.env.get("FROM_NAME") ?? "Vimen";
-const APP_URL = Deno.env.get("APP_URL") ?? "https://vimen.app";
 
-const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+const MAX_BODY_BYTES = 4 * 1024;
+const DAILY_LIMIT = 100;
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Content-Type": "application/json",
-};
+// ── CORS (les appels depuis l'app mobile n'ont pas d'Origin, seuls les
+// navigateurs sont concernés) ────────────────────────────────────────
+const ALLOWED_ORIGINS = ["https://vimen.app", "https://www.vimen.app", "http://localhost:5173"];
 
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  GBP: "£", EUR: "€", USD: "$", CAD: "C$", AUD: "A$", CHF: "CHF ",
-};
-
-async function getVerifiedProfileId(req: Request): Promise<string> {
-  const authHeader = req.headers.get("Authorization") || "";
-  const token = authHeader.replace(/^Bearer\s+/i, "");
-  if (!token) throw new Error("Token de session manquant");
-  if (!CLERK_SECRET_KEY) throw new Error("CLERK_SECRET_KEY non configuré côté serveur");
-
-  const payload = await verifyToken(token, { secretKey: CLERK_SECRET_KEY });
-  const clerkId = payload.sub;
-
-  const { data: profile, error } = await supabase
-    .from("profiles").select("id").eq("clerk_id", clerkId).single();
-  if (error || !profile) throw new Error("Profil introuvable");
-  return profile.id;
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin") ?? "";
+  const allowed = ALLOWED_ORIGINS.includes(origin) || /^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin);
+  return {
+    "Access-Control-Allow-Origin": allowed ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
 }
 
-// deno-lint-ignore no-explicit-any
-type QuoteRow = Record<string, any> & {
+// Lit le body en coupant court au-delà de maxBytes (ne se fie pas à
+// Content-Length, qui peut être absent ou mensonger).
+async function readJsonWithLimit(req: Request, maxBytes: number): Promise<{ data: unknown; error: string | null }> {
+  if (!req.body) return { data: null, error: "empty_body" };
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      reader.cancel();
+      return { data: null, error: "payload_too_large" };
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return { data: JSON.parse(new TextDecoder().decode(bytes)), error: null };
+  } catch {
+    return { data: null, error: "invalid_json" };
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────
+function esc(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// Nom affiché dans le champ "From" : on retire tout ce qui pourrait
+// casser l'en-tête (guillemets, chevrons, retours à la ligne).
+function safeDisplayName(value: string): string {
+  return value.replace(/[<>"\r\n]/g, "").trim().slice(0, 60) || "Vimen";
+}
+
+function formatMoney(amount: number, currency: string, locale: string): string {
+  try {
+    return new Intl.NumberFormat(locale, { style: "currency", currency }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${currency}`;
+  }
+}
+
+interface QuoteRow {
+  id: string;
+  profile_id: string;
+  quote_number: string;
+  title: string | null;
+  total: number | string | null;
+  valid_until: string | null;
+  public_token: string | null;
   client: { name: string | null; email: string | null } | null;
-  profile: { name: string | null; email: string | null; phone: string | null; currency: string | null } | null;
+  profile: {
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    currency: string | null;
+    language: string | null;
+  } | null;
+}
+
+const COPY = {
+  fr: {
+    locale: "fr-FR",
+    subject: (num: string, trade: string, amount: string) => `Devis ${num} de ${trade} — ${amount}`,
+    hello: (name: string) => `Bonjour ${name},`,
+    intro: (trade: string, title: string) =>
+      `${trade} vous a envoyé un devis${title ? ` : « ${title} »` : ""}.`,
+    total: "Montant total",
+    validUntil: (date: string) => `Valable jusqu'au ${date}`,
+    button: "Consulter et signer le devis",
+    fallback: "Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :",
+    contact: (phone: string) => `Une question ? Répondez directement à cet email${phone ? ` ou appelez le ${phone}` : ""}.`,
+  },
+  en: {
+    locale: "en-GB",
+    subject: (num: string, trade: string, amount: string) => `Quote ${num} from ${trade} — ${amount}`,
+    hello: (name: string) => `Hi ${name},`,
+    intro: (trade: string, title: string) =>
+      `${trade} has sent you a quote${title ? `: "${title}"` : ""}.`,
+    total: "Total amount",
+    validUntil: (date: string) => `Valid until ${date}`,
+    button: "View and sign the quote",
+    fallback: "If the button doesn't work, copy this link into your browser:",
+    contact: (phone: string) => `Any questions? Reply directly to this email${phone ? ` or call ${phone}` : ""}.`,
+  },
 };
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+function buildHtml(args: {
+  c: typeof COPY.fr;
+  clientName: string;
+  tradeName: string;
+  title: string;
+  amount: string;
+  validUntil: string;
+  quoteUrl: string;
+  phone: string;
+}): string {
+  const { c, clientName, tradeName, title, amount, validUntil, quoteUrl, phone } = args;
+  return `<!DOCTYPE html>
+<html><body style="margin:0;padding:0;background:#F5F4F1;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#131211;">
+  <div style="max-width:560px;margin:0 auto;padding:32px 20px;">
+    <div style="background:#ffffff;border-radius:14px;padding:32px;border:1px solid #E5E5E0;">
+      <p style="margin:0 0 16px;font-size:16px;">${esc(c.hello(clientName))}</p>
+      <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#444;">${esc(c.intro(tradeName, title))}</p>
+      <div style="background:#FAFAF8;border-radius:10px;padding:18px 20px;margin-bottom:24px;">
+        <div style="font-size:12px;color:#6B6B66;text-transform:uppercase;letter-spacing:0.5px;">${esc(c.total)}</div>
+        <div style="font-size:28px;font-weight:800;margin-top:4px;">${esc(amount)}</div>
+        ${validUntil ? `<div style="font-size:13px;color:#6B6B66;margin-top:6px;">${esc(c.validUntil(validUntil))}</div>` : ""}
+      </div>
+      <a href="${esc(quoteUrl)}" style="display:inline-block;background:#E8500A;color:#ffffff;text-decoration:none;font-weight:700;font-size:15px;padding:14px 26px;border-radius:10px;">${esc(c.button)}</a>
+      <p style="margin:24px 0 4px;font-size:12px;color:#6B6B66;">${esc(c.fallback)}</p>
+      <p style="margin:0;font-size:12px;color:#6B6B66;word-break:break-all;">${esc(quoteUrl)}</p>
+    </div>
+    <p style="text-align:center;font-size:12px;color:#8A8680;margin:18px 0 0;">${esc(c.contact(phone))}</p>
+  </div>
+</body></html>`;
+}
+
+// ── Handler ──────────────────────────────────────────────────────────
+Deno.serve(async (req: Request) => {
+  const cors = corsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
   const json = (body: Record<string, unknown>, status = 200) =>
-    new Response(JSON.stringify(body), { status, headers: CORS });
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+
+  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   try {
-    const callerProfileId = await getVerifiedProfileId(req);
-
-    const { quoteId } = await req.json();
-    if (typeof quoteId !== "string" || !quoteId) {
-      return json({ error: "quoteId requis" }, 400);
+    if (!RESEND_API_KEY) {
+      return json({ error: "Envoi d'emails non configuré (secret RESEND_API_KEY manquant)" }, 503);
     }
 
-    const { data: quote, error: qErr } = await supabase
+    // 1. Qui appelle ? Sans token, rien ne passe.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!/^Bearer\s+\S+/i.test(authHeader)) {
+      return json({ error: "Non authentifié" }, 401);
+    }
+
+    // 2. Quel devis ? Seul champ accepté du client.
+    const { data: raw, error: bodyError } = await readJsonWithLimit(req, MAX_BODY_BYTES);
+    if (bodyError) return json({ error: bodyError }, bodyError === "payload_too_large" ? 413 : 400);
+    const quoteId = (raw as { quoteId?: unknown } | null)?.quoteId;
+    if (typeof quoteId !== "string" || !quoteId) return json({ error: "quoteId requis" }, 400);
+
+    // 3. Lecture avec le token de l'utilisateur : RLS ne renvoie le devis
+    // que s'il appartient bien à l'appelant.
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+    const { data, error } = await db
       .from("quotes")
-      .select("*, client:clients(name,email), profile:profiles(name,email,phone,currency)")
+      .select(
+        "id, profile_id, quote_number, title, total, valid_until, public_token, " +
+          "client:clients(name,email), profile:profiles(name,email,phone,currency,language)",
+      )
       .eq("id", quoteId)
-      .single<QuoteRow>();
+      .single();
 
-    if (qErr || !quote) return json({ error: "Devis introuvable" }, 404);
-    // Ne révèle jamais si le devis existe pour quelqu'un d'autre.
-    if (quote.profile_id !== callerProfileId) return json({ error: "Devis introuvable" }, 404);
-    if (!quote.client?.email) return json({ error: "Ce client n'a pas d'adresse email" }, 400);
-    if (!quote.public_token) return json({ error: "Ce devis n'a pas de lien public" }, 400);
+    if (error || !data) return json({ error: "Devis introuvable" }, 404);
+    const quote = data as unknown as QuoteRow;
 
-    const clientName = quote.client.name ?? "";
-    const tradeName = quote.profile?.name ?? "";
-    const tradeEmail = quote.profile?.email ?? "";
-    const tradePhone = quote.profile?.phone ?? "";
-    const currencyCode = quote.profile?.currency ?? "EUR";
-    const quoteUrl = `${APP_URL}/quote/${quote.public_token}`;
+    const clientEmail = quote.client?.email?.trim() ?? "";
+    if (!clientEmail) return json({ error: "Ce client n'a pas d'adresse email" }, 400);
+    if (!quote.public_token) {
+      return json({ error: "Ce devis n'a pas de lien public — réessaie dans un instant" }, 400);
+    }
+
+    // 4. Plafond quotidien par professionnel.
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+    const bucket = `email:${quote.profile_id}`;
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await admin
+      .from("rate_limit_events")
+      .select("*", { count: "exact", head: true })
+      .eq("bucket_key", bucket)
+      .gte("created_at", since);
+    if ((count ?? 0) >= DAILY_LIMIT) {
+      return json({ error: "Limite quotidienne d'envois atteinte, réessaie demain" }, 429);
+    }
+
+    // 5. Composition (tout vient de la base, rien du body).
+    const profile = quote.profile;
+    const c = profile?.language === "fr" ? COPY.fr : COPY.en;
+    const tradeName = profile?.name?.trim() || "Vimen";
+    const currency = profile?.currency || "EUR";
+    const amount = formatMoney(Number(quote.total ?? 0), currency, c.locale);
     const validUntil = quote.valid_until
-      ? new Date(quote.valid_until).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
-      : null;
+      ? new Date(quote.valid_until).toLocaleDateString(c.locale, { day: "numeric", month: "long", year: "numeric" })
+      : "";
+    const quoteUrl = `${APP_URL}/quote/${quote.public_token}`;
 
-    const fmtMoney = (n: number) =>
-      `${CURRENCY_SYMBOLS[currencyCode] ?? CURRENCY_SYMBOLS.EUR}${Number(n).toLocaleString("en-GB", { minimumFractionDigits: 2 })}`;
+    const html = buildHtml({
+      c,
+      clientName: quote.client?.name?.trim() || "",
+      tradeName,
+      title: quote.title?.trim() || "",
+      amount,
+      validUntil,
+      quoteUrl,
+      phone: profile?.phone?.trim() || "",
+    });
 
-    const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f1;color:#131211}
-  .wrap{max-width:580px;margin:32px auto;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #e5e3de}
-  .top{background:#E8500A;padding:20px 32px}
-  .logo{color:#fff;font-size:20px;font-weight:900;letter-spacing:-0.5px}
-  .body{padding:36px 36px 28px}
-  .quote-num{font-size:22px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px}
-  .quote-sub{font-size:13px;color:#888;margin-bottom:24px}
-  .amount-box{background:#f7f6f3;border-radius:10px;padding:20px;text-align:center;margin-bottom:24px}
-  .amount-lbl{font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
-  .amount-val{font-size:30px;font-weight:900;color:#E8500A;letter-spacing:-0.5px}
-  .cta-btn{display:block;background:#E8500A;color:#fff;text-decoration:none;padding:15px 28px;border-radius:10px;font-size:16px;font-weight:700;text-align:center;margin:0 0 20px}
-  .footer{text-align:center;padding:18px;font-size:12px;color:#aaa;border-top:1px solid #eee}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="top"><div class="logo">⚡ Vimen</div></div>
-  <div class="body">
-    <p style="font-size:15px;margin-bottom:24px">Hi ${clientName},</p>
-    <p style="font-size:14px;color:#555;margin-bottom:24px;line-height:1.6">
-      <strong>${tradeName}</strong> has sent you a quote for your review.
-      ${validUntil ? `This quote is valid until <strong>${validUntil}</strong>.` : ""}
-    </p>
-
-    <div class="quote-num">${quote.quote_number}</div>
-
-    <div class="amount-box">
-      <div class="amount-lbl">Quote total</div>
-      <div class="amount-val">${fmtMoney(quote.total)}</div>
-    </div>
-
-    <a class="cta-btn" href="${quoteUrl}">View & sign quote →</a>
-
-    <p style="font-size:13px;color:#888;line-height:1.6">
-      You can review the full breakdown and sign online, no account needed.
-      Questions? Reply to ${tradeEmail}${tradePhone ? ` or call ${tradePhone}` : ""}.
-    </p>
-  </div>
-  <div class="footer">Sent via <a href="https://vimen.app" style="color:#E8500A;text-decoration:none">Vimen</a></div>
-</div>
-</body>
-</html>`;
-
+    const replyTo = profile?.email?.trim();
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: `${tradeName} via ${FROM_NAME} <${FROM_EMAIL}>`,
-        to: [quote.client.email],
-        subject: `Quote ${quote.quote_number} from ${tradeName} — ${fmtMoney(quote.total)}`,
+        from: `${safeDisplayName(tradeName)} via ${safeDisplayName(FROM_NAME)} <${FROM_EMAIL}>`,
+        to: [clientEmail],
+        ...(replyTo ? { reply_to: replyTo } : {}),
+        subject: c.subject(quote.quote_number, tradeName.replace(/[\r\n]/g, " "), amount),
         html,
       }),
     });
 
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.message ?? "Resend API error");
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({}));
+      const message = (detail as { message?: string }).message ?? `Resend ${res.status}`;
+      console.error("send-quote-email: Resend error:", message);
+      return json({ error: `Envoi impossible : ${message}` }, 502);
+    }
 
-    return json({ success: true, id: result.id });
+    await admin.from("rate_limit_events").insert({ bucket_key: bucket, action: "send_quote_email" });
+    return json({ success: true }, 200);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("send-quote-email error:", message);
