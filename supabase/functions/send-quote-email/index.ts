@@ -1,10 +1,5 @@
 // supabase/functions/send-quote-email/index.ts
 //
-// Envoi manuel d'un devis par email (bouton "Envoyer par email" dans
-// QuotesPage). Ne prend qu'un quoteId — TOUT le contenu de l'email
-// (montant, nom du client, coordonnées du pro) est relu ici depuis la
-// base, jamais fourni par le navigateur, pour qu'il soit impossible
-// d'usurper un autre pro ou de fabriquer un faux montant.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { verifyToken } from "https://esm.sh/@clerk/backend@1";

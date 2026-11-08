@@ -1,15 +1,5 @@
 // supabase/functions/send-referral-email/index.ts
 //
-// Envoie l'email d'invitation de parrainage via l'API Resend.
-//
-// Déploiement :
-//   supabase functions deploy send-referral-email
-//
-// Secret requis (une seule fois) :
-//   supabase secrets set RESEND_API_KEY=re_xxxxxxxxxxxxx
-//
-// Il faut aussi avoir vérifié un domaine d'envoi sur https://resend.com/domains
-// (ex: mail.tradie.app) et l'utiliser comme adresse "from" ci-dessous.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { checkRateLimit } from "../_shared/rateLimit.ts";

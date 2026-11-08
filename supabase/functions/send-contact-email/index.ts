@@ -1,9 +1,4 @@
 // supabase/functions/send-contact-email/index.ts
-//
-// Reçoit { name, email, message } depuis ContactPage.jsx et envoie un mail
-// via Resend. Déploiement : supabase functions deploy send-contact-email
-// Variable requise (secret) : RESEND_API_KEY
-//   supabase secrets set RESEND_API_KEY=re_xxxxxxxx
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { checkRateLimit } from "../_shared/rateLimit.ts";

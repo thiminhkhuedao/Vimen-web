@@ -1,22 +1,7 @@
 /**
  * Supabase Edge Function: send-weekly-digest
  *
- * Déclenchée UNE FOIS PAR SEMAINE (lundi matin) par pg_cron — voir
- * sql/013_weekly_digest.sql. Comme send-invoice-reminders, elle n'est pas appelée
- * par un utilisateur : elle est protégée par un secret partagé (x-cron-secret).
- *
- * Envoie à chaque pro qui n'a pas désactivé « résumé hebdomadaire »
- * (profiles.notif_weekly_digest) un email récapitulatif :
- *   - demandes de réservation reçues ces 7 derniers jours + demandes en attente de réponse ;
- *   - factures émises ces 7 derniers jours ;
- *   - factures impayées (dont en retard).
- * Si rien n'est à signaler, aucun email n'est envoyé.
- *
- * Appelée avec : { dryRun?: true } — dryRun liste ce qui serait envoyé, sans rien envoyer.
- * Renvoie :      { sent, skipped, failed, dryRun, details }
- *
  * Deploy:   supabase functions deploy send-weekly-digest --no-verify-jwt
- * Secrets:  CRON_SECRET, RESEND_API_KEY, FROM_EMAIL, APP_URL (déjà définis pour les autres fonctions)
  */
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";

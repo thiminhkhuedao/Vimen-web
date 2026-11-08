@@ -1,17 +1,5 @@
 // supabase/functions/send-review-request/index.ts
-//
-// Envoie une demande d'avis Google par EMAIL uniquement, à l'adresse
-// enregistrée du client. Appelée automatiquement quand une intervention
-// est marquée comme terminée (voir JobsPage.jsx -> autoSendReviewRequest),
-// et aussi manuellement depuis ReviewsPage ("Demander un avis").
-//
-// Ne prend qu'un jobId — le client, le nom du pro et son lien Google sont
-// relus ici depuis la base, jamais fournis par le navigateur, pour qu'il
-// soit impossible de faire envoyer un faux email "de la part" d'un autre
-// pro à n'importe quelle adresse.
-//
-// Pas de SMS ici : Vimen fonctionne uniquement par email pour ce type
-// de notification.
+
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { verifyToken } from "https://esm.sh/@clerk/backend@1";

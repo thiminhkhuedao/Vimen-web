@@ -1,19 +1,6 @@
 /**
  * Supabase Edge Function: send-booking-declined
  *
- * Appelée par le pro (JWT Clerk) APRÈS avoir refusé une demande de réservation
- * (voir BookingPage.jsx -> confirmDecline()). Prévient le client par email, avec un
- * message facultatif écrit par le pro et un lien vers sa page de réservation.
- *
- * Sécurité :
- *   - le profil est déduit du jeton Clerk vérifié, jamais fourni par l'appelant ;
- *   - la demande doit appartenir à ce profil ET avoir déjà le statut « declined » ;
- *   - un seul email par demande (colonne decline_email_sent_at) : pas de renvoi en boucle ;
- *   - tout texte saisi par un utilisateur est échappé avant d'entrer dans le HTML.
- *
- * Appelée avec : { bookingRequestId, message? }
- * Renvoie :      { success: true, emailSent, alreadySent? } ou { error }
- *
  * Deploy:   supabase functions deploy send-booking-declined --no-verify-jwt
  * Secrets:  RESEND_API_KEY, APP_URL, CLERK_SECRET_KEY (déjà définis pour les autres fonctions)
  * SQL:      sql/017_decline_email_sent.sql (colonne decline_email_sent_at)

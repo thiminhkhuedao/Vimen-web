@@ -114,8 +114,6 @@ Deno.serve(async (req: Request) => {
     await step("clients", supabase.from("clients").delete({ count: "exact" }).eq("profile_id", pid));
     await step("profiles", supabase.from("profiles").delete({ count: "exact" }).eq("id", pid));
 
-    // Supprime le compte Clerk en dernier (une fois les données parties,
-    // pour ne pas perdre l'accès en cours de route si une étape échoue)
     if (CLERK_SECRET_KEY) {
       await deleteClerkUser(clerkId);
       deleted["clerk_account"] = 1;

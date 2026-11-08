@@ -1,60 +1,23 @@
 /**
  * Supabase Edge Function: stripe-webhook
  *
- * This is the most important backend function in the whole app.
- * Every time a client pays an invoice through Stripe, this fires
- * and records the transaction + fees in Supabase.
- *
- * DURCISSEMENT apporté à cette version :
- *   1. Comparaison de signature en temps constant (l'ancienne version
- *      utilisait `===` sur des strings, techniquement vulnérable à une
- *      attaque par timing — même si peu réaliste sur du HTTP en pratique,
- *      autant fermer la porte proprement).
- *   2. Limite de taille du body avant de le lire en entier (aucune limite
- *      n'existait avant).
+ * This is the most important backend function in the whole app (use for later).
  *
  * Deploy:
  *   supabase functions deploy stripe-webhook
- *
- * Set secrets:
- *   supabase secrets set STRIPE_SECRET_KEY=sk_live_...
- *   supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...
- *
- * In Stripe Dashboard → Developers → Webhooks → Add endpoint:
- *   URL: https://YOUR_PROJECT.supabase.co/functions/v1/stripe-webhook
- *   Events to listen to:
- *     - payment_intent.succeeded
- *     - payment_intent.payment_failed
- *     - payout.paid
- *     - payout.failed
- *     - charge.refunded
- *
- * ── Why this doesn't use the `stripe` npm SDK ──────────────────
- * The SDK (even loaded via esm.sh?target=deno) pulls in Node
- * compatibility shims that call Deno.core.runMicrotasks() internally
- * — an API Supabase's Edge Runtime has since removed, causing every
- * invocation to fail with:
- *   "Deno.core.runMicrotasks() is not supported in this environment"
- * Webhook signature verification is just HMAC-SHA256 over a string,
- * and Stripe's own event/object shapes are plain JSON — neither
- * needs the SDK. Verifying manually with Deno's native Web Crypto
- * API removes the dependency (and the risk of it breaking again on
- * a future Deno runtime upgrade) entirely.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""  // service role — bypasses RLS
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""  
 );
 
 const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 
-// Aucune requête Stripe légitime ne dépasse cette taille en pratique —
-// un event avec beaucoup de métadonnées reste de l'ordre de quelques Ko.
-const MAX_BODY_BYTES = 256 * 1024; // 256 Ko
 
-// Stripe UK rate: 1.4% + 20p
+const MAX_BODY_BYTES = 256 * 1024; 
+
 const STRIPE_FEE_RATE   = 0.014;
 const STRIPE_FEE_FIXED  = 0.20;
 
@@ -69,9 +32,7 @@ function calculateFees(grossAmount: number) {
   return { stripeFee, netAmount };
 }
 
-// Lit le body en texte en coupant court si ça dépasse MAX_BODY_BYTES — ne
-// se fie pas au header Content-Length (peut être omis ou mensonger),
-// compte les vrais octets reçus au fil du flux.
+
 async function readTextWithLimit(req: Request, maxBytes: number): Promise<string | null> {
   if (!req.body) return "";
   const reader = req.body.getReader();
@@ -96,10 +57,7 @@ async function readTextWithLimit(req: Request, maxBytes: number): Promise<string
   return new TextDecoder().decode(bytes);
 }
 
-// Comparaison en temps constant — évite qu'un attaquant puisse déduire la
-// signature attendue octet par octet en mesurant le temps de réponse
-// (l'ancien `computedSig === expectedSig` sortait dès la première
-// différence trouvée, ce qui fuite un peu d'information par le timing).
+
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let diff = 0;
@@ -109,10 +67,6 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-/**
- * Verifies a Stripe webhook signature manually, per Stripe's public
- * spec: https://stripe.com/docs/webhooks#verify-manually
- */
 async function verifyStripeSignature(rawBody: string, signatureHeader: string, secret: string): Promise<boolean> {
   const parts = Object.fromEntries(
     signatureHeader.split(",").map(part => part.split("=") as [string, string])

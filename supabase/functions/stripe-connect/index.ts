@@ -1,27 +1,9 @@
 /**
  * Supabase Edge Function: stripe-connect
  *
- * SÉCURITÉ — IDOR corrigé (voir audit "Broken Access Control") :
- * L'ancienne version faisait confiance à un `profileId` envoyé dans le
- * body de la requête, sans vérifier qu'il appartenait bien à l'appelant.
- * N'importe quel utilisateur connecté pouvait donc récupérer un lien
- * d'onboarding Stripe pour N'IMPORTE QUEL profil et détourner les futurs
- * paiements vers son propre compte bancaire.
- *
- * Fix : on ne fait plus jamais confiance à un ID fourni par le client
- * pour déterminer l'identité. On dérive le profil de l'appelant à partir
- * de son JWT (via un client Supabase scopé à son Authorization header,
- * qui ne peut lire QUE sa propre ligne grâce au RLS `profiles_own`).
- *
+ * SÉCURITÉ — IDOR corrigé 
  * Deploy:
  *   supabase functions deploy stripe-connect
- *
- * Secrets requis (déjà utilisés par les autres fonctions) :
- *   STRIPE_SECRET_KEY
- *   SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / SUPABASE_ANON_KEY (par défaut)
- *
- * Appelée avec : { returnUrl }  — PLUS de profileId, il est déduit du JWT
- * Renvoie :      { url }
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -77,10 +59,6 @@ Deno.serve(async (req) => {
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 
-    // Client scopé au JWT de l'appelant : la policy RLS "profiles_own"
-    // garantit que .single() sans filtre ne peut renvoyer QUE SA PROPRE
-    // ligne, quoi qu'on demande explicitement. C'est ça qui remplace la
-    // confiance aveugle en un profileId fourni par le client.
     const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
       global: { headers: { Authorization: authHeader } },
     });
@@ -94,11 +72,9 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Profil introuvable" }), { status: 403, headers: CORS });
     }
 
-    const profileId = myProfile.id; // dérivé du JWT — jamais du body
+    const profileId = myProfile.id; // dérivé du JWT 
     let accountId = myProfile.stripe_account_id;
 
-    // Écriture (création du compte Stripe / mise à jour) : service_role,
-    // mais seulement maintenant qu'on a confirmé l'identité ci-dessus.
     const supabaseAdmin = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
     // First time connecting — create a new Express connected account.
@@ -119,10 +95,7 @@ Deno.serve(async (req) => {
         .eq("id", profileId);
     }
 
-    // Account Links expire quickly and are meant to be single-use —
-    // create a fresh one every time this function is called, even
-    // for a professional who already has an account (e.g. they
-    // dropped off mid-onboarding and are retrying).
+    
     const accountLink = await stripeRequest("POST", "account_links", {
       account:     accountId,
       refresh_url: returnUrl,

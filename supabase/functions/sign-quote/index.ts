@@ -1,11 +1,6 @@
 // supabase/functions/sign-quote/index.ts
 //
-// Appelée depuis PublicQuotePage.jsx quand le client signe. Publique et
-// non authentifiée par design (le client n'a pas de compte) — la sécurité
-// vient du token, difficile à deviner (uuid), pas d'un login.
-//
-// Appelée avec : { token, signedBy }
-// Renvoie :      { success: true, signedAt } ou { error }
+// Appelée depuis PublicQuotePage.jsx 
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit } from "../_shared/rateLimit.ts";
@@ -63,8 +58,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: updateErr.message }), { status: 500, headers: CORS });
     }
 
-    // Notifie le pro — best-effort, on ne bloque pas la réponse au client
-    // si l'envoi du push échoue (pas de token enregistré, etc.)
+    // Notifie le pro 
     try {
       await admin.functions.invoke("send-push", {
         body: {

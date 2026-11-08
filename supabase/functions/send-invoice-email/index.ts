@@ -1,7 +1,5 @@
 /**
  * Supabase Edge Function: send-invoice-email
- * Appelée avec : { invoiceId, reminder?, includeIban?, includeStripeLink? }
- * Renvoie :      { success: true, id } ou { error }
  */
 import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 

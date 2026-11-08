@@ -1,25 +1,6 @@
 /**
  * Supabase Edge Function: send-booking-confirmation
  *
- * Appelée par le pro (JWT Clerk) juste après avoir accepté une demande de
- * réservation (voir BookingPage.jsx -> respond()). Ne fait JAMAIS confiance
- * à un montant fourni par l'appelant : le service et son éventuelle
- * configuration d'acompte sont relus depuis la base, jamais construits
- * côté client.
- *
- * Si le service lié a un acompte configuré (deposit_enabled) ET que le pro
- * a un compte Stripe connecté, on crée un lien de paiement Stripe DIRECTEMENT
- * sur son compte connecté (en-tête Stripe-Account) — l'argent va chez le pro,
- * jamais chez Vimen, exactement comme pour les factures.
- *
- * Si le pro n'a pas connecté Stripe, on envoie quand même l'email de
- * confirmation, sans lien de paiement, et on le signale dans la réponse pour
- * que l'interface puisse le prévenir.
- *
- * Appelée avec : { bookingRequestId }
- * Renvoie :      { success: true, depositRequired, depositLinkCreated,
- *                  stripeNotConnected, emailSent } ou { error }
- *
  * Deploy:   supabase functions deploy send-booking-confirmation
  * Secrets:  STRIPE_SECRET_KEY, RESEND_API_KEY, APP_URL, CLERK_SECRET_KEY
  */
