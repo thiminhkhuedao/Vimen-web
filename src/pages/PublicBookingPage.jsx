@@ -823,6 +823,7 @@ function PublicBookingPageInner() {
   const [done, setDone] = useState(false);
   const [honeypot, setHoneypot] = useState("");
   const [captchaToken, setCaptchaToken] = useState(null);
+  const [captchaKey, setCaptchaKey] = useState(0); // change => le widget anti-robot est recréé (nouveau jeton)
   const [formError, setFormError] = useState(""); // string OU { what, why } — voir ErrorNotice
   const [fieldErrors, setFieldErrors] = useState({});
 
@@ -833,6 +834,13 @@ function PublicBookingPageInner() {
   const updateFormField = (key) => (e) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
     setFieldErrors((prev) => ({ ...prev, [key]: null }));
+  };
+
+  // Un jeton Turnstile ne peut servir qu'UNE fois : dès qu'il a été vérifié par le serveur, on en demande un nouveau.
+  // Sinon, tout nouvel essai après une erreur (réseau, base...) échoue avec « Verification failed ».
+  const resetCaptcha = () => {
+    setCaptchaToken(null);
+    setCaptchaKey((k) => k + 1);
   };
 
   // Charge le profil public + disponibilités
@@ -981,6 +989,7 @@ function PublicBookingPageInner() {
     if (rateLimitMsg) {
       setSending(false);
       setFormError(rateLimitMsg);
+      resetCaptcha();
       return;
     }
 
@@ -1009,6 +1018,7 @@ function PublicBookingPageInner() {
 
       if (error) {
         console.error("booking_requests insert :", error);
+        resetCaptcha();
         setFormError({
           what: tf("publicBooking.sendErrorWhat", "Couldn't send your request"),
           why: tf("publicBooking.sendErrorWhy", "This is usually a temporary connection issue — your details weren't lost. Try sending again."),
@@ -1019,6 +1029,7 @@ function PublicBookingPageInner() {
       setDone(true);
     } catch {
       setSending(false);
+      resetCaptcha();
       setFormError({
         what: tf("publicBooking.sendErrorWhat", "Couldn't send your request"),
         why: tf("publicBooking.sendErrorNetworkWhy", "Check your connection and try again — nothing was lost."),
@@ -1452,7 +1463,7 @@ function PublicBookingPageInner() {
             <Honeypot value={honeypot} onChange={setHoneypot} />
 
             <div style={{ marginBottom: 16 }}>
-              <Turnstile onVerify={setCaptchaToken} onExpire={() => setCaptchaToken(null)} />
+              <Turnstile key={captchaKey} onVerify={setCaptchaToken} onExpire={() => setCaptchaToken(null)} />
             </div>
 
             {formError && (
