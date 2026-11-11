@@ -64,21 +64,35 @@ async function recordEvent(bucketKey: string, action: string): Promise<void> {
   await supabase.from("rate_limit_events").insert({ bucket_key: bucketKey, action });
 }
 
-async function verifyTurnstile(token: string | undefined, ip: string): Promise<boolean> {
-  if (!token) return false;
-  if (!TURNSTILE_SECRET_KEY) return false; // pas de secret configuré -> refuse par défaut, jamais par accident
+interface TurnstileResult {
+  ok: boolean;
+  codes: string[];     // codes d'erreur renvoyés par Cloudflare (ex. "timeout-or-duplicate"), pour les journaux
+  hostname?: string;
+}
 
-  const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      secret: TURNSTILE_SECRET_KEY,
-      response: token,
-      remoteip: ip,
-    }),
-  });
-  const data = await res.json();
-  return data.success === true;
+async function verifyTurnstile(token: string | undefined, ip: string): Promise<TurnstileResult> {
+  if (!token) return { ok: false, codes: ["missing-token"] };
+  if (!TURNSTILE_SECRET_KEY) return { ok: false, codes: ["missing-secret-on-server"] }; // pas de secret configuré -> refuse par défaut, jamais par accident
+
+  const params = new URLSearchParams({ secret: TURNSTILE_SECRET_KEY, response: token });
+  // L'IP est facultative : on ne l'envoie que si elle a l'air valide (pas « unknown », pas de port ni de texte).
+  if (/^[0-9a-fA-F:.]{3,45}$/.test(ip) && ip !== "unknown") params.set("remoteip", ip);
+
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params,
+    });
+    const data = await res.json();
+    return {
+      ok: data.success === true,
+      codes: Array.isArray(data["error-codes"]) ? data["error-codes"] : [],
+      hostname: typeof data.hostname === "string" ? data.hostname : undefined,
+    };
+  } catch (err) {
+    return { ok: false, codes: ["siteverify-unreachable: " + (err instanceof Error ? err.message : String(err))] };
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -130,8 +144,10 @@ Deno.serve(async (req: Request) => {
     // Actions qui exigent un CAPTCHA vérifié server-side
     const requiresCaptcha = ["signup", "contact_form", "booking_request"].includes(action);
     if (requiresCaptcha) {
-      const captchaOk = await verifyTurnstile(turnstileToken, ip);
-      if (!captchaOk) {
+      const captcha = await verifyTurnstile(turnstileToken, ip);
+      if (!captcha.ok) {
+        // Le détail n'est PAS renvoyé au client (rien à apprendre à un bot) : il va dans les journaux de la fonction.
+        console.error("check-rate-limit: Turnstile refusé", JSON.stringify({ action, codes: captcha.codes, hostname: captcha.hostname ?? null }));
         return json({ allowed: false, reason: "captcha_failed" }, 200);
       }
     }
